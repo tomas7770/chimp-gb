@@ -7,7 +7,7 @@ class Gameboy
 {
 public:
     Gameboy(const Cartridge &cart) : mCart(std::move(cart)) {}
-    void printDataSize() const;
+    void dumpInstructions() const;
 
     static constexpr int wramSize = 8192;
     uint8_t wram[wramSize];

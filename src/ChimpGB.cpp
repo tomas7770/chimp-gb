@@ -16,7 +16,10 @@ int main(int argc, char *args[])
     std::ifstream dataStream(filename, std::ios::binary | std::ios::ate);
     auto size = dataStream.tellg();
     dataStream.seekg(0);
-    Gameboy(Cartridge(dataStream, size)).printDataSize();
+
+    auto gameboy = new Gameboy(Cartridge(dataStream, size));
+    gameboy->dumpInstructions();
+    delete gameboy;
 
     return 0;
 }
