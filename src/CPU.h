@@ -8,7 +8,23 @@ class Gameboy;
 class CPU
 {
 public:
+    void fetchDecodeExecuteOpcode();
+
 private:
+    uint16_t getImm16() const;
+    uint8_t getImm8() const;
+
+    uint8_t readR8(uint8_t bitmask) const;
+    void writeR8(uint8_t bitmask, uint8_t value);
+    uint16_t readR16(uint8_t bitmask) const;
+    void writeR16(uint8_t bitmask, uint16_t value);
+    uint16_t readR16Mem(uint8_t bitmask);
+    bool checkCond(uint8_t bitmask) const;
+    uint8_t readR16StkLow(uint8_t bitmask) const;
+    uint8_t readR16StkHigh(uint8_t bitmask) const;
+    void writeR16StkLow(uint8_t bitmask, uint8_t value);
+    void writeR16StkHigh(uint8_t bitmask, uint8_t value);
+
     std::shared_ptr<Gameboy> mGameboy;
 
     // AF
@@ -25,5 +41,10 @@ private:
     uint8_t mRegL;
     // SP and PC
     uint16_t mSP;
-    uint16_t mPC;
+    uint16_t mPC = 0x0100;
+
+    static constexpr uint8_t FLAG_ZERO = (1 << 7);
+    static constexpr uint8_t FLAG_SUB = (1 << 6);
+    static constexpr uint8_t FLAG_HALFCARRY = (1 << 5);
+    static constexpr uint8_t FLAG_CARRY = (1 << 4);
 };
