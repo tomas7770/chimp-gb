@@ -20,6 +20,11 @@ RomHeader::RomHeader(const std::vector<uint8_t> &romData)
         throw std::runtime_error("Provided ROM is not valid: Checksum mismatch");
     }
 
+    if (romData[0x0147] >= CART_TYPE_COUNT)
+    {
+        throw std::runtime_error("Provided ROM is not yet supported");
+    }
+
     char titleChars[16];
     std::memcpy(titleChars, romData.data() + 0x0134, 16);
     title = std::string(titleChars);
