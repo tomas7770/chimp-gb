@@ -7,6 +7,7 @@ class Gameboy
 {
 public:
     Gameboy(const Cartridge &cart) : mCart(std::move(cart)) {}
+    Gameboy() = default; // DEBUG/TESTING
 
     uint8_t readByte(uint16_t address);
     void writeByte(uint16_t address, uint8_t value);
