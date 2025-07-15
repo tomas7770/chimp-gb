@@ -30,6 +30,7 @@ public:
         uint16_t PC;
     };
     CPUState getState() const;
+    void setState(CPUState state);
 
 private:
     uint16_t getImm16() const;

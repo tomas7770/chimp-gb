@@ -1007,3 +1007,17 @@ CPU::CPUState CPU::getState() const
 {
     return {mRegA, mRegF, mRegB, mRegC, mRegD, mRegE, mRegH, mRegL, mSP, mPC};
 }
+
+void CPU::setState(CPU::CPUState state)
+{
+    mRegA = state.regA;
+    mRegF = state.regF;
+    mRegB = state.regB;
+    mRegC = state.regC;
+    mRegD = state.regD;
+    mRegE = state.regE;
+    mRegH = state.regH;
+    mRegL = state.regL;
+    mSP = state.SP;
+    mPC = state.PC;
+}
