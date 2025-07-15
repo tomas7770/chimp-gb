@@ -4,12 +4,12 @@
 uint16_t CPU::getImm16() const
 {
     // Little-endian
-    return (mGameboy->readByte(mPC + 2) << 8) + mGameboy->readByte(mPC + 1);
+    return (mGameboy->readByte(mPC - 1 + 2) << 8) + mGameboy->readByte(mPC - 1 + 1);
 }
 
 uint8_t CPU::getImm8() const
 {
-    return mGameboy->readByte(mPC + 1);
+    return mGameboy->readByte(mPC - 1 + 1);
 }
 
 uint8_t CPU::readR8(uint8_t bitmask) const
@@ -219,12 +219,12 @@ void CPU::writeR16StkHigh(uint8_t bitmask, uint8_t value)
 
 void CPU::fetchDecodeExecuteOpcode()
 {
-    auto opcode = mGameboy->readByte(mPC);
+    auto opcode = mGameboy->readByte(mPC - 1);
     if (opcode == 0xCB)
     {
         // Prefix
         mPC++;
-        opcode = mGameboy->readByte(mPC);
+        opcode = mGameboy->readByte(mPC - 1);
         if (opcode & 0b11111000 == 0b00000000)
         {
             // rlc r8
@@ -553,12 +553,12 @@ void CPU::fetchDecodeExecuteOpcode()
     else if (opcode == 0b00010000)
     {
         // stop
-        std::cout << "stop";
+        // TODO
     }
     else if (opcode == 0b01110110)
     {
         // halt (ld [hl], [hl])
-        std::cout << "halt";
+        // TODO
     }
     else if (opcode & 0b11000000 == 0b01000000)
     {
@@ -780,7 +780,7 @@ void CPU::fetchDecodeExecuteOpcode()
             // INC SP
             mSP++;
 
-            mPC = (high << 8 + low) - 1;
+            mPC = (high << 8 + low);
         }
     }
     else if (opcode == 0b11001001)
@@ -797,19 +797,34 @@ void CPU::fetchDecodeExecuteOpcode()
         // INC SP
         mSP++;
 
-        mPC = (high << 8 + low) - 1;
+        mPC = (high << 8 + low);
     }
     else if (opcode == 0b11011001)
     {
         // reti
-        std::cout << "reti";
+        // Equivalent to executing EI then RET, meaning that IME is set right after this instruction
+        // TODO EI part
+
+        // Same as ret
+        // "pop pc"
+        uint8_t low, high;
+        // LD LOW(pc), [SP]
+        low = mGameboy->readByte(mSP);
+        // INC SP
+        mSP++;
+        // LD HIGH(pc), [SP]
+        high = mGameboy->readByte(mSP);
+        // INC SP
+        mSP++;
+
+        mPC = (high << 8 + low);
     }
     else if (opcode & 0b11100111 == 0b11000010)
     {
         // jp cond, imm16
         if (checkCond((opcode & 0b00011000) >> 3))
         {
-            mPC = getImm16() - 1;
+            mPC = getImm16();
         }
         else
         {
@@ -819,7 +834,7 @@ void CPU::fetchDecodeExecuteOpcode()
     else if (opcode == 0b11000011)
     {
         // jp imm16
-        mPC = getImm16() - 1;
+        mPC = getImm16();
     }
     else if (opcode == 0b11101001)
     {
@@ -841,7 +856,7 @@ void CPU::fetchDecodeExecuteOpcode()
             // LD [SP], LOW(mPC + 3)
             mGameboy->writeByte(mSP, (mPC + 3) & 0xFF);
 
-            mPC = getImm16() - 1;
+            mPC = getImm16();
         }
         else
         {
@@ -862,7 +877,7 @@ void CPU::fetchDecodeExecuteOpcode()
         // LD [SP], LOW(mPC + 3)
         mGameboy->writeByte(mSP, (mPC + 3) & 0xFF);
 
-        mPC = getImm16() - 1;
+        mPC = getImm16();
     }
     else if (opcode & 0b11000111 == 0b11000111)
     {
@@ -878,7 +893,7 @@ void CPU::fetchDecodeExecuteOpcode()
         // LD [SP], LOW(mPC + 3)
         mGameboy->writeByte(mSP, (mPC + 3) & 0xFF);
 
-        mPC = ((opcode & 0b00111000) >> 3) - 1;
+        mPC = ((opcode & 0b00111000) >> 3);
     }
     else if (opcode & 0b11001111 == 0b11000001)
     {
@@ -974,16 +989,21 @@ void CPU::fetchDecodeExecuteOpcode()
     else if (opcode == 0b11110011)
     {
         // di
-        std::cout << "di";
+        // TODO
     }
     else if (opcode == 0b11111011)
     {
         // ei
-        std::cout << "ei";
+        // TODO
     }
     else
     {
         throw std::runtime_error("Invalid opcode");
     }
     mPC++;
+}
+
+CPU::CPUState CPU::getState() const
+{
+    return {mRegA, mRegF, mRegB, mRegC, mRegD, mRegE, mRegH, mRegL, mSP, mPC};
 }

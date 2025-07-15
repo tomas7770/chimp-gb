@@ -10,6 +10,27 @@ class CPU
 public:
     void fetchDecodeExecuteOpcode();
 
+    // DEBUG/TESTING
+    struct CPUState
+    {
+        // AF
+        uint8_t regA;
+        uint8_t regF;
+        // BC
+        uint8_t regB;
+        uint8_t regC;
+        // DE
+        uint8_t regD;
+        uint8_t regE;
+        // HL
+        uint8_t regH;
+        uint8_t regL;
+        // SP and PC
+        uint16_t SP;
+        uint16_t PC;
+    };
+    CPUState getState() const;
+
 private:
     uint16_t getImm16() const;
     uint8_t getImm8() const;
@@ -41,7 +62,7 @@ private:
     uint8_t mRegL;
     // SP and PC
     uint16_t mSP;
-    uint16_t mPC = 0x0100;
+    uint16_t mPC = 0x0101; // always ahead (+1) of the currently executed instruction
 
     static constexpr uint8_t FLAG_ZERO = (1 << 7);
     static constexpr uint8_t FLAG_SUB = (1 << 6);

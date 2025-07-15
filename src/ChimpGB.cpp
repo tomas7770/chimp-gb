@@ -18,7 +18,7 @@ int main(int argc, char *args[])
     dataStream.seekg(0);
 
     auto gameboy = new Gameboy(Cartridge(dataStream, size));
-    gameboy->dumpInstructions();
+    //gameboy->dumpInstructions();
     delete gameboy;
 
     return 0;
