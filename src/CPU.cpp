@@ -105,6 +105,7 @@ void CPU::writeR16(uint8_t bitmask, uint16_t value)
 
 uint16_t CPU::readR16Mem(uint8_t bitmask)
 {
+    uint16_t val;
     switch (bitmask)
     {
     case 0:
@@ -112,12 +113,12 @@ uint16_t CPU::readR16Mem(uint8_t bitmask)
     case 1:
         return mRegD << 8 + mRegE;
     case 2:
-        uint16_t val = mRegH << 8 + mRegL;
+        val = mRegH << 8 + mRegL;
         mRegH = (val + 1) >> 8;
         mRegL = (val + 1) & 0xFF;
         return val;
     case 3:
-        uint16_t val = mRegH << 8 + mRegL;
+        val = mRegH << 8 + mRegL;
         mRegH = (val - 1) >> 8;
         mRegL = (val - 1) & 0xFF;
         return val;
