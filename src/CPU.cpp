@@ -44,20 +44,28 @@ void CPU::writeR8(uint8_t bitmask, uint8_t value)
     {
     case 0:
         mRegB = value;
+        break;
     case 1:
         mRegC = value;
+        break;
     case 2:
         mRegD = value;
+        break;
     case 3:
         mRegE = value;
+        break;
     case 4:
         mRegH = value;
+        break;
     case 5:
         mRegL = value;
+        break;
     case 6:
         mGameboy->writeByte(mRegH << 8 + mRegL, value);
+        break;
     case 7:
         mRegA = value;
+        break;
 
     default:
         throw std::runtime_error("Invalid bitmask provided to r8 instruction parameter");
@@ -69,11 +77,11 @@ uint16_t CPU::readR16(uint8_t bitmask) const
     switch (bitmask)
     {
     case 0:
-        return mRegB << 8 + mRegC;
+        return (mRegB << 8) + mRegC;
     case 1:
-        return mRegD << 8 + mRegE;
+        return (mRegD << 8) + mRegE;
     case 2:
-        return mRegH << 8 + mRegL;
+        return (mRegH << 8) + mRegL;
     case 3:
         return mSP;
 
@@ -89,14 +97,18 @@ void CPU::writeR16(uint8_t bitmask, uint16_t value)
     case 0:
         mRegB = value >> 8;
         mRegC = (value & 0xFF);
+        break;
     case 1:
         mRegD = value >> 8;
         mRegE = (value & 0xFF);
+        break;
     case 2:
         mRegH = value >> 8;
         mRegL = (value & 0xFF);
+        break;
     case 3:
         mSP = value;
+        break;
 
     default:
         throw std::runtime_error("Invalid bitmask provided to r16 instruction parameter");
@@ -109,16 +121,16 @@ uint16_t CPU::readR16Mem(uint8_t bitmask)
     switch (bitmask)
     {
     case 0:
-        return mRegB << 8 + mRegC;
+        return (mRegB << 8) + mRegC;
     case 1:
-        return mRegD << 8 + mRegE;
+        return (mRegD << 8) + mRegE;
     case 2:
-        val = mRegH << 8 + mRegL;
+        val = (mRegH << 8) + mRegL;
         mRegH = (val + 1) >> 8;
         mRegL = (val + 1) & 0xFF;
         return val;
     case 3:
-        val = mRegH << 8 + mRegL;
+        val = (mRegH << 8) + mRegL;
         mRegH = (val - 1) >> 8;
         mRegL = (val - 1) & 0xFF;
         return val;
@@ -188,12 +200,16 @@ void CPU::writeR16StkLow(uint8_t bitmask, uint8_t value)
     {
     case 0:
         mRegC = value;
+        break;
     case 1:
         mRegE = value;
+        break;
     case 2:
         mRegL = value;
+        break;
     case 3:
         mRegF = value;
+        break;
 
     default:
         throw std::runtime_error("Invalid bitmask provided to r16stk instruction parameter");
@@ -206,12 +222,16 @@ void CPU::writeR16StkHigh(uint8_t bitmask, uint8_t value)
     {
     case 0:
         mRegB = value;
+        break;
     case 1:
         mRegD = value;
+        break;
     case 2:
         mRegH = value;
+        break;
     case 3:
         mRegA = value;
+        break;
 
     default:
         throw std::runtime_error("Invalid bitmask provided to r16stk instruction parameter");
@@ -226,7 +246,7 @@ void CPU::fetchDecodeExecuteOpcode()
         // Prefix
         mPC++;
         opcode = mGameboy->readByte(mPC - 1);
-        if (opcode & 0b11111000 == 0b00000000)
+        if ((opcode & 0b11111000) == 0b00000000)
         {
             // rlc r8
             uint8_t origVal = readR8(opcode & 0b00000111);
@@ -237,7 +257,7 @@ void CPU::fetchDecodeExecuteOpcode()
                 mRegF |= FLAG_CARRY;
             writeR8(opcode & 0b00000111, std::rotl(origVal, 1));
         }
-        else if (opcode & 0b11111000 == 0b00001000)
+        else if ((opcode & 0b11111000) == 0b00001000)
         {
             // rrc r8
             uint8_t origVal = readR8(opcode & 0b00000111);
@@ -248,7 +268,7 @@ void CPU::fetchDecodeExecuteOpcode()
                 mRegF |= FLAG_CARRY;
             writeR8(opcode & 0b00000111, std::rotr(origVal, 1));
         }
-        else if (opcode & 0b11111000 == 0b00010000)
+        else if ((opcode & 0b11111000) == 0b00010000)
         {
             // rl r8
             uint16_t origVal = (mRegF & FLAG_CARRY ? (1 << 8) : 0) + readR8(opcode & 0b00000111);
@@ -267,7 +287,7 @@ void CPU::fetchDecodeExecuteOpcode()
 
             writeR8(opcode & 0b00000111, result);
         }
-        else if (opcode & 0b11111000 == 0b00011000)
+        else if ((opcode & 0b11111000) == 0b00011000)
         {
             // rr r8
             uint16_t origVal = (readR8(opcode & 0b00000111) << 1) + (mRegF & FLAG_CARRY ? 1 : 0);
@@ -285,7 +305,7 @@ void CPU::fetchDecodeExecuteOpcode()
 
             writeR8(opcode & 0b00000111, result);
         }
-        else if (opcode & 0b11111000 == 0b00100000)
+        else if ((opcode & 0b11111000) == 0b00100000)
         {
             // sla r8
             uint8_t origVal = readR8(opcode & 0b00000111);
@@ -297,7 +317,7 @@ void CPU::fetchDecodeExecuteOpcode()
                 mRegF |= FLAG_CARRY;
             writeR8(opcode & 0b00000111, result);
         }
-        else if (opcode & 0b11111000 == 0b00101000)
+        else if ((opcode & 0b11111000) == 0b00101000)
         {
             // sra r8
             int8_t origVal = readR8(opcode & 0b00000111);
@@ -309,7 +329,7 @@ void CPU::fetchDecodeExecuteOpcode()
                 mRegF |= FLAG_CARRY;
             writeR8(opcode & 0b00000111, result);
         }
-        else if (opcode & 0b11111000 == 0b00110000)
+        else if ((opcode & 0b11111000) == 0b00110000)
         {
             // swap r8
             uint8_t origVal = readR8(opcode & 0b00000111);
@@ -320,7 +340,7 @@ void CPU::fetchDecodeExecuteOpcode()
             uint8_t high = origVal & 0b11110000;
             writeR8(opcode & 0b00000111, (low << 4) + (high >> 4));
         }
-        else if (opcode & 0b11111000 == 0b00111000)
+        else if ((opcode & 0b11111000) == 0b00111000)
         {
             // srl r8
             uint8_t origVal = readR8(opcode & 0b00000111);
@@ -332,7 +352,7 @@ void CPU::fetchDecodeExecuteOpcode()
                 mRegF |= FLAG_CARRY;
             writeR8(opcode & 0b00000111, result);
         }
-        else if (opcode & 0b11000000 == 0b01000000)
+        else if ((opcode & 0b11000000) == 0b01000000)
         {
             // bit b3, r8
             uint8_t b3 = (opcode & 0b00111000) >> 3;
@@ -340,13 +360,13 @@ void CPU::fetchDecodeExecuteOpcode()
             if (!(readR8(opcode & 0b00000111) & (1 << b3)))
                 mRegF |= FLAG_ZERO;
         }
-        else if (opcode & 0b11000000 == 0b10000000)
+        else if ((opcode & 0b11000000) == 0b10000000)
         {
             // res b3, r8
             uint8_t b3 = (opcode & 0b00111000) >> 3;
             writeR8(opcode & 0b00000111, readR8(opcode & 0b00000111) & !(1 << b3));
         }
-        else if (opcode & 0b11000000 == 0b11000000)
+        else if ((opcode & 0b11000000) == 0b11000000)
         {
             // set b3, r8
             uint8_t b3 = (opcode & 0b00111000) >> 3;
@@ -365,18 +385,18 @@ void CPU::fetchDecodeExecuteOpcode()
     {
         // nop
     }
-    else if (opcode & 0b11001111 == 0b00000001)
+    else if ((opcode & 0b11001111) == 0b00000001)
     {
         // ld r16, imm16
         writeR16((opcode & 0b00110000) >> 4, getImm16());
         mPC += 2;
     }
-    else if (opcode & 0b11001111 == 0b00000010)
+    else if ((opcode & 0b11001111) == 0b00000010)
     {
         // ld [r16mem], a
         mGameboy->writeByte(readR16Mem((opcode & 0b00110000) >> 4), mRegA);
     }
-    else if (opcode & 0b11001111 == 0b00001010)
+    else if ((opcode & 0b11001111) == 0b00001010)
     {
         // ld a, [r16mem]
         mRegA = mGameboy->readByte((opcode & 0b00110000) >> 4);
@@ -387,17 +407,17 @@ void CPU::fetchDecodeExecuteOpcode()
         mGameboy->writeWord(getImm16(), mSP);
         mPC += 2;
     }
-    else if (opcode & 0b11001111 == 0b00000011)
+    else if ((opcode & 0b11001111) == 0b00000011)
     {
         // inc r16
         writeR16((opcode & 0b00110000) >> 4, readR16((opcode & 0b00110000) >> 4) + 1);
     }
-    else if (opcode & 0b11001111 == 0b00001011)
+    else if ((opcode & 0b11001111) == 0b00001011)
     {
         // dec r16
         writeR16((opcode & 0b00110000) >> 4, readR16((opcode & 0b00110000) >> 4) - 1);
     }
-    else if (opcode & 0b11001111 == 0b00001001)
+    else if ((opcode & 0b11001111) == 0b00001001)
     {
         // add hl, r16
         uint32_t hl = mRegH << 8 + mRegL;
@@ -411,17 +431,17 @@ void CPU::fetchDecodeExecuteOpcode()
         mRegH = hl >> 8;
         mRegL = hl & 0xFF;
     }
-    else if (opcode & 0b11000111 == 0b00000100)
+    else if ((opcode & 0b11000111) == 0b00000100)
     {
         // inc r8
         writeR8((opcode & 0b00111000) >> 3, readR8((opcode & 0b00111000) >> 3) + 1);
     }
-    else if (opcode & 0b11000111 == 0b00000101)
+    else if ((opcode & 0b11000111) == 0b00000101)
     {
         // dec r8
         writeR8((opcode & 0b00111000) >> 3, readR8((opcode & 0b00111000) >> 3) - 1);
     }
-    else if (opcode & 0b11000111 == 0b00000110)
+    else if ((opcode & 0b11000111) == 0b00000110)
     {
         // ld r8, imm8
         writeR8((opcode & 0b00111000) >> 3, getImm8());
@@ -541,7 +561,7 @@ void CPU::fetchDecodeExecuteOpcode()
         int8_t offset = getImm8();
         mPC += 1 + offset;
     }
-    else if (opcode & 0b11100111 == 0b00100000)
+    else if ((opcode & 0b11100111) == 0b00100000)
     {
         // jr cond, imm8
         if (checkCond((opcode & 0b00011000) >> 3))
@@ -561,12 +581,12 @@ void CPU::fetchDecodeExecuteOpcode()
         // halt (ld [hl], [hl])
         // TODO
     }
-    else if (opcode & 0b11000000 == 0b01000000)
+    else if ((opcode & 0b11000000) == 0b01000000)
     {
         // ld r8, r8
         writeR8((opcode & 0b00111000) >> 3, readR8(opcode & 0b00000111));
     }
-    else if (opcode & 0b11111000 == 0b10000000)
+    else if ((opcode & 0b11111000) == 0b10000000)
     {
         // add a, r8
         uint8_t orig = mRegA;
@@ -580,7 +600,7 @@ void CPU::fetchDecodeExecuteOpcode()
         if (orig & (1 << 4) != result & (1 << 4))
             mRegF |= FLAG_HALFCARRY;
     }
-    else if (opcode & 0b11111000 == 0b10001000)
+    else if ((opcode & 0b11111000) == 0b10001000)
     {
         // adc a, r8
         uint8_t orig = mRegA;
@@ -594,7 +614,7 @@ void CPU::fetchDecodeExecuteOpcode()
         if (orig & (1 << 4) != result & (1 << 4))
             mRegF |= FLAG_HALFCARRY;
     }
-    else if (opcode & 0b11111000 == 0b10010000)
+    else if ((opcode & 0b11111000) == 0b10010000)
     {
         // sub a, r8
         uint8_t orig = mRegA;
@@ -609,7 +629,7 @@ void CPU::fetchDecodeExecuteOpcode()
             mRegF |= FLAG_HALFCARRY;
         mRegA = result;
     }
-    else if (opcode & 0b11111000 == 0b10011000)
+    else if ((opcode & 0b11111000) == 0b10011000)
     {
         // sbc a, r8
         uint8_t orig = mRegA;
@@ -624,7 +644,7 @@ void CPU::fetchDecodeExecuteOpcode()
             mRegF |= FLAG_HALFCARRY;
         mRegA = result;
     }
-    else if (opcode & 0b11111000 == 0b10100000)
+    else if ((opcode & 0b11111000) == 0b10100000)
     {
         // and a, r8
         mRegA &= readR8(opcode & 0b00000111);
@@ -632,7 +652,7 @@ void CPU::fetchDecodeExecuteOpcode()
         if (mRegA == 0)
             mRegF |= FLAG_ZERO;
     }
-    else if (opcode & 0b11111000 == 0b10101000)
+    else if ((opcode & 0b11111000) == 0b10101000)
     {
         // xor a, r8
         mRegA ^= readR8(opcode & 0b00000111);
@@ -640,7 +660,7 @@ void CPU::fetchDecodeExecuteOpcode()
         if (mRegA == 0)
             mRegF |= FLAG_ZERO;
     }
-    else if (opcode & 0b11111000 == 0b10110000)
+    else if ((opcode & 0b11111000) == 0b10110000)
     {
         // or a, r8
         mRegA |= readR8(opcode & 0b00000111);
@@ -648,7 +668,7 @@ void CPU::fetchDecodeExecuteOpcode()
         if (mRegA == 0)
             mRegF |= FLAG_ZERO;
     }
-    else if (opcode & 0b11111000 == 0b10111000)
+    else if ((opcode & 0b11111000) == 0b10111000)
     {
         // cp a, r8
         uint8_t orig = mRegA;
@@ -765,7 +785,7 @@ void CPU::fetchDecodeExecuteOpcode()
             mRegF |= FLAG_HALFCARRY;
         mPC += 1;
     }
-    else if (opcode & 0b11100111 == 0b11000000)
+    else if ((opcode & 0b11100111) == 0b11000000)
     {
         // ret cond
         if (checkCond((opcode & 0b00011000) >> 3))
@@ -820,7 +840,7 @@ void CPU::fetchDecodeExecuteOpcode()
 
         mPC = (high << 8 + low);
     }
-    else if (opcode & 0b11100111 == 0b11000010)
+    else if ((opcode & 0b11100111) == 0b11000010)
     {
         // jp cond, imm16
         if (checkCond((opcode & 0b00011000) >> 3))
@@ -842,7 +862,7 @@ void CPU::fetchDecodeExecuteOpcode()
         // jp hl
         mPC = mRegH << 8 + mRegL;
     }
-    else if (opcode & 0b11100111 == 0b11000100)
+    else if ((opcode & 0b11100111) == 0b11000100)
     {
         // call cond, imm16
         if (checkCond((opcode & 0b00011000) >> 3))
@@ -880,7 +900,7 @@ void CPU::fetchDecodeExecuteOpcode()
 
         mPC = getImm16();
     }
-    else if (opcode & 0b11000111 == 0b11000111)
+    else if ((opcode & 0b11000111) == 0b11000111)
     {
         // rst tgt3
 
@@ -896,7 +916,7 @@ void CPU::fetchDecodeExecuteOpcode()
 
         mPC = ((opcode & 0b00111000) >> 3);
     }
-    else if (opcode & 0b11001111 == 0b11000001)
+    else if ((opcode & 0b11001111) == 0b11000001)
     {
         // pop r16stk
         // LD LOW(r16), [SP]   ; C, E or L
@@ -908,7 +928,7 @@ void CPU::fetchDecodeExecuteOpcode()
         // INC SP
         mSP++;
     }
-    else if (opcode & 0b11001111 == 0b11000101)
+    else if ((opcode & 0b11001111) == 0b11000101)
     {
         // push r16stk
         // DEC SP

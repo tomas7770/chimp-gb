@@ -8,7 +8,7 @@ class Gameboy;
 class CPU
 {
 public:
-    CPU(Gameboy& gameboy) : mGameboy(std::make_shared<Gameboy>(gameboy)) {}
+    CPU(Gameboy *gameboy) : mGameboy(gameboy) {}
 
     void fetchDecodeExecuteOpcode();
 
@@ -49,7 +49,7 @@ private:
     void writeR16StkLow(uint8_t bitmask, uint8_t value);
     void writeR16StkHigh(uint8_t bitmask, uint8_t value);
 
-    std::shared_ptr<Gameboy> mGameboy;
+    Gameboy *mGameboy;
 
     // AF
     uint8_t mRegA;
