@@ -8,6 +8,8 @@ class Gameboy;
 class CPU
 {
 public:
+    CPU(Gameboy& gameboy) : mGameboy(std::make_shared<Gameboy>(gameboy)) {}
+
     void fetchDecodeExecuteOpcode();
 
     // DEBUG/TESTING

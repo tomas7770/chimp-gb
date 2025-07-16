@@ -8,6 +8,7 @@ set(SOURCE_FILES
     Cartridge.cpp
     RomHeader.cpp
     CPU.cpp
+    GameboyTester.cpp
 )
 
 add_executable(ChimpGB ${SOURCE_FILES})
@@ -16,7 +17,7 @@ include_directories(${SDL2_INCLUDE_DIR})
 if (MINGW)
     target_link_libraries(ChimpGB mingw32)
 endif()
-target_link_libraries(ChimpGB ${SDL2_LIBRARIES})
+target_link_libraries(ChimpGB ${SDL2_LIBRARIES} nlohmann_json::nlohmann_json)
 if (WIN32)
     target_link_libraries(ChimpGB shlwapi)
 endif()

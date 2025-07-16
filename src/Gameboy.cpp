@@ -48,3 +48,8 @@ CPU::CPUState Gameboy::getCPUState() const
 {
     return mCPU.getState();
 }
+
+void Gameboy::setCPUState(CPU::CPUState state)
+{
+    mCPU.setState(state);
+}
