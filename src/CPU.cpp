@@ -208,7 +208,7 @@ void CPU::writeR16StkLow(uint8_t bitmask, uint8_t value)
         mRegL = value;
         break;
     case 3:
-        mRegF = value;
+        mRegF = value & 0xF0;
         break;
 
     default:
@@ -729,14 +729,18 @@ void CPU::decodeExecutePrefetchOpcode()
     {
         // adc a, imm8
         uint8_t orig = mRegA;
-        uint16_t result = mRegA + getImm8() + (mRegF & FLAG_CARRY ? 1 : 0);
+        uint8_t operand1 = getImm8();
+        uint8_t operand2 = (mRegF & FLAG_CARRY) ? 1 : 0;
+        uint16_t operand = operand1 + operand2;
+        uint16_t result = mRegA + operand;
         mRegA = result & 0xFF;
         mRegF = 0;
         if (mRegA == 0)
             mRegF |= FLAG_ZERO;
         if (result > 0xFF)
             mRegF |= FLAG_CARRY;
-        if ((orig & (1 << 4)) != (result & (1 << 4)))
+        if (((orig & 0xF) + (operand1 & 0xF)) > 0xF ||
+            ((orig & 0xF) + (operand1 & 0xF) + operand2) > 0xF) // overflow from bit 3
             mRegF |= FLAG_HALFCARRY;
         mPC += 1;
     }
@@ -751,7 +755,7 @@ void CPU::decodeExecutePrefetchOpcode()
             mRegF |= FLAG_ZERO;
         if (sub > mRegA)
             mRegF |= FLAG_CARRY;
-        if ((orig & (1 << 4)) != (result & (1 << 4)))
+        if ((sub & 0xF) > (orig & 0xF)) // borrow from bit 4
             mRegF |= FLAG_HALFCARRY;
         mRegA = result;
         mPC += 1;
@@ -760,15 +764,19 @@ void CPU::decodeExecutePrefetchOpcode()
     {
         // sbc a, imm8
         uint8_t orig = mRegA;
-        uint8_t sub = getImm8() + (mRegF & FLAG_CARRY ? 1 : 0);
+        uint8_t sub1 = getImm8();
+        uint8_t sub2 = (mRegF & FLAG_CARRY) ? 1 : 0;
+        uint16_t sub = sub1 + sub2;
         uint8_t result = mRegA - sub;
         mRegF = FLAG_SUB;
         if (result == 0)
             mRegF |= FLAG_ZERO;
         if (sub > mRegA)
             mRegF |= FLAG_CARRY;
-        if ((orig & (1 << 4)) != (result & (1 << 4)))
+        if (((sub1 & 0xF) > (orig & 0xF)) ||
+            (sub2 > ((orig & 0xF) - (sub1 & 0xF)))) // borrow from bit 4
             mRegF |= FLAG_HALFCARRY;
+        mRegA = result;
         mPC += 1;
     }
     else if (opcode == 0b11100110)
@@ -809,7 +817,7 @@ void CPU::decodeExecutePrefetchOpcode()
             mRegF |= FLAG_ZERO;
         if (sub > mRegA)
             mRegF |= FLAG_CARRY;
-        if ((orig & (1 << 4)) != (result & (1 << 4)))
+        if ((sub & 0xF) > (orig & 0xF)) // borrow from bit 4
             mRegF |= FLAG_HALFCARRY;
         mPC += 1;
     }
@@ -866,7 +874,7 @@ void CPU::decodeExecutePrefetchOpcode()
         // INC SP
         mSP++;
 
-        mPC = (high << 8 + low);
+        mPC = (high << 8) + low;
     }
     else if ((opcode & 0b11100111) == 0b11000010)
     {
@@ -888,22 +896,22 @@ void CPU::decodeExecutePrefetchOpcode()
     else if (opcode == 0b11101001)
     {
         // jp hl
-        mPC = mRegH << 8 + mRegL;
+        mPC = (mRegH << 8) + mRegL;
     }
     else if ((opcode & 0b11100111) == 0b11000100)
     {
         // call cond, imm16
         if (checkCond((opcode & 0b00011000) >> 3))
         {
-            // push mPC + 3
+            // push mPC - 1 + 3
             // DEC SP
             mSP--;
-            // LD [SP], HIGH(mPC + 3)
-            mGameboy->writeByte(mSP, (mPC + 3) >> 8);
+            // LD [SP], HIGH(mPC - 1 + 3)
+            mGameboy->writeByte(mSP, (mPC - 1 + 3) >> 8);
             // DEC SP
             mSP--;
-            // LD [SP], LOW(mPC + 3)
-            mGameboy->writeByte(mSP, (mPC + 3) & 0xFF);
+            // LD [SP], LOW(mPC - 1 + 3)
+            mGameboy->writeByte(mSP, (mPC - 1 + 3) & 0xFF);
 
             mPC = getImm16();
         }
@@ -916,15 +924,15 @@ void CPU::decodeExecutePrefetchOpcode()
     {
         // call imm16
 
-        // push mPC + 3
+        // push mPC - 1 + 3
         // DEC SP
         mSP--;
-        // LD [SP], HIGH(mPC + 3)
-        mGameboy->writeByte(mSP, (mPC + 3) >> 8);
+        // LD [SP], HIGH(mPC - 1 + 3)
+        mGameboy->writeByte(mSP, (mPC - 1 + 3) >> 8);
         // DEC SP
         mSP--;
-        // LD [SP], LOW(mPC + 3)
-        mGameboy->writeByte(mSP, (mPC + 3) & 0xFF);
+        // LD [SP], LOW(mPC - 1 + 3)
+        mGameboy->writeByte(mSP, (mPC - 1 + 3) & 0xFF);
 
         mPC = getImm16();
     }
@@ -932,17 +940,17 @@ void CPU::decodeExecutePrefetchOpcode()
     {
         // rst tgt3
 
-        // push mPC + 1
+        // push mPC - 1 + 1
         // DEC SP
         mSP--;
-        // LD [SP], HIGH(mPC + 1)
-        mGameboy->writeByte(mSP, (mPC + 1) >> 8);
+        // LD [SP], HIGH(mPC - 1 + 1)
+        mGameboy->writeByte(mSP, (mPC - 1 + 1) >> 8);
         // DEC SP
         mSP--;
-        // LD [SP], LOW(mPC + 1)
-        mGameboy->writeByte(mSP, (mPC + 1) & 0xFF);
+        // LD [SP], LOW(mPC - 1 + 1)
+        mGameboy->writeByte(mSP, (mPC - 1 + 1) & 0xFF);
 
-        mPC = ((opcode & 0b00111000) >> 3);
+        mPC = opcode & 0b00111000;
     }
     else if ((opcode & 0b11001111) == 0b11000001)
     {
@@ -1010,9 +1018,9 @@ void CPU::decodeExecutePrefetchOpcode()
         uint16_t result = mSP + imm8;
         mSP = result;
         mRegF = 0;
-        if (result > 0xFF)
+        if (((orig & 0xFF) + (imm8 & 0xFF)) > 0xFF) // overflow from bit 7
             mRegF |= FLAG_CARRY;
-        if ((orig & (1 << 4)) != (result & (1 << 4)))
+        if (((orig & 0xF) + (imm8 & 0xF)) > 0xF) // overflow from bit 3
             mRegF |= FLAG_HALFCARRY;
         mPC += 1;
     }
@@ -1024,16 +1032,16 @@ void CPU::decodeExecutePrefetchOpcode()
         mRegH = result >> 8;
         mRegL = result & 0xFF;
         mRegF = 0;
-        if (result > 0xFF)
+        if (((mSP & 0xFF) + (imm8 & 0xFF)) > 0xFF) // overflow from bit 7
             mRegF |= FLAG_CARRY;
-        if ((result & (1 << 4)) != (mSP & (1 << 4)))
+        if (((mSP & 0xF) + (imm8 & 0xF)) > 0xF) // overflow from bit 3
             mRegF |= FLAG_HALFCARRY;
         mPC += 1;
     }
     else if (opcode == 0b11111001)
     {
         // ld sp, hl
-        mSP = mRegH << 8 + mRegL;
+        mSP = (mRegH << 8) + mRegL;
     }
     else if (opcode == 0b11110011)
     {
