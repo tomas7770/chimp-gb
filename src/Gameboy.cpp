@@ -41,7 +41,7 @@ void Gameboy::writeWord(uint16_t address, uint16_t value)
 void Gameboy::doMCycle()
 {
     cycleInfo.clear();
-    mCPU.fetchDecodeExecuteOpcode();
+    mCPU.decodeExecutePrefetchOpcode();
 }
 
 CPU::CPUState Gameboy::getCPUState() const

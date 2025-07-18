@@ -238,9 +238,10 @@ void CPU::writeR16StkHigh(uint8_t bitmask, uint8_t value)
     }
 }
 
-void CPU::fetchDecodeExecuteOpcode()
+void CPU::decodeExecutePrefetchOpcode()
 {
-    auto opcode = mGameboy->readByte(mPC - 1);
+    // Decode and execute
+    auto opcode = mOpcode;
     if (opcode == 0xCB)
     {
         // Prefix
@@ -1048,6 +1049,8 @@ void CPU::fetchDecodeExecuteOpcode()
     {
         throw std::runtime_error("Invalid opcode");
     }
+    // Prefetch
+    mOpcode = mGameboy->readByte(mPC);
     mPC++;
 }
 
@@ -1068,4 +1071,5 @@ void CPU::setState(CPU::CPUState state)
     mRegL = state.regL;
     mSP = state.SP;
     mPC = state.PC;
+    mOpcode = state.opcode;
 }

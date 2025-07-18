@@ -10,7 +10,7 @@ class CPU
 public:
     CPU(Gameboy *gameboy) : mGameboy(gameboy) {}
 
-    void fetchDecodeExecuteOpcode();
+    void decodeExecutePrefetchOpcode();
 
     // DEBUG/TESTING
     struct CPUState
@@ -30,6 +30,8 @@ public:
         // SP and PC
         uint16_t SP;
         uint16_t PC;
+        // Instruction
+        uint8_t opcode;
     };
     CPUState getState() const;
     void setState(CPUState state);
@@ -65,7 +67,10 @@ private:
     uint8_t mRegL;
     // SP and PC
     uint16_t mSP;
-    uint16_t mPC = 0x0101; // always ahead (+1) of the currently executed instruction
+    uint16_t mPC = 0x0100;
+    // Instruction register
+    // Instruction loop is decode-execute-prefetch. PC is ahead of current instruction by 1.
+    uint8_t mOpcode = 0;
 
     static constexpr uint8_t FLAG_ZERO = (1 << 7);
     static constexpr uint8_t FLAG_SUB = (1 << 6);
