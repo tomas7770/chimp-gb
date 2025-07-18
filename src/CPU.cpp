@@ -293,8 +293,6 @@ void CPU::decodeExecutePrefetchOpcode()
             // rr r8
             uint16_t origVal = (readR8(opcode & 0b00000111) << 1) + (mRegF & FLAG_CARRY ? 1 : 0);
             mRegF = 0;
-            if (origVal == 0)
-                mRegF |= FLAG_ZERO;
             if (origVal & 0b10)
                 mRegF |= FLAG_CARRY;
 
@@ -303,6 +301,8 @@ void CPU::decodeExecutePrefetchOpcode()
             {
                 result |= (1 << 7);
             }
+            if (result == 0)
+                mRegF |= FLAG_ZERO;
 
             writeR8(opcode & 0b00000111, result);
         }
@@ -365,7 +365,7 @@ void CPU::decodeExecutePrefetchOpcode()
         {
             // res b3, r8
             uint8_t b3 = (opcode & 0b00111000) >> 3;
-            writeR8(opcode & 0b00000111, readR8(opcode & 0b00000111) & !(1 << b3));
+            writeR8(opcode & 0b00000111, readR8(opcode & 0b00000111) & ~(1 << b3));
         }
         else if ((opcode & 0b11000000) == 0b11000000)
         {
