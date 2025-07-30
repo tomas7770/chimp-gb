@@ -2461,11 +2461,13 @@ void CPU::decodeExecuteOpcode()
     {
         // stop
         // TODO
+        prefetchOpcode();
     }
     else if (opcode == 0b01110110)
     {
         // halt (ld [hl], [hl])
         // TODO
+        prefetchOpcode();
     }
     else if ((opcode & 0b11000000) == 0b01000000)
     {
