@@ -6,17 +6,6 @@ void CPU::doMCycle()
     (*this.*mMCycleFunc)();
 }
 
-uint16_t CPU::getImm16() const
-{
-    // Little-endian
-    return (mGameboy->readByte(mPC - 1 + 2) << 8) + mGameboy->readByte(mPC - 1 + 1);
-}
-
-uint8_t CPU::getImm8() const
-{
-    return mGameboy->readByte(mPC - 1 + 1);
-}
-
 uint8_t CPU::readByteAtPC() const
 {
     return mGameboy->readByte(mPC);

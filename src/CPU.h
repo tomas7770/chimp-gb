@@ -37,8 +37,6 @@ public:
     void setState(CPUState state);
 
 private:
-    uint16_t getImm16() const;
-    uint8_t getImm8() const;
     uint8_t readByteAtPC() const;
 
     uint8_t readR8(uint8_t bitmask) const;
@@ -190,7 +188,6 @@ private:
     void opcode_rrihl_M3();
     void opcode_rrihl_M4();
     void opcode_slar8_M2();
-    ;
     void opcode_slaihl_M2();
     void opcode_slaihl_M3();
     void opcode_slaihl_M4();
