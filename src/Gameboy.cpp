@@ -9,7 +9,12 @@ uint8_t Gameboy::readByte(uint16_t address)
     {
         throw std::runtime_error("Read byte from invalid address");
     }
-    cycleInfo.push_back({address, debugRam[address], READ});
+
+    if (cycleInfo.accessType != NONE)
+    {
+        throw std::runtime_error("Multiple memory accesses in single M-cycle");
+    }
+    cycleInfo = {address, debugRam[address], READ};
 
     return debugRam[address];
 }
@@ -22,25 +27,16 @@ void Gameboy::writeByte(uint16_t address, uint8_t value)
     }
     debugRam[address] = value;
 
-    cycleInfo.push_back({address, value, WRITE});
-}
-
-void Gameboy::writeWord(uint16_t address, uint16_t value)
-{
-    if (address + 1 >= 1 << 16)
+    if (cycleInfo.accessType != NONE)
     {
-        throw std::runtime_error("Write word to invalid address");
+        throw std::runtime_error("Multiple memory accesses in single M-cycle");
     }
-    // Little-endian
-    debugRam[address] = value & 0xFF;
-    debugRam[address + 1] = value >> 8;
-
-    cycleInfo.push_back({address, value, WRITE});
+    cycleInfo = {address, value, WRITE};
 }
 
 void Gameboy::doMCycle()
 {
-    cycleInfo.clear();
+    cycleInfo = {0, 0, NONE};
     mCPU.doMCycle();
 }
 

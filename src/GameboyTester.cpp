@@ -37,10 +37,55 @@ void runTestSuite(std::istream &testStream, Gameboy &gameboy)
 
         std::cout << testNumber << " " << test["name"] << " ";
 
+        bool fail = false;
+
         for (auto &cyclesValue : test["cycles"])
         {
             gameboy.doMCycle();
-            // TODO
+            if (cyclesValue.is_null())
+            {
+                if (gameboy.cycleInfo.accessType != Gameboy::AccessType::NONE)
+                {
+                    std::cout << "FAIL cycles null " << gameboy.cycleInfo.address << " " << gameboy.cycleInfo.value << " " << gameboy.cycleInfo.accessType;
+                    std::cout << "\n";
+                    fail = true;
+                    break;
+                }
+                else
+                {
+                    continue;
+                }
+            }
+            int address = cyclesValue[0];
+            if (gameboy.cycleInfo.address != address)
+            {
+                std::cout << "FAIL cycles address " << address << " " << gameboy.cycleInfo.address;
+                std::cout << "\n";
+                fail = true;
+                break;
+            }
+            int value = cyclesValue[1];
+            if (gameboy.cycleInfo.value != value)
+            {
+                std::cout << "FAIL cycles value " << value << " " << gameboy.cycleInfo.value;
+                std::cout << "\n";
+                fail = true;
+                break;
+            }
+            std::string accessType = cyclesValue[2];
+            if ((accessType == "read" && gameboy.cycleInfo.accessType != Gameboy::AccessType::READ)
+            || (accessType == "write" && gameboy.cycleInfo.accessType != Gameboy::AccessType::WRITE))
+            {
+                std::cout << "FAIL cycles accessType " << accessType << " " << gameboy.cycleInfo.accessType;
+                std::cout << "\n";
+                fail = true;
+                break;
+            }
+        }
+
+        if (fail)
+        {
+            continue;
         }
 
         auto cpuState = gameboy.getCPUState();
@@ -86,7 +131,6 @@ void runTestSuite(std::istream &testStream, Gameboy &gameboy)
         }
         else
         {
-            bool fail = false;
             for (auto &ramValue : test["final"]["ram"])
             {
                 int address = ramValue[0];
@@ -103,7 +147,7 @@ void runTestSuite(std::istream &testStream, Gameboy &gameboy)
                 continue;
             }
 
-            std::cout << "CYCLES";
+            std::cout << "PASS";
         }
         std::cout << "\n";
     }

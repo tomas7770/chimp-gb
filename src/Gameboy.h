@@ -11,7 +11,6 @@ public:
 
     uint8_t readByte(uint16_t address);
     void writeByte(uint16_t address, uint8_t value);
-    void writeWord(uint16_t address, uint16_t value);
 
     static constexpr int wramSize = 8192;
     uint8_t wram[wramSize];
@@ -31,7 +30,7 @@ public:
         uint16_t value;
         AccessType accessType;
     };
-    std::vector<MemoryAccess> cycleInfo;
+    MemoryAccess cycleInfo;
 
     CPU::CPUState getCPUState() const;
     void setCPUState(CPU::CPUState state);

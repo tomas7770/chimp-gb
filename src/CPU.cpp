@@ -2721,4 +2721,5 @@ void CPU::setState(CPU::CPUState state)
     mSP = state.SP;
     mPC = state.PC;
     mOpcode = state.opcode;
+    mMCycleFunc = &CPU::decodeExecuteOpcode;
 }
