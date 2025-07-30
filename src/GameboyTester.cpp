@@ -34,9 +34,14 @@ void runTestSuite(std::istream &testStream, Gameboy &gameboy)
             test["initial"]["pc"],
             initialOpcode,
         });
-        gameboy.doMCycle();
 
         std::cout << testNumber << " " << test["name"] << " ";
+
+        for (auto &cyclesValue : test["cycles"])
+        {
+            gameboy.doMCycle();
+            // TODO
+        }
 
         auto cpuState = gameboy.getCPUState();
         if (cpuState.regA != test["final"]["a"])
@@ -88,18 +93,10 @@ void runTestSuite(std::istream &testStream, Gameboy &gameboy)
                 if (gameboy.debugRam[address] != ramValue[1])
                 {
                     std::cout << "FAIL ram " << ramValue[0] << " " << ramValue[1] << " " << int(gameboy.debugRam[address]);
+                    std::cout << "\n";
                     fail = true;
                     break;
                 }
-            }
-            if (fail)
-            {
-                continue;
-            }
-
-            for (auto &cyclesValue : test["cycles"])
-            {
-                // TODO
             }
             if (fail)
             {
