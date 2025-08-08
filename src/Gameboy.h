@@ -7,7 +7,6 @@ class Gameboy
 {
 public:
     Gameboy(const Cartridge &cart) : mCart(std::move(cart)), mCPU(this) {}
-    Gameboy() : mCPU(this) {}; // DEBUG/TESTING
 
     uint8_t readByte(uint16_t address);
     void writeByte(uint16_t address, uint8_t value);
@@ -17,25 +16,12 @@ public:
 
     // DEBUG/TESTING
     void doMCycle();
-    uint8_t debugRam[1 << 16];
-    enum AccessType
-    {
-        READ,
-        WRITE,
-        NONE
-    };
-    struct MemoryAccess
-    {
-        uint16_t address;
-        uint16_t value;
-        AccessType accessType;
-    };
-    MemoryAccess cycleInfo;
-
-    CPU::CPUState getCPUState() const;
-    void setCPUState(CPU::CPUState state);
 
 private:
     Cartridge mCart;
     CPU mCPU;
+
+    static constexpr uint16_t WRAM0_ADDR = 0xC000;
+    static constexpr uint16_t ECHO_ADDR = 0xE000;
+    static constexpr uint16_t OAM_ADDR = 0xFE00;
 };

@@ -8,7 +8,6 @@ set(SOURCE_FILES
     Cartridge.cpp
     RomHeader.cpp
     CPU.cpp
-    GameboyTester.cpp
 )
 
 add_executable(ChimpGB ${SOURCE_FILES})

@@ -10,7 +10,6 @@ class Cartridge
 {
 public:
     Cartridge(std::istream &dataStream, std::streamsize size);
-    Cartridge() = default; // DEBUG/TESTING
     const std::vector<uint8_t> &getData() const;
     const RomHeader &getHeader() const;
 

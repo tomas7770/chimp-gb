@@ -10,13 +10,16 @@ uint8_t Gameboy::readByte(uint16_t address)
         throw std::runtime_error("Read byte from invalid address");
     }
 
-    if (cycleInfo.accessType != NONE)
+    if (address >= WRAM0_ADDR && address < ECHO_ADDR)
     {
-        throw std::runtime_error("Multiple memory accesses in single M-cycle");
+        return wram[address - WRAM0_ADDR];
     }
-    cycleInfo = {address, debugRam[address], READ};
+    else if (address >= ECHO_ADDR && address < OAM_ADDR)
+    {
+        return wram[address - ECHO_ADDR];
+    }
 
-    return debugRam[address];
+    return 0;
 }
 
 void Gameboy::writeByte(uint16_t address, uint8_t value)
@@ -25,27 +28,18 @@ void Gameboy::writeByte(uint16_t address, uint8_t value)
     {
         throw std::runtime_error("Write byte to invalid address");
     }
-    debugRam[address] = value;
 
-    if (cycleInfo.accessType != NONE)
+    if (address >= WRAM0_ADDR && address < ECHO_ADDR)
     {
-        throw std::runtime_error("Multiple memory accesses in single M-cycle");
+        wram[address - WRAM0_ADDR] = value;
     }
-    cycleInfo = {address, value, WRITE};
+    else if (address >= ECHO_ADDR && address < OAM_ADDR)
+    {
+        wram[address - ECHO_ADDR] = value;
+    }
 }
 
 void Gameboy::doMCycle()
 {
-    cycleInfo = {0, 0, NONE};
     mCPU.doMCycle();
-}
-
-CPU::CPUState Gameboy::getCPUState() const
-{
-    return mCPU.getState();
-}
-
-void Gameboy::setCPUState(CPU::CPUState state)
-{
-    mCPU.setState(state);
 }

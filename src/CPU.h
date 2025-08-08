@@ -12,30 +12,6 @@ public:
 
     void doMCycle();
 
-    // DEBUG/TESTING
-    struct CPUState
-    {
-        // AF
-        uint8_t regA;
-        uint8_t regF;
-        // BC
-        uint8_t regB;
-        uint8_t regC;
-        // DE
-        uint8_t regD;
-        uint8_t regE;
-        // HL
-        uint8_t regH;
-        uint8_t regL;
-        // SP and PC
-        uint16_t SP;
-        uint16_t PC;
-        // Instruction
-        uint8_t opcode;
-    };
-    CPUState getState() const;
-    void setState(CPUState state);
-
 private:
     uint8_t readByteAtPC() const;
 
