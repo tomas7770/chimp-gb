@@ -24,6 +24,8 @@ private:
     Clock mClock;
     Cartridge mCart;
     CPU mCPU;
+    // DEBUG/TESTING
+    uint8_t mDebugChar;
 
     static constexpr uint16_t VRAM_ADDR = 0x8000;
     static constexpr uint16_t WRAM0_ADDR = 0xC000;
