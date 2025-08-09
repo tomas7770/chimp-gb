@@ -1,5 +1,6 @@
 #include "CPU.h"
 #include "Gameboy.h"
+#include "CPUDebug.h"
 
 void CPU::doTCycle()
 {
@@ -2344,6 +2345,11 @@ void CPU::decodeExecuteOpcode()
 {
     // Decode and execute
     auto opcode = mOpcode;
+    if (mDebugPrint)
+    {
+        printOpcode(opcode, mGameboy->readByte(mPC), mGameboy->readByte(mPC + 1), mGameboy->readByte(mPC + 2));
+    }
+
     if (opcode == 0xCB)
     {
         // Prefix

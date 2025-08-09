@@ -9,7 +9,7 @@ int main(int argc, char *args[])
 {
     if (argc < 2)
     {
-        std::cout << "Usage: ChimpGB <rom file>" << std::endl;
+        std::cout << "Usage: ChimpGB <rom file> [-debug]" << std::endl;
         return 0;
     }
 
@@ -18,7 +18,12 @@ int main(int argc, char *args[])
     auto size = dataStream.tellg();
     dataStream.seekg(0);
 
-    auto gameboy = new Gameboy(Cartridge(dataStream, size));
+    bool debug = false;
+    if (argc >= 3 && std::string(args[2]) == "-debug")
+    {
+        debug = true;
+    }
+    auto gameboy = new Gameboy(Cartridge(dataStream, size), debug);
 
     uint64_t frameTimestamp = SDL_GetTicks64();
     while (1)

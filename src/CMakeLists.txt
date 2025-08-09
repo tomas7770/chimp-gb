@@ -9,6 +9,7 @@ set(SOURCE_FILES
     RomHeader.cpp
     CPU.cpp
     Clock.cpp
+    CPUDebug.cpp
 )
 
 add_executable(ChimpGB ${SOURCE_FILES})

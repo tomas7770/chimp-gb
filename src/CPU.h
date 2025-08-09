@@ -8,7 +8,7 @@ class Gameboy;
 class CPU
 {
 public:
-    CPU(Gameboy *gameboy) : mGameboy(gameboy) {}
+    CPU(Gameboy *gameboy, bool debug) : mGameboy(gameboy), mDebugPrint(debug) {}
 
     void doTCycle();
 
@@ -271,6 +271,8 @@ private:
     void (CPU::*mMCycleFunc)() = &CPU::decodeExecuteOpcode;
 
     int mTCycleCounter = 0;
+
+    bool mDebugPrint;
 
     static constexpr uint8_t FLAG_ZERO = (1 << 7);
     static constexpr uint8_t FLAG_SUB = (1 << 6);

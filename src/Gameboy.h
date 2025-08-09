@@ -7,7 +7,7 @@
 class Gameboy
 {
 public:
-    Gameboy(const Cartridge &cart) : mClock(this), mCart(std::move(cart)), mCPU(this) {}
+    Gameboy(const Cartridge &cart, bool debug) : mClock(this), mCart(std::move(cart)), mCPU(this, debug) {}
 
     uint8_t readByte(uint16_t address);
     void writeByte(uint16_t address, uint8_t value);
