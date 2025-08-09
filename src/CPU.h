@@ -259,7 +259,7 @@ private:
     uint8_t mRegH;
     uint8_t mRegL;
     // SP and PC
-    uint16_t mSP;
+    uint16_t mSP = 0xFFFE;
     uint16_t mPC = 0x0100;
     // Instruction register
     // Instruction loop is decode-execute-prefetch. PC is ahead of current instruction by 1.

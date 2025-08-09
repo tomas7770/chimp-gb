@@ -10,7 +10,11 @@ uint8_t Gameboy::readByte(uint16_t address)
         throw std::runtime_error("Read byte from invalid address");
     }
 
-    if (address >= WRAM0_ADDR && address < ECHO_ADDR)
+    if (address < VRAM_ADDR)
+    {
+        return mCart.getData().at(address);
+    }
+    else if (address >= WRAM0_ADDR && address < ECHO_ADDR)
     {
         return wram[address - WRAM0_ADDR];
     }

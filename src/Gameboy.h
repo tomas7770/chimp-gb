@@ -23,6 +23,7 @@ private:
     Cartridge mCart;
     CPU mCPU;
 
+    static constexpr uint16_t VRAM_ADDR = 0x8000;
     static constexpr uint16_t WRAM0_ADDR = 0xC000;
     static constexpr uint16_t ECHO_ADDR = 0xE000;
     static constexpr uint16_t OAM_ADDR = 0xFE00;

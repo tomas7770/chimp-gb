@@ -27,7 +27,7 @@ int main(int argc, char *args[])
         uint64_t deltaTime = SDL_GetTicks64() - frameTimestamp;
         frameTimestamp = SDL_GetTicks64();
 
-        gameboy->tick(deltaTime);
+        gameboy->tick(1e6 * deltaTime);
     }
 
     delete gameboy;
