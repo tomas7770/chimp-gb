@@ -3,6 +3,7 @@
 
 #include <iostream>
 #include <fstream>
+#include "SDL.h"
 
 int main(int argc, char *args[])
 {
@@ -18,7 +19,17 @@ int main(int argc, char *args[])
     dataStream.seekg(0);
 
     auto gameboy = new Gameboy(Cartridge(dataStream, size));
-    
+
+    uint64_t frameTimestamp = SDL_GetTicks64();
+    while (1)
+    {
+        // TODO: make it possible to stop
+        uint64_t deltaTime = SDL_GetTicks64() - frameTimestamp;
+        frameTimestamp = SDL_GetTicks64();
+
+        gameboy->tick(deltaTime);
+    }
+
     delete gameboy;
 
     return 0;

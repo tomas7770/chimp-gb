@@ -1,6 +1,16 @@
 #include "CPU.h"
 #include "Gameboy.h"
 
+void CPU::doTCycle()
+{
+    mTCycleCounter++;
+    if (mTCycleCounter >= T_CYCLES_PER_M_CYCLE)
+    {
+        mTCycleCounter = 0;
+        doMCycle();
+    }
+}
+
 void CPU::doMCycle()
 {
     (*this.*mMCycleFunc)();

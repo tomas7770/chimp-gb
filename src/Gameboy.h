@@ -1,12 +1,13 @@
 #pragma once
 
+#include "Clock.h"
 #include "Cartridge.h"
 #include "CPU.h"
 
 class Gameboy
 {
 public:
-    Gameboy(const Cartridge &cart) : mCart(std::move(cart)), mCPU(this) {}
+    Gameboy(const Cartridge &cart) : mClock(this), mCart(std::move(cart)), mCPU(this) {}
 
     uint8_t readByte(uint16_t address);
     void writeByte(uint16_t address, uint8_t value);
@@ -14,10 +15,11 @@ public:
     static constexpr int wramSize = 8192;
     uint8_t wram[wramSize];
 
-    // DEBUG/TESTING
-    void doMCycle();
+    void tick(uint64_t deltaTime);
+    void doTCycle();
 
 private:
+    Clock mClock;
     Cartridge mCart;
     CPU mCPU;
 

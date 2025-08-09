@@ -39,7 +39,12 @@ void Gameboy::writeByte(uint16_t address, uint8_t value)
     }
 }
 
-void Gameboy::doMCycle()
+void Gameboy::tick(uint64_t deltaTime)
 {
-    mCPU.doMCycle();
+    mClock.tick(deltaTime);
+}
+
+void Gameboy::doTCycle()
+{
+    mCPU.doTCycle();
 }

@@ -10,9 +10,11 @@ class CPU
 public:
     CPU(Gameboy *gameboy) : mGameboy(gameboy) {}
 
-    void doMCycle();
+    void doTCycle();
 
 private:
+    void doMCycle();
+
     uint8_t readByteAtPC() const;
 
     uint8_t readR8(uint8_t bitmask) const;
@@ -268,10 +270,14 @@ private:
     // Function to call on next M-cycle
     void (CPU::*mMCycleFunc)() = &CPU::decodeExecuteOpcode;
 
+    int mTCycleCounter = 0;
+
     static constexpr uint8_t FLAG_ZERO = (1 << 7);
     static constexpr uint8_t FLAG_SUB = (1 << 6);
     static constexpr uint8_t FLAG_HALFCARRY = (1 << 5);
     static constexpr uint8_t FLAG_CARRY = (1 << 4);
 
     static constexpr int HL_BITMASK = 6;
+
+    static constexpr int T_CYCLES_PER_M_CYCLE = 4;
 };
