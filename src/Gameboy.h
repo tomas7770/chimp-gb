@@ -13,7 +13,9 @@ public:
     void writeByte(uint16_t address, uint8_t value);
 
     static constexpr int wramSize = 8192;
+    static constexpr int hramSize = 0xFFFE - 0xFF80 + 1;
     uint8_t wram[wramSize];
+    uint8_t hram[hramSize];
 
     void tick(uint64_t deltaTime);
     void doTCycle();
@@ -27,4 +29,6 @@ private:
     static constexpr uint16_t WRAM0_ADDR = 0xC000;
     static constexpr uint16_t ECHO_ADDR = 0xE000;
     static constexpr uint16_t OAM_ADDR = 0xFE00;
+    static constexpr uint16_t HRAM_ADDR = 0xFF80;
+    static constexpr uint16_t IE_ADDR = 0xFFFF;
 };
