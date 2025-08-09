@@ -1508,19 +1508,16 @@ void CPU::opcode_rlr8_M2()
 {
     uint16_t origVal = (mRegF & FLAG_CARRY ? (1 << 8) : 0) + readR8(mOpcode & 0b00000111);
     mRegF = 0;
-    if (origVal == 0)
-        mRegF |= FLAG_ZERO;
 
     uint16_t result = origVal << 1;
     if (result & (1 << 8))
         mRegF |= FLAG_CARRY;
     if (result & (1 << 9))
-    {
-        result &= 0b11111111;
         result |= 1;
-    }
+    if ((result & 0xFF) == 0)
+        mRegF |= FLAG_ZERO;
 
-    writeR8(mOpcode & 0b00000111, result);
+    writeR8(mOpcode & 0b00000111, result & 0xFF);
 
     prefetchOpcode();
 }
@@ -1536,19 +1533,16 @@ void CPU::opcode_rlihl_M3()
 {
     uint16_t origVal = (mRegF & FLAG_CARRY ? (1 << 8) : 0) + mDataZ;
     mRegF = 0;
-    if (origVal == 0)
-        mRegF |= FLAG_ZERO;
 
     uint16_t result = origVal << 1;
     if (result & (1 << 8))
         mRegF |= FLAG_CARRY;
     if (result & (1 << 9))
-    {
-        result &= 0b11111111;
         result |= 1;
-    }
+    if ((result & 0xFF) == 0)
+        mRegF |= FLAG_ZERO;
 
-    writeByteAtHL(result);
+    writeByteAtHL(result & 0xFF);
 
     mMCycleFunc = &CPU::opcode_rlihl_M4;
 }
