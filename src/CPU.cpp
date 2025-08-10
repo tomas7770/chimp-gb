@@ -14,9 +14,23 @@ void CPU::doTCycle()
     }
 }
 
+void CPU::requestInterrupt(InterruptSource source)
+{
+    IF |= (1 << source);
+}
+
 void CPU::doMCycle()
 {
     (*this.*mMCycleFunc)();
+
+    if (mRequestIME > 0)
+    {
+        mRequestIME--;
+        if (mRequestIME == 0)
+        {
+            mIME = true;
+        }
+    }
 }
 
 uint8_t CPU::readByteAtPC() const
@@ -2007,7 +2021,7 @@ void CPU::opcode_reti_M2()
 void CPU::opcode_reti_M3()
 {
     mPC = (mDataW << 8) + mDataZ;
-    // TODO set IME = 1
+    mRequestIME = 2;
 
     mMCycleFunc = &CPU::opcode_reti_M4;
 }
@@ -2052,13 +2066,16 @@ void CPU::opcode_rsttgt3_M4()
 
 void CPU::opcode_di_M1()
 {
-    // TODO
+    mRequestIME = 0;
+    mIME = false;
+
     prefetchOpcode();
 }
 
 void CPU::opcode_ei_M1()
 {
-    // TODO
+    mRequestIME = 2;
+
     prefetchOpcode();
 }
 
@@ -2233,6 +2250,41 @@ void CPU::opcode_prefix_cb_M1()
     mMCycleFunc = &CPU::decodeExecuteOpcodeCB;
 }
 
+void CPU::interrupt_M1()
+{
+    mPC--;
+
+    mMCycleFunc = &CPU::interrupt_M2;
+}
+
+void CPU::interrupt_M2()
+{
+    mSP--;
+
+    mMCycleFunc = &CPU::interrupt_M3;
+}
+
+void CPU::interrupt_M3()
+{
+    mGameboy->writeByte(mSP, mPC >> 8);
+    mSP--;
+
+    mMCycleFunc = &CPU::interrupt_M4;
+}
+
+void CPU::interrupt_M4()
+{
+    mGameboy->writeByte(mSP, mPC & 0xFF);
+    mPC = mIRQ;
+
+    mMCycleFunc = &CPU::interrupt_M5;
+}
+
+void CPU::interrupt_M5()
+{
+    prefetchOpcode();
+}
+
 void CPU::prefetchOpcode()
 {
     // std::cout << std::hex << std::uppercase
@@ -2253,6 +2305,21 @@ void CPU::prefetchOpcode()
     mOpcode = readByteAtPC();
     mPC++;
     mMCycleFunc = &CPU::decodeExecuteOpcode;
+    if (mIME)
+    {
+        // Check interrupts
+        // Bit 0 (VBlank) has the highest priority, and Bit 4 (Joypad) has the lowest priority
+        for (int i = 0; i <= 4; i++)
+        {
+            if ((IF & (1 << i)) && (IE & (1 << i)))
+            {
+                IF &= ~(1 << i);
+                mIME = false;
+                mIRQ = INTERRUPT_HANDLERS[i];
+                return interrupt_M1();
+            }
+        }
+    }
 }
 
 void CPU::decodeExecuteOpcodeCB()

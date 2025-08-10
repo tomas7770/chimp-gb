@@ -22,9 +22,17 @@ uint8_t Gameboy::readByte(uint16_t address)
     {
         return wram[address - ECHO_ADDR];
     }
+    else if (address == IF_ADDR)
+    {
+        return mCPU.IF;
+    }
     else if (address >= HRAM_ADDR && address < IE_ADDR)
     {
         return hram[address - HRAM_ADDR];
+    }
+    else if (address == IE_ADDR)
+    {
+        return mCPU.IE;
     }
     // DEBUG
     else if (address == 0xFF44)
@@ -50,9 +58,17 @@ void Gameboy::writeByte(uint16_t address, uint8_t value)
     {
         wram[address - ECHO_ADDR] = value;
     }
+    else if (address == IF_ADDR)
+    {
+        mCPU.IF = value;
+    }
     else if (address >= HRAM_ADDR && address < IE_ADDR)
     {
         hram[address - HRAM_ADDR] = value;
+    }
+    else if (address == IE_ADDR)
+    {
+        mCPU.IE = value;
     }
     // DEBUG/TESTING
     else if (address == 0xFF01)

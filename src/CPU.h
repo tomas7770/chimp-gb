@@ -12,6 +12,22 @@ public:
 
     void doTCycle();
 
+    enum InterruptSource
+    {
+        VBlank,
+        LCD,
+        Timer,
+        Serial,
+        Joypad
+    };
+    void requestInterrupt(InterruptSource source);
+
+    // Interrupts (these registers are accessible through memory map)
+    // Interrupt enable
+    uint8_t IE = 0;
+    // Interrupt flag
+    uint8_t IF = 0;
+
 private:
     void doMCycle();
 
@@ -240,6 +256,12 @@ private:
     void opcode_retcond_M5();
     void opcode_prefix_cb_M1();
 
+    void interrupt_M1();
+    void interrupt_M2();
+    void interrupt_M3();
+    void interrupt_M4();
+    void interrupt_M5();
+
     void decodeExecuteOpcodeCB();
     void decodeExecuteOpcode();
     void prefetchOpcode();
@@ -263,6 +285,7 @@ private:
     uint16_t mPC = 0x0100;
     // Instruction register
     // Instruction loop is decode-execute-prefetch. PC is ahead of current instruction by 1.
+    // Initially loaded instruction is a NOP.
     uint8_t mOpcode = 0;
     // Data bus
     uint8_t mDataZ;
@@ -274,6 +297,14 @@ private:
 
     bool mDebugPrint;
 
+    // Interrupts
+    // Interrupt master enable (disabled by default)
+    bool mIME = false;
+    // The effect of ei is delayed by one M-cycle. This variable counts how many M-cycles are left to enable mIME.
+    int mRequestIME = 0;
+    // Store handler of interrupt that was triggered
+    uint16_t mIRQ;
+
     static constexpr uint8_t FLAG_ZERO = (1 << 7);
     static constexpr uint8_t FLAG_SUB = (1 << 6);
     static constexpr uint8_t FLAG_HALFCARRY = (1 << 5);
@@ -282,4 +313,6 @@ private:
     static constexpr int HL_BITMASK = 6;
 
     static constexpr int T_CYCLES_PER_M_CYCLE = 4;
+
+    static constexpr uint16_t INTERRUPT_HANDLERS[] = {0x40, 0x48, 0x50, 0x58, 0x60};
 };
