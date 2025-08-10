@@ -1,14 +1,15 @@
 #include "Clock.h"
-#include "Gameboy.h"
 
-void Clock::tick(uint64_t deltaTime)
+int Clock::tick(uint64_t deltaTime)
 {
     mTimeAccum += deltaTime;
-    if (mTimeAccum > MAX_TIME_ACCUM)
-        mTimeAccum = MAX_TIME_ACCUM;
-    while (mTimeAccum >= CYCLE_PERIOD)
+    if (mTimeAccum > mMaxTimeAccum)
+        mTimeAccum = mMaxTimeAccum;
+    int numTicks = 0;
+    while (mTimeAccum >= mPeriod)
     {
-        mGameboy->doTCycle();
-        mTimeAccum -= CYCLE_PERIOD;
+        numTicks++;
+        mTimeAccum -= mPeriod;
     }
+    return numTicks;
 }

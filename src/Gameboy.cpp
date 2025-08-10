@@ -83,7 +83,11 @@ void Gameboy::writeByte(uint16_t address, uint8_t value)
 
 void Gameboy::tick(uint64_t deltaTime)
 {
-    mClock.tick(deltaTime);
+    int numTicks = mClock.tick(deltaTime);
+    for (int i = 0; i < numTicks; i++)
+    {
+        doTCycle();
+    }
 }
 
 void Gameboy::doTCycle()
