@@ -22,6 +22,22 @@ uint8_t Gameboy::readByte(uint16_t address)
     {
         return wram[address - ECHO_ADDR];
     }
+    else if (address == DIV_ADDR)
+    {
+        return (mSysCounter >> 6) & 0xFF;
+    }
+    else if (address == TIMA_ADDR)
+    {
+        return mTimer.TIMA;
+    }
+    else if (address == TMA_ADDR)
+    {
+        return mTimer.TMA;
+    }
+    else if (address == TAC_ADDR)
+    {
+        return mTimer.TAC;
+    }
     else if (address == IF_ADDR)
     {
         return mCPU.IF;
@@ -58,6 +74,23 @@ void Gameboy::writeByte(uint16_t address, uint8_t value)
     {
         wram[address - ECHO_ADDR] = value;
     }
+    else if (address == DIV_ADDR)
+    {
+        // The whole system internal counter is set to 0
+        mSysCounter = 0;
+    }
+    else if (address == TIMA_ADDR)
+    {
+        mTimer.TIMA = value;
+    }
+    else if (address == TMA_ADDR)
+    {
+        mTimer.TMA = value;
+    }
+    else if (address == TAC_ADDR)
+    {
+        mTimer.TAC = value;
+    }
     else if (address == IF_ADDR)
     {
         mCPU.IF = value;
@@ -78,6 +111,15 @@ void Gameboy::writeByte(uint16_t address, uint8_t value)
     else if (address == 0xFF02 && value == 0x81)
     {
         std::cout << mDebugChar;
+    }
+}
+
+void Gameboy::tickSystemCounter()
+{
+    mSysCounter++;
+    if (mTimer.tick(mSysCounter, mSysCounter - 1))
+    {
+        mCPU.requestInterrupt(CPU::InterruptSource::Timer);
     }
 }
 

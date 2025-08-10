@@ -254,6 +254,7 @@ private:
     void opcode_retcond_M3();
     void opcode_retcond_M4();
     void opcode_retcond_M5();
+    void opcode_halt_M1();
     void opcode_prefix_cb_M1();
 
     void interrupt_M1();
@@ -304,6 +305,9 @@ private:
     int mRequestIME = 0;
     // Store handler of interrupt that was triggered
     uint16_t mIRQ;
+
+    // Halt
+    bool mHalted = false;
 
     static constexpr uint8_t FLAG_ZERO = (1 << 7);
     static constexpr uint8_t FLAG_SUB = (1 << 6);

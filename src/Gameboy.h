@@ -3,6 +3,7 @@
 #include "Clock.h"
 #include "Cartridge.h"
 #include "CPU.h"
+#include "Timer.h"
 
 class Gameboy
 {
@@ -18,6 +19,8 @@ public:
     uint8_t wram[wramSize];
     uint8_t hram[hramSize];
 
+    void tickSystemCounter();
+
     void tick(uint64_t deltaTime);
     void doTCycle();
 
@@ -25,6 +28,8 @@ private:
     Clock mClock;
     Cartridge mCart;
     CPU mCPU;
+    Timer mTimer;
+    uint16_t mSysCounter = 0xABCC;
     // DEBUG/TESTING
     uint8_t mDebugChar;
 
@@ -32,6 +37,10 @@ private:
     static constexpr uint16_t WRAM0_ADDR = 0xC000;
     static constexpr uint16_t ECHO_ADDR = 0xE000;
     static constexpr uint16_t OAM_ADDR = 0xFE00;
+    static constexpr uint16_t DIV_ADDR = 0xFF04;
+    static constexpr uint16_t TIMA_ADDR = 0xFF05;
+    static constexpr uint16_t TMA_ADDR = 0xFF06;
+    static constexpr uint16_t TAC_ADDR = 0xFF07;
     static constexpr uint16_t IF_ADDR = 0xFF0F;
     static constexpr uint16_t HRAM_ADDR = 0xFF80;
     static constexpr uint16_t IE_ADDR = 0xFFFF;

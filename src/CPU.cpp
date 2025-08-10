@@ -17,10 +17,22 @@ void CPU::doTCycle()
 void CPU::requestInterrupt(InterruptSource source)
 {
     IF |= (1 << source);
+    if (mHalted)
+    {
+        mHalted = false;
+        mMCycleFunc = &CPU::prefetchOpcode;
+    }
 }
 
 void CPU::doMCycle()
 {
+    mGameboy->tickSystemCounter();
+    
+    if (mHalted)
+    {
+        return;
+    }
+
     (*this.*mMCycleFunc)();
 
     if (mRequestIME > 0)
@@ -2243,6 +2255,12 @@ void CPU::opcode_retcond_M5()
     prefetchOpcode();
 }
 
+void CPU::opcode_halt_M1()
+{
+    mHalted = true;
+    // Don't prefetch opcode, emulate HALT bug
+}
+
 void CPU::opcode_prefix_cb_M1()
 {
     mOpcode = readByteAtPC();
@@ -2560,8 +2578,7 @@ void CPU::decodeExecuteOpcode()
     else if (opcode == 0b01110110)
     {
         // halt (ld [hl], [hl])
-        // TODO
-        prefetchOpcode();
+        opcode_halt_M1();
     }
     else if ((opcode & 0b11000000) == 0b01000000)
     {
