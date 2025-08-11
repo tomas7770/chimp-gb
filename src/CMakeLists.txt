@@ -4,6 +4,7 @@ project(ChimpGB)
 
 set(SOURCE_FILES
     ChimpGB.cpp
+    ChimpGBApp.cpp
     Gameboy.cpp
     Cartridge.cpp
     RomHeader.cpp
@@ -11,6 +12,7 @@ set(SOURCE_FILES
     Clock.cpp
     CPUDebug.cpp
     Timer.cpp
+    LCD.cpp
 )
 
 add_executable(ChimpGB ${SOURCE_FILES})

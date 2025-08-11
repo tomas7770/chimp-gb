@@ -1,9 +1,8 @@
+#include "ChimpGBApp.h"
 #include "Cartridge.h"
-#include "Gameboy.h"
 
 #include <iostream>
 #include <fstream>
-#include "SDL.h"
 
 int main(int argc, char *args[])
 {
@@ -23,19 +22,9 @@ int main(int argc, char *args[])
     {
         debug = true;
     }
-    auto gameboy = new Gameboy(Cartridge(dataStream, size), debug);
 
-    uint64_t frameTimestamp = SDL_GetTicks64();
-    while (1)
-    {
-        // TODO: make it possible to stop
-        uint64_t deltaTime = SDL_GetTicks64() - frameTimestamp;
-        frameTimestamp = SDL_GetTicks64();
-
-        gameboy->tick(1e6 * deltaTime);
-    }
-
-    delete gameboy;
+    ChimpGBApp app(Cartridge(dataStream, size), debug);
+    app.mainLoop();
 
     return 0;
 }

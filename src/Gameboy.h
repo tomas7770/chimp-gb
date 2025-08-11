@@ -4,6 +4,7 @@
 #include "Cartridge.h"
 #include "CPU.h"
 #include "Timer.h"
+#include "LCD.h"
 
 class Gameboy
 {
@@ -21,6 +22,8 @@ public:
 
     void tickSystemCounter();
 
+    const LCD::Color* getPixels() const;
+
     void tick(uint64_t deltaTime);
     void doTCycle();
 
@@ -29,6 +32,7 @@ private:
     Cartridge mCart;
     CPU mCPU;
     Timer mTimer;
+    LCD mLCD;
     uint16_t mSysCounter = 0xABCC;
 
     static constexpr uint16_t VRAM_ADDR = 0x8000;

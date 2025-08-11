@@ -99,6 +99,11 @@ void Gameboy::tickSystemCounter()
     }
 }
 
+const LCD::Color* Gameboy::getPixels() const
+{
+    return mLCD.pixels;
+}
+
 void Gameboy::tick(uint64_t deltaTime)
 {
     int numTicks = mClock.tick(deltaTime);
