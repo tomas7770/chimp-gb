@@ -1,8 +1,6 @@
 #include "CPU.h"
 #include "Gameboy.h"
 #include "CPUDebug.h"
-#include <iostream>
-#include <iomanip>
 
 void CPU::doTCycle()
 {
@@ -2305,21 +2303,6 @@ void CPU::interrupt_M5()
 
 void CPU::prefetchOpcode()
 {
-    // std::cout << std::hex << std::uppercase
-    //     << "A:" << std::setw(2) << std::setfill('0') << int(mRegA)
-    //     << " F:" << std::setw(2) << std::setfill('0') << int(mRegF)
-    //     << " B:" << std::setw(2) << std::setfill('0') << int(mRegB)
-    //     << " C:" << std::setw(2) << std::setfill('0') << int(mRegC)
-    //     << " D:" << std::setw(2) << std::setfill('0') << int(mRegD)
-    //     << " E:" << std::setw(2) << std::setfill('0') << int(mRegE)
-    //     << " H:" << std::setw(2) << std::setfill('0') << int(mRegH)
-    //     << " L:" << std::setw(2) << std::setfill('0') << int(mRegL)
-    //     << " SP:" << std::setw(4) << std::setfill('0') << int(mSP)
-    //     << " PC:" << std::setw(4) << std::setfill('0') << int(mPC)
-    //     << " PCMEM:" << std::setw(2) << std::setfill('0') << int(mGameboy->readByte(mPC))
-    //     << "," << std::setw(2) << std::setfill('0') << int(mGameboy->readByte(mPC+1))
-    //     << "," << std::setw(2) << std::setfill('0') << int(mGameboy->readByte(mPC+2))
-    //     << "," << std::setw(2) << std::setfill('0') << int(mGameboy->readByte(mPC+3)) << "\n";
     mOpcode = readByteAtPC();
     mPC++;
     mMCycleFunc = &CPU::decodeExecuteOpcode;

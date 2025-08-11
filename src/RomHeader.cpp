@@ -22,7 +22,7 @@ RomHeader::RomHeader(const std::vector<uint8_t> &romData)
 
     if (romData[0x0147] >= CART_TYPE_COUNT)
     {
-        //throw std::runtime_error("Provided ROM of type " + std::to_string(romData[0x0147]) + " is not yet supported");
+        throw std::runtime_error("Provided ROM is not yet supported");
     }
 
     char titleChars[16];

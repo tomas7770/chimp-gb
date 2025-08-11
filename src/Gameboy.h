@@ -30,8 +30,6 @@ private:
     CPU mCPU;
     Timer mTimer;
     uint16_t mSysCounter = 0xABCC;
-    // DEBUG/TESTING
-    uint8_t mDebugChar;
 
     static constexpr uint16_t VRAM_ADDR = 0x8000;
     static constexpr uint16_t WRAM0_ADDR = 0xC000;

@@ -270,17 +270,17 @@ private:
     Gameboy *mGameboy;
 
     // AF
-    uint8_t mRegA = 0x01;
-    uint8_t mRegF = 0xB0;
+    uint8_t mRegA;
+    uint8_t mRegF;
     // BC
-    uint8_t mRegB = 0x00;
-    uint8_t mRegC = 0x13;
+    uint8_t mRegB;
+    uint8_t mRegC;
     // DE
-    uint8_t mRegD = 0x00;
-    uint8_t mRegE = 0xD8;
+    uint8_t mRegD;
+    uint8_t mRegE;
     // HL
-    uint8_t mRegH = 0x01;
-    uint8_t mRegL = 0x4D;
+    uint8_t mRegH;
+    uint8_t mRegL;
     // SP and PC
     uint16_t mSP = 0xFFFE;
     uint16_t mPC = 0x0100;

@@ -50,11 +50,6 @@ uint8_t Gameboy::readByte(uint16_t address)
     {
         return mCPU.IE;
     }
-    // DEBUG
-    else if (address == 0xFF44)
-    {
-        return 0x90;
-    }
 
     return 0;
 }
@@ -102,15 +97,6 @@ void Gameboy::writeByte(uint16_t address, uint8_t value)
     else if (address == IE_ADDR)
     {
         mCPU.IE = value;
-    }
-    // DEBUG/TESTING
-    else if (address == 0xFF01)
-    {
-        mDebugChar = value;
-    }
-    else if (address == 0xFF02 && value == 0x81)
-    {
-        std::cout << mDebugChar;
     }
 }
 
