@@ -12,7 +12,7 @@ set(SOURCE_FILES
     Clock.cpp
     CPUDebug.cpp
     Timer.cpp
-    LCD.cpp
+    PPU.cpp
 )
 
 add_executable(ChimpGB ${SOURCE_FILES})

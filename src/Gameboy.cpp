@@ -9,6 +9,18 @@ uint8_t Gameboy::readByte(uint16_t address)
     {
         return mCart.getData().at(address);
     }
+    else if (address >= VRAM_ADDR && address < SRAM_ADDR)
+    {
+        // if (mPPU.getMode() == 3)
+        // {
+        //     return 0xFF; // garbage
+        // }
+        // else
+        // {
+        //     return mPPU.vram[address - VRAM_ADDR];
+        // }
+        return mPPU.vram[address - VRAM_ADDR];
+    }
     else if (address >= WRAM0_ADDR && address < ECHO_ADDR)
     {
         return wram[address - WRAM0_ADDR];
@@ -16,6 +28,11 @@ uint8_t Gameboy::readByte(uint16_t address)
     else if (address >= ECHO_ADDR && address < OAM_ADDR)
     {
         return wram[address - ECHO_ADDR];
+    }
+    else if (address == JOYPAD_ADDR)
+    {
+        // TODO (0xFF means all buttons released, so it'll be the default until joypad is implemented)
+        return 0xFF;
     }
     else if (address == DIV_ADDR)
     {
@@ -37,6 +54,14 @@ uint8_t Gameboy::readByte(uint16_t address)
     {
         return mCPU.IF;
     }
+    else if (address == LCDC_ADDR)
+    {
+        return mLCD.LCDC;
+    }
+    else if (address == LY_ADDR)
+    {
+        return mLCD.LY;
+    }
     else if (address >= HRAM_ADDR && address < IE_ADDR)
     {
         return hram[address - HRAM_ADDR];
@@ -51,7 +76,15 @@ uint8_t Gameboy::readByte(uint16_t address)
 
 void Gameboy::writeByte(uint16_t address, uint8_t value)
 {
-    if (address >= WRAM0_ADDR && address < ECHO_ADDR)
+    if (address >= VRAM_ADDR && address < SRAM_ADDR)
+    {
+        // if (mPPU.getMode() != 3)
+        // {
+        //     mPPU.vram[address - VRAM_ADDR] = value;
+        // }
+        mPPU.vram[address - VRAM_ADDR] = value;
+    }
+    else if (address >= WRAM0_ADDR && address < ECHO_ADDR)
     {
         wram[address - WRAM0_ADDR] = value;
     }
@@ -80,6 +113,10 @@ void Gameboy::writeByte(uint16_t address, uint8_t value)
     {
         mCPU.IF = value;
     }
+    else if (address == LCDC_ADDR)
+    {
+        mLCD.LCDC = value;
+    }
     else if (address >= HRAM_ADDR && address < IE_ADDR)
     {
         hram[address - HRAM_ADDR] = value;
@@ -88,6 +125,11 @@ void Gameboy::writeByte(uint16_t address, uint8_t value)
     {
         mCPU.IE = value;
     }
+}
+
+void Gameboy::requestInterrupt(CPU::InterruptSource source)
+{
+    mCPU.requestInterrupt(source);
 }
 
 void Gameboy::tickSystemCounter()
@@ -116,4 +158,5 @@ void Gameboy::tick(uint64_t deltaTime)
 void Gameboy::doTCycle()
 {
     mCPU.doTCycle();
+    mPPU.doDot();
 }
