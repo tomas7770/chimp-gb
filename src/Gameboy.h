@@ -44,6 +44,7 @@ private:
     static constexpr uint16_t WRAM0_ADDR = 0xC000;
     static constexpr uint16_t ECHO_ADDR = 0xE000;
     static constexpr uint16_t OAM_ADDR = 0xFE00;
+    static constexpr uint16_t UNUSABLE_ADDR = 0xFEA0;
     static constexpr uint16_t JOYPAD_ADDR = 0xFF00;
     static constexpr uint16_t DIV_ADDR = 0xFF04;
     static constexpr uint16_t TIMA_ADDR = 0xFF05;
@@ -52,6 +53,7 @@ private:
     static constexpr uint16_t IF_ADDR = 0xFF0F;
     static constexpr uint16_t LCDC_ADDR = 0xFF40;
     static constexpr uint16_t LY_ADDR = 0xFF44;
+    static constexpr uint16_t DMA_ADDR = 0xFF46;
     static constexpr uint16_t HRAM_ADDR = 0xFF80;
     static constexpr uint16_t IE_ADDR = 0xFFFF;
 

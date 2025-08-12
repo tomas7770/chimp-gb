@@ -21,6 +21,7 @@ public:
         Joypad
     };
     void requestInterrupt(InterruptSource source);
+    void startDMATransfer(uint8_t value);
 
     // Interrupts (these registers are accessible through memory map)
     // Interrupt enable
@@ -309,6 +310,11 @@ private:
     // Halt
     bool mHalted = false;
 
+    // DMA
+    uint16_t mDMASourceStart;
+    int mDMACycles;
+    bool mDMACopying = false;
+
     static constexpr uint8_t FLAG_ZERO = (1 << 7);
     static constexpr uint8_t FLAG_SUB = (1 << 6);
     static constexpr uint8_t FLAG_HALFCARRY = (1 << 5);
@@ -319,4 +325,6 @@ private:
     static constexpr int T_CYCLES_PER_M_CYCLE = 4;
 
     static constexpr uint16_t INTERRUPT_HANDLERS[] = {0x40, 0x48, 0x50, 0x58, 0x60};
+
+    static constexpr int DMA_M_CYCLES = 160;
 };

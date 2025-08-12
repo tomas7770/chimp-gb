@@ -29,6 +29,19 @@ uint8_t Gameboy::readByte(uint16_t address)
     {
         return wram[address - ECHO_ADDR];
     }
+    else if (address >= OAM_ADDR && address < UNUSABLE_ADDR)
+    {
+        // if (mPPU.getMode() == 0 || mPPU.getMode() == 1)
+        // {
+        //     return mPPU.oam[address - OAM_ADDR];
+        // }
+        // else
+        // {
+        //     return 0xFF; // garbage
+        // }
+        return mPPU.oam[address - OAM_ADDR];
+    }
+    // TODO implement unusable memory
     else if (address == JOYPAD_ADDR)
     {
         // TODO (0xFF means all buttons released, so it'll be the default until joypad is implemented)
@@ -92,6 +105,15 @@ void Gameboy::writeByte(uint16_t address, uint8_t value)
     {
         wram[address - ECHO_ADDR] = value;
     }
+    else if (address >= OAM_ADDR && address < UNUSABLE_ADDR)
+    {
+        // if (mPPU.getMode() == 0 || mPPU.getMode() == 1)
+        // {
+        //     mPPU.oam[address - OAM_ADDR] = value;
+        // }
+        mPPU.oam[address - OAM_ADDR] = value;
+    }
+    // TODO implement unusable memory
     else if (address == DIV_ADDR)
     {
         // The whole system internal counter is set to 0
@@ -116,6 +138,10 @@ void Gameboy::writeByte(uint16_t address, uint8_t value)
     else if (address == LCDC_ADDR)
     {
         mLCD.LCDC = value;
+    }
+    else if (address == DMA_ADDR)
+    {
+        mCPU.startDMATransfer(value);
     }
     else if (address >= HRAM_ADDR && address < IE_ADDR)
     {

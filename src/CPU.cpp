@@ -22,16 +22,34 @@ void CPU::requestInterrupt(InterruptSource source)
     }
 }
 
+void CPU::startDMATransfer(uint8_t value)
+{
+    // Note: inaccurate, doesn't emulate bus conflicts or invalid "value" (> 0xDF)
+    mDMASourceStart = value << 8;
+    mDMACycles = 0;
+    mDMACopying = true;
+}
+
 void CPU::doMCycle()
 {
     mGameboy->tickSystemCounter();
-    
+
     if (mHalted)
     {
         return;
     }
 
     (*this.*mMCycleFunc)();
+
+    if (mDMACopying)
+    {
+        mGameboy->writeByte(0xFE00 + mDMACycles, mGameboy->readByte(mDMASourceStart + mDMACycles));
+        mDMACycles++;
+        if (mDMACycles >= DMA_M_CYCLES)
+        {
+            mDMACopying = false;
+        }
+    }
 
     if (mRequestIME > 0)
     {
