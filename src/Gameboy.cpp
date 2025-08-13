@@ -44,8 +44,35 @@ uint8_t Gameboy::readByte(uint16_t address)
     // TODO implement unusable memory
     else if (address == JOYPAD_ADDR)
     {
-        // TODO (0xFF means all buttons released, so it'll be the default until joypad is implemented)
-        return 0xFF;
+        uint8_t value = 0xFF;
+
+        // If bit is 0, then is pressed
+        if (mJoypad.selectButtons)
+        {
+            value &= ~Joypad::SEL_BUTTONS_BITMASK;
+            if (mJoypad.keys[4])
+                value &= ~Joypad::A_RIGHT_BITMASK;
+            if (mJoypad.keys[5])
+                value &= ~Joypad::B_LEFT_BITMASK;
+            if (mJoypad.keys[6])
+                value &= ~Joypad::START_DOWN_BITMASK;
+            if (mJoypad.keys[7])
+                value &= ~Joypad::SELECT_UP_BITMASK;
+        }
+        if (mJoypad.selectDPad)
+        {
+            value &= ~Joypad::SEL_DPAD_BITMASK;
+            if (mJoypad.keys[3])
+                value &= ~Joypad::A_RIGHT_BITMASK;
+            if (mJoypad.keys[2])
+                value &= ~Joypad::B_LEFT_BITMASK;
+            if (mJoypad.keys[1])
+                value &= ~Joypad::START_DOWN_BITMASK;
+            if (mJoypad.keys[0])
+                value &= ~Joypad::SELECT_UP_BITMASK;
+        }
+
+        return value;
     }
     else if (address == DIV_ADDR)
     {
@@ -114,6 +141,12 @@ void Gameboy::writeByte(uint16_t address, uint8_t value)
         mPPU.oam[address - OAM_ADDR] = value;
     }
     // TODO implement unusable memory
+    else if (address == JOYPAD_ADDR)
+    {
+        // If bit is 0, then select
+        mJoypad.selectButtons = (value & Joypad::SEL_BUTTONS_BITMASK) ? false : true;
+        mJoypad.selectDPad = (value & Joypad::SEL_DPAD_BITMASK) ? false : true;
+    }
     else if (address == DIV_ADDR)
     {
         // The whole system internal counter is set to 0
@@ -193,4 +226,14 @@ void Gameboy::doTCycle()
 uint64_t Gameboy::getFrameClockTimeLeft()
 {
     return mFrameClock.getTimeLeft();
+}
+
+void Gameboy::onKeyPress(int key)
+{
+    mJoypad.keys[key] = true;
+}
+
+void Gameboy::onKeyRelease(int key)
+{
+    mJoypad.keys[key] = false;
 }

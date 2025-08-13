@@ -6,6 +6,7 @@
 #include "Timer.h"
 #include "LCD.h"
 #include "PPU.h"
+#include "Joypad.h"
 
 class Gameboy
 {
@@ -30,6 +31,8 @@ public:
     void tick(uint64_t deltaTime);
     void doTCycle();
     uint64_t getFrameClockTimeLeft();
+    void onKeyPress(int key);
+    void onKeyRelease(int key);
 
 private:
     Clock mFrameClock;
@@ -38,6 +41,7 @@ private:
     Timer mTimer;
     LCD mLCD;
     PPU mPPU;
+    Joypad mJoypad;
     uint16_t mSysCounter = 0xABCC;
 
     static constexpr uint16_t VRAM_ADDR = 0x8000;

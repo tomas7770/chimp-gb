@@ -85,7 +85,31 @@ void ChimpGBApp::mainLoop()
         while (SDL_PollEvent(&mEventSDL) != 0)
         {
             if (mEventSDL.type == SDL_QUIT)
+            {
                 running = false;
+            }
+            else if (mEventSDL.type == SDL_KEYDOWN)
+            {
+                for (int i = 0; i < 8; i++)
+                {
+                    if (mEventSDL.key.keysym.scancode == KEYMAP[i])
+                    {
+                        mGameboy->onKeyPress(i);
+                        break;
+                    }
+                }
+            }
+            else if (mEventSDL.type == SDL_KEYUP)
+            {
+                for (int i = 0; i < 8; i++)
+                {
+                    if (mEventSDL.key.keysym.scancode == KEYMAP[i])
+                    {
+                        mGameboy->onKeyRelease(i);
+                        break;
+                    }
+                }
+            }
         }
         uint64_t deltaTime = SDL_GetTicks64() - frameTimestamp;
         frameTimestamp = SDL_GetTicks64();
