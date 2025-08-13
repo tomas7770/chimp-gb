@@ -10,7 +10,7 @@ public:
     void mainLoop();
 
 private:
-    constexpr const static char *WINDOW_TITLE = "ChimpGB - Gameboy Emulator";
+    constexpr const static char *WINDOW_TITLE = "ChimpGB - Game Boy Emulator";
     constexpr static int WINDOW_WIDTH = 640;
     constexpr static int WINDOW_HEIGHT = 576;
 
