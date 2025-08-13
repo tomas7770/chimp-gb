@@ -98,6 +98,10 @@ void ChimpGBApp::mainLoop()
                         break;
                     }
                 }
+                if (mEventSDL.key.keysym.scancode == FAST_FORWARD_KEY)
+                {
+                    mGameboy->setFastForward(true);
+                }
             }
             else if (mEventSDL.type == SDL_KEYUP)
             {
@@ -108,6 +112,10 @@ void ChimpGBApp::mainLoop()
                         mGameboy->onKeyRelease(i);
                         break;
                     }
+                }
+                if (mEventSDL.key.keysym.scancode == FAST_FORWARD_KEY)
+                {
+                    mGameboy->setFastForward(false);
                 }
             }
         }

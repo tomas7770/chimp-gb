@@ -31,6 +31,7 @@ public:
     void tick(uint64_t deltaTime);
     void doTCycle();
     uint64_t getFrameClockTimeLeft();
+    void setFastForward(bool enabled);
     void onKeyPress(int key);
     void onKeyRelease(int key);
 

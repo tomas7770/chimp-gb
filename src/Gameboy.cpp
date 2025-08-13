@@ -228,6 +228,18 @@ uint64_t Gameboy::getFrameClockTimeLeft()
     return mFrameClock.getTimeLeft();
 }
 
+void Gameboy::setFastForward(bool enabled)
+{
+    if (enabled)
+    {
+        mFrameClock.setPeriod(0);
+    }
+    else
+    {
+        mFrameClock.setPeriod(FRAME_PERIOD);
+    }
+}
+
 void Gameboy::onKeyPress(int key)
 {
     mJoypad.keys[key] = true;

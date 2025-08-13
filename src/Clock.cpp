@@ -19,3 +19,8 @@ uint64_t Clock::getTimeLeft()
 {
     return mPeriod - mTimeAccum;
 }
+
+void Clock::setPeriod(uint64_t period)
+{
+    mPeriod = period;
+}

@@ -8,6 +8,7 @@ public:
     Clock(uint64_t period) : mPeriod(period) {}
     bool tick(uint64_t deltaTime);
     uint64_t getTimeLeft();
+    void setPeriod(uint64_t period);
 
 private:
     uint64_t mPeriod;
