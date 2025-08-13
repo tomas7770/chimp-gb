@@ -5,6 +5,7 @@ project(ChimpGB)
 set(SOURCE_FILES
     ChimpGB.cpp
     ChimpGBApp.cpp
+    Platform.cpp
     Gameboy.cpp
     Cartridge.cpp
     RomHeader.cpp

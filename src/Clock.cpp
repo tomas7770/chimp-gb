@@ -1,15 +1,21 @@
 #include "Clock.h"
 
-int Clock::tick(uint64_t deltaTime)
+bool Clock::tick(uint64_t deltaTime)
 {
     mTimeAccum += deltaTime;
-    if (mTimeAccum > mMaxTimeAccum)
-        mTimeAccum = mMaxTimeAccum;
-    int numTicks = 0;
-    while (mTimeAccum >= mPeriod)
+    if (mTimeAccum >= mPeriod)
     {
-        numTicks++;
         mTimeAccum -= mPeriod;
+        if (mTimeAccum >= mPeriod)
+        {
+            mTimeAccum = mPeriod;
+        }
+        return true;
     }
-    return numTicks;
+    return false;
+}
+
+uint64_t Clock::getTimeLeft()
+{
+    return mPeriod - mTimeAccum;
 }

@@ -174,10 +174,13 @@ const LCD::Color* Gameboy::getPixels() const
 
 void Gameboy::tick(uint64_t deltaTime)
 {
-    int numTicks = mClock.tick(deltaTime);
-    for (int i = 0; i < numTicks; i++)
+    bool doTick = mFrameClock.tick(deltaTime);
+    if (doTick)
     {
-        doTCycle();
+        for (int i = 0; i < CYCLES_PER_FRAME; i++)
+        {
+            doTCycle();
+        }
     }
 }
 
@@ -185,4 +188,9 @@ void Gameboy::doTCycle()
 {
     mCPU.doTCycle();
     mPPU.doDot();
+}
+
+uint64_t Gameboy::getFrameClockTimeLeft()
+{
+    return mFrameClock.getTimeLeft();
 }

@@ -10,7 +10,7 @@
 class Gameboy
 {
 public:
-    Gameboy(const Cartridge &cart, bool debug) : mClock(CLOCK_CYCLE_PERIOD, CLOCK_MAX_TIME_ACCUM),
+    Gameboy(const Cartridge &cart, bool debug) : mFrameClock(FRAME_PERIOD),
                                                  mCart(std::move(cart)), mCPU(this, debug), mPPU(this, &(this->mLCD)) {}
 
     uint8_t readByte(uint16_t address);
@@ -29,9 +29,10 @@ public:
 
     void tick(uint64_t deltaTime);
     void doTCycle();
+    uint64_t getFrameClockTimeLeft();
 
 private:
-    Clock mClock;
+    Clock mFrameClock;
     Cartridge mCart;
     CPU mCPU;
     Timer mTimer;
@@ -57,6 +58,6 @@ private:
     static constexpr uint16_t HRAM_ADDR = 0xFF80;
     static constexpr uint16_t IE_ADDR = 0xFFFF;
 
-    static constexpr uint64_t CLOCK_CYCLE_PERIOD = 1e9 / 4194304;
-    static constexpr uint64_t CLOCK_MAX_TIME_ACCUM = 1e9 / 15;
+    static constexpr uint64_t FRAME_PERIOD = 1e9 / 60; // nanoseconds
+    static constexpr int CYCLES_PER_FRAME = 70224;
 };

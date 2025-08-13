@@ -1,4 +1,5 @@
 #include "ChimpGBApp.h"
+#include "Platform.h"
 #include <iostream>
 
 ChimpGBApp::ChimpGBApp(const Cartridge &cart, bool debug)
@@ -98,6 +99,7 @@ void ChimpGBApp::mainLoop()
             terminate(-1);
         }
         drawDisplay();
+        mainSleep(mGameboy->getFrameClockTimeLeft());
     }
 
     terminate(0);
