@@ -26,7 +26,14 @@ ChimpGBApp::ChimpGBApp(const Cartridge &cart, bool debug)
         std::cout << "Renderer could not be created! SDL_Error: " << SDL_GetError() << std::endl;
         terminate(-1);
     }
-    SDL_RenderSetLogicalSize(mRendererSDL, WINDOW_WIDTH, WINDOW_HEIGHT);
+    SDL_RenderSetLogicalSize(mRendererSDL, LCD::SCREEN_W, LCD::SCREEN_H);
+
+    mTextureSDL = SDL_CreateTexture(mRendererSDL, SDL_PIXELFORMAT_RGBA8888, SDL_TEXTUREACCESS_STREAMING, LCD::SCREEN_W, LCD::SCREEN_H);
+    if (mTextureSDL == NULL)
+    {
+        std::cout << "Blit texture could not be created! SDL_Error: " << SDL_GetError() << std::endl;
+        terminate(-1);
+    }
 
     try
     {
@@ -51,28 +58,27 @@ void ChimpGBApp::drawDisplay()
     auto pixels = mGameboy->getPixels();
     for (int i = 0; i < LCD::SCREEN_W * LCD::SCREEN_H; i++)
     {
-        // Render filled quad
-        SDL_Rect fillRect = {(i % LCD::SCREEN_W) * xScale, (i / LCD::SCREEN_W) * yScale, xScale, yScale};
         switch (pixels[i])
         {
         default:
         case LCD::Color::White:
-            SDL_SetRenderDrawColor(mRendererSDL, 0xFF, 0xFF, 0xFF, 0xFF);
+            mTexturePixels[i] = 0xFFFFFFFF;
             break;
         case LCD::Color::LightGray:
-            SDL_SetRenderDrawColor(mRendererSDL, 0x7F, 0x7F, 0x7F, 0xFF);
+            mTexturePixels[i] = 0x7F7F7FFF;
             break;
         case LCD::Color::DarkGray:
-            SDL_SetRenderDrawColor(mRendererSDL, 0x3F, 0x3F, 0x3F, 0xFF);
+            mTexturePixels[i] = 0x3F3F3FFF;
             break;
         case LCD::Color::Black:
-            SDL_SetRenderDrawColor(mRendererSDL, 0x00, 0x00, 0x00, 0xFF);
+            mTexturePixels[i] = 0x000000FF;
             break;
         }
-        SDL_RenderFillRect(mRendererSDL, &fillRect);
     }
 
     // Update renderer
+    SDL_UpdateTexture(mTextureSDL, NULL, mTexturePixels, LCD::SCREEN_W * 4);
+    SDL_RenderCopy(mRendererSDL, mTextureSDL, NULL, NULL);
     SDL_RenderPresent(mRendererSDL);
 }
 

@@ -26,7 +26,9 @@ private:
 
     SDL_Window *mWindowSDL = NULL;
     SDL_Renderer *mRendererSDL = NULL;
+    SDL_Texture *mTextureSDL = NULL;
     SDL_Event mEventSDL;
+    uint32_t mTexturePixels[LCD::SCREEN_W * LCD::SCREEN_H];
 
     Gameboy *mGameboy = nullptr;
 

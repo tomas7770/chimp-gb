@@ -23,8 +23,8 @@ int main(int argc, char *args[])
         debug = true;
     }
 
-    ChimpGBApp app(Cartridge(dataStream, size), debug);
-    app.mainLoop();
+    ChimpGBApp *app = new ChimpGBApp(Cartridge(dataStream, size), debug);
+    app->mainLoop();
 
     return 0;
 }
