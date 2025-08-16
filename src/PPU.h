@@ -53,6 +53,7 @@ private:
     static constexpr uint16_t TILE_BLOCK_2_OFFSET = 0x9000 - 0x8000;
 
     static constexpr uint16_t TILE_MAP_0_ADDR = 0x9800 - 0x8000;
+    static constexpr uint16_t TILE_MAP_1_ADDR = 0x9C00 - 0x8000;
 
     static constexpr int SPRITE_BYTES = 4;
     static constexpr int MAX_SPRITES_PER_LINE = 10;

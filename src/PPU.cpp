@@ -89,7 +89,16 @@ void PPU::setMode(int mode)
 
 uint8_t PPU::getBGTileAtScreenPixel(int x, int y)
 {
-    return vram[TILE_MAP_0_ADDR + (x / TILE_LENGTH) + TILE_MAP_LENGTH * (y / TILE_LENGTH)];
+    uint16_t tileMapAddr;
+    if (mLCD->LCDC & LCD::LCDC_FLAG_BG_TILE_MAP)
+    {
+        tileMapAddr = TILE_MAP_1_ADDR;
+    }
+    else
+    {
+        tileMapAddr = TILE_MAP_0_ADDR;
+    }
+    return vram[tileMapAddr + (x / TILE_LENGTH) + TILE_MAP_LENGTH * (y / TILE_LENGTH)];
 }
 
 int PPU::getBGTilePixel(uint8_t tileId, int tilePixelX, int tilePixelY, bool drawingObj, bool xFlip, bool yFlip)
