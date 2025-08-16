@@ -32,7 +32,8 @@ private:
     void setMode(int mode);
 
     uint8_t getBGTileAtScreenPixel(int x, int y);
-    int getBGTilePixel(uint8_t tileId, int tilePixelX, int tilePixelY, bool xFlip = false, bool yFlip = false);
+    int getBGTilePixel(uint8_t tileId, int tilePixelX, int tilePixelY, bool drawingObj,
+        bool xFlip = false, bool yFlip = false);
     int getBGPixelOnScreen(int x, int y);
     LCD::Color getPaletteColor(uint8_t palette, int colorId);
     LCD::Color getScreenPixel(int x, int y);
@@ -48,6 +49,8 @@ private:
     static constexpr int TILE_LENGTH = 8;
     static constexpr int TILE_MAP_LENGTH = 32;
     static constexpr int TILE_BYTES = 16;
+
+    static constexpr uint16_t TILE_BLOCK_2_OFFSET = 0x9000 - 0x8000;
 
     static constexpr uint16_t TILE_MAP_0_ADDR = 0x9800 - 0x8000;
 

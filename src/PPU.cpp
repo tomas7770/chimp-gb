@@ -92,10 +92,17 @@ uint8_t PPU::getBGTileAtScreenPixel(int x, int y)
     return vram[TILE_MAP_0_ADDR + (x / TILE_LENGTH) + TILE_MAP_LENGTH * (y / TILE_LENGTH)];
 }
 
-int PPU::getBGTilePixel(uint8_t tileId, int tilePixelX, int tilePixelY, bool xFlip, bool yFlip)
+int PPU::getBGTilePixel(uint8_t tileId, int tilePixelX, int tilePixelY, bool drawingObj, bool xFlip, bool yFlip)
 {
-    // TODO ADDRESSING MODES
-    int tileOffset = tileId * TILE_BYTES;
+    int tileOffset;
+    if ((mLCD->LCDC & LCD::LCDC_FLAG_BG_WINDOW_TILE_DATA) || drawingObj)
+    {
+        tileOffset = tileId * TILE_BYTES;
+    }
+    else
+    {
+        tileOffset = TILE_BLOCK_2_OFFSET + static_cast<int8_t>(tileId) * TILE_BYTES;
+    }
     // Apply flip
     if (xFlip)
     {
@@ -121,7 +128,7 @@ int PPU::getBGPixelOnScreen(int x, int y)
     uint8_t tileId = getBGTileAtScreenPixel(x, y);
     int tilePixelX = x % TILE_LENGTH;
     int tilePixelY = y % TILE_LENGTH;
-    return getBGTilePixel(tileId, tilePixelX, tilePixelY);
+    return getBGTilePixel(tileId, tilePixelX, tilePixelY, false);
 }
 
 LCD::Color PPU::getPaletteColor(uint8_t palette, int colorId)
@@ -178,7 +185,7 @@ LCD::Color PPU::getScreenPixel(int pixelX, int pixelY)
         int tilePixelX = (pixelX - x) % TILE_LENGTH;
         int tilePixelY = (pixelY - y) % TILE_LENGTH;
         uint8_t flags = oam[i + 3]; // Byte 3: attributes/flags
-        int objColorId = getBGTilePixel(tileId, tilePixelX, tilePixelY,
+        int objColorId = getBGTilePixel(tileId, tilePixelX, tilePixelY, true,
             (flags & OBJ_FLAG_X_FLIP) ? true : false, (flags & OBJ_FLAG_Y_FLIP) ? true : false);
         bool bgHasPriority = (flags & OBJ_FLAG_PRIORITY) && bgColorId > 0;
         if (objColorId != 0 && !bgHasPriority)
