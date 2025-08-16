@@ -18,5 +18,7 @@ struct LCD
     Color pixels[SCREEN_W * SCREEN_H] = {Color::White};
 
     uint8_t LCDC = 0x91;
+    uint8_t SCY = 0;
+    uint8_t SCX = 0;
     uint8_t LY = 0;
 };

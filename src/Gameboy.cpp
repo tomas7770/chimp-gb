@@ -98,6 +98,14 @@ uint8_t Gameboy::readByte(uint16_t address)
     {
         return mLCD.LCDC;
     }
+    else if (address == SCY_ADDR)
+    {
+        return mLCD.SCY;
+    }
+    else if (address == SCX_ADDR)
+    {
+        return mLCD.SCX;
+    }
     else if (address == LY_ADDR)
     {
         return mLCD.LY;
@@ -171,6 +179,14 @@ void Gameboy::writeByte(uint16_t address, uint8_t value)
     else if (address == LCDC_ADDR)
     {
         mLCD.LCDC = value;
+    }
+    else if (address == SCY_ADDR)
+    {
+        mLCD.SCY = value;
+    }
+    else if (address == SCX_ADDR)
+    {
+        mLCD.SCX = value;
     }
     else if (address == DMA_ADDR)
     {

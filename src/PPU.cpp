@@ -87,6 +87,8 @@ int PPU::getBGTilePixel(uint8_t tileId, int tilePixelX, int tilePixelY)
 
 int PPU::getBGPixelOnScreen(int x, int y)
 {
+    x = (x + mLCD->SCX) % 256;
+    y = (y + mLCD->SCY) % 256;
     uint8_t tileId = getBGTileAtScreenPixel(x, y);
     int tilePixelX = x % TILE_LENGTH;
     int tilePixelY = y % TILE_LENGTH;
