@@ -168,45 +168,48 @@ LCD::Color PPU::getScreenPixel(int pixelX, int pixelY)
         colorId = bgColorId;
         palette = mLCD->BGP;
     }
-    // The smaller the X coordinate, the higher the object priority.
-    // 256 > any unsigned byte
-    int lowestX = 256;
-    for (int j = spritesInScanline.size() - 1; j >= 0; j--)
+    if (mLCD->LCDC & LCD::LCDC_FLAG_OBJ_ENABLE)
     {
-        // The object located first in OAM has higher priority, so start by the last and let the earlier ones override
-        int i = spritesInScanline.at(j);
-        // Only x is checked because y was already checked during OAM scan
-        int x = oam[i + 1] - 8; // Byte 1: x+8 (value=0 means x=-8)
-        if (pixelX < x || pixelX >= x + 8)
+        // The smaller the X coordinate, the higher the object priority.
+        // 256 > any unsigned byte
+        int lowestX = 256;
+        for (int j = spritesInScanline.size() - 1; j >= 0; j--)
         {
-            continue;
-        }
-
-        // Pixel is within this object
-        if (oam[i + 1] > lowestX)
-        {
-            continue;
-        }
-        lowestX = oam[i + 1];
-        int y = oam[i] - 16; // Byte 0: y+16 (value=0 means y=-16)
-        // TODO implement support for 16 pixel tall sprites (2 tiles)
-        uint8_t tileId = oam[i + 2]; // Byte 2: tile index
-        int tilePixelX = (pixelX - x) % TILE_LENGTH;
-        int tilePixelY = (pixelY - y) % TILE_LENGTH;
-        uint8_t flags = oam[i + 3]; // Byte 3: attributes/flags
-        int objColorId = getBGTilePixel(tileId, tilePixelX, tilePixelY, true,
-            (flags & OBJ_FLAG_X_FLIP) ? true : false, (flags & OBJ_FLAG_Y_FLIP) ? true : false);
-        bool bgHasPriority = (flags & OBJ_FLAG_PRIORITY) && bgColorId > 0;
-        if (objColorId != 0 && !bgHasPriority)
-        {
-            colorId = objColorId;
-            if (flags & OBJ_FLAG_DMG_PAL)
+            // The object located first in OAM has higher priority, so start by the last and let the earlier ones override
+            int i = spritesInScanline.at(j);
+            // Only x is checked because y was already checked during OAM scan
+            int x = oam[i + 1] - 8; // Byte 1: x+8 (value=0 means x=-8)
+            if (pixelX < x || pixelX >= x + 8)
             {
-                palette = mLCD->OBP1;
+                continue;
             }
-            else
+
+            // Pixel is within this object
+            if (oam[i + 1] > lowestX)
             {
-                palette = mLCD->OBP0;
+                continue;
+            }
+            lowestX = oam[i + 1];
+            int y = oam[i] - 16; // Byte 0: y+16 (value=0 means y=-16)
+            // TODO implement support for 16 pixel tall sprites (2 tiles)
+            uint8_t tileId = oam[i + 2]; // Byte 2: tile index
+            int tilePixelX = (pixelX - x) % TILE_LENGTH;
+            int tilePixelY = (pixelY - y) % TILE_LENGTH;
+            uint8_t flags = oam[i + 3]; // Byte 3: attributes/flags
+            int objColorId = getBGTilePixel(tileId, tilePixelX, tilePixelY, true,
+                                            (flags & OBJ_FLAG_X_FLIP) ? true : false, (flags & OBJ_FLAG_Y_FLIP) ? true : false);
+            bool bgHasPriority = (flags & OBJ_FLAG_PRIORITY) && bgColorId > 0;
+            if (objColorId != 0 && !bgHasPriority)
+            {
+                colorId = objColorId;
+                if (flags & OBJ_FLAG_DMG_PAL)
+                {
+                    palette = mLCD->OBP1;
+                }
+                else
+                {
+                    palette = mLCD->OBP0;
+                }
             }
         }
     }
