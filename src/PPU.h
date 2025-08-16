@@ -29,6 +29,8 @@ private:
 
     std::vector<int> spritesInScanline; // list of sprites to draw, stored as an offset from OAM start
 
+    void setMode(int mode);
+
     uint8_t getBGTileAtScreenPixel(int x, int y);
     int getBGTilePixel(uint8_t tileId, int tilePixelX, int tilePixelY, bool xFlip = false, bool yFlip = false);
     int getBGPixelOnScreen(int x, int y);

@@ -58,9 +58,11 @@ private:
     static constexpr uint16_t TAC_ADDR = 0xFF07;
     static constexpr uint16_t IF_ADDR = 0xFF0F;
     static constexpr uint16_t LCDC_ADDR = 0xFF40;
+    static constexpr uint16_t STAT_ADDR = 0xFF41;
     static constexpr uint16_t SCY_ADDR = 0xFF42;
     static constexpr uint16_t SCX_ADDR = 0xFF43;
     static constexpr uint16_t LY_ADDR = 0xFF44;
+    static constexpr uint16_t LYC_ADDR = 0xFF45;
     static constexpr uint16_t DMA_ADDR = 0xFF46;
     static constexpr uint16_t BGP_ADDR = 0xFF47;
     static constexpr uint16_t OBP0_ADDR = 0xFF48;

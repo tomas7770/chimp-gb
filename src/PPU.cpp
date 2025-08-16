@@ -30,12 +30,12 @@ void PPU::doDot()
         mLCD->LY %= LCD::SCREEN_H + VBLANK_LINES;
         if (mLCD->LY == LCD::SCREEN_H)
         {
-            mMode = 1;
+            setMode(1);
             mGameboy->requestInterrupt(CPU::InterruptSource::VBlank);
         }
         else if (mLCD->LY < LCD::SCREEN_H)
         {
-            mMode = 2;
+            setMode(2);
             // OAM scan
             spritesInScanline.clear();
             for (int i = 0; i < oamSize; i += SPRITE_BYTES)
@@ -53,18 +53,38 @@ void PPU::doDot()
                 }
             }
         }
+
+        if (mLCD->LYC == mLCD->LY)
+        {
+            mLCD->STAT |= LCD::STAT_LYC_LY_BITMASK;
+            if (mLCD->STAT & LCD::STAT_LYC_INT_BITMASK)
+            {
+                mGameboy->requestInterrupt(CPU::InterruptSource::LCD);
+            }
+        }
+        else
+        {
+            mLCD->STAT &= ~LCD::STAT_LYC_LY_BITMASK;
+        }
     }
     else if (mLCD->LY < LCD::SCREEN_H)
     {
         if (mCurrentDot >= MODE_2_DOTS + MODE_3_DOTS)
         {
-            mMode = 0;
+            setMode(0);
         }
         else if (mCurrentDot >= MODE_2_DOTS)
         {
-            mMode = 3;
+            setMode(3);
         }
     }
+}
+
+void PPU::setMode(int mode)
+{
+    mMode = mode;
+    mLCD->STAT &= ~LCD::STAT_MODE_BITMASK;
+    mLCD->STAT |= mode;
 }
 
 uint8_t PPU::getBGTileAtScreenPixel(int x, int y)
