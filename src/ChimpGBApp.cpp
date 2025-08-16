@@ -131,7 +131,7 @@ void ChimpGBApp::mainLoop()
         {
             mGameboy->tick(1e6 * deltaTime);
         }
-        catch (std::exception err)
+        catch (std::runtime_error err)
         {
             SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, WINDOW_TITLE, err.what(), mWindowSDL);
             terminate(-1);
