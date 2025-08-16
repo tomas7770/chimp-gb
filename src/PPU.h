@@ -30,7 +30,7 @@ private:
     std::vector<int> spritesInScanline; // list of sprites to draw, stored as an offset from OAM start
 
     uint8_t getBGTileAtScreenPixel(int x, int y);
-    int getBGTilePixel(uint8_t tileId, int tilePixelX, int tilePixelY);
+    int getBGTilePixel(uint8_t tileId, int tilePixelX, int tilePixelY, bool xFlip = false, bool yFlip = false);
     int getBGPixelOnScreen(int x, int y);
     LCD::Color getPaletteColor(uint8_t palette, int colorId);
     LCD::Color getScreenPixel(int x, int y);
@@ -53,5 +53,7 @@ private:
     static constexpr int MAX_SPRITES_PER_LINE = 10;
 
     static constexpr uint8_t OBJ_FLAG_PRIORITY = (1 << 7);
+    static constexpr uint8_t OBJ_FLAG_Y_FLIP = (1 << 6);
+    static constexpr uint8_t OBJ_FLAG_X_FLIP = (1 << 5);
     static constexpr uint8_t OBJ_FLAG_DMG_PAL = (1 << 4);
 };

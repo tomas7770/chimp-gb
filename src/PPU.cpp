@@ -72,10 +72,19 @@ uint8_t PPU::getBGTileAtScreenPixel(int x, int y)
     return vram[TILE_MAP_0_ADDR + (x / TILE_LENGTH) + TILE_MAP_LENGTH * (y / TILE_LENGTH)];
 }
 
-int PPU::getBGTilePixel(uint8_t tileId, int tilePixelX, int tilePixelY)
+int PPU::getBGTilePixel(uint8_t tileId, int tilePixelX, int tilePixelY, bool xFlip, bool yFlip)
 {
     // TODO ADDRESSING MODES
     int tileOffset = tileId * TILE_BYTES;
+    // Apply flip
+    if (xFlip)
+    {
+        tilePixelX = 7 - tilePixelX;
+    }
+    if (yFlip)
+    {
+        tilePixelY = 7 - tilePixelY;
+    }
     // Each tile occupies 16 bytes, where each line is represented by 2 bytes.
     int lineOffset = tilePixelY * 2;
     // The first byte specifies the LSB of the color ID of each pixel, and the second byte specifies the MSB.
@@ -142,8 +151,9 @@ LCD::Color PPU::getScreenPixel(int pixelX, int pixelY)
         uint8_t tileId = oam[i + 2]; // Byte 2: tile index
         int tilePixelX = (pixelX - x) % TILE_LENGTH;
         int tilePixelY = (pixelY - y) % TILE_LENGTH;
-        int objColorId = getBGTilePixel(tileId, tilePixelX, tilePixelY);
         uint8_t flags = oam[i + 3]; // Byte 3: attributes/flags
+        int objColorId = getBGTilePixel(tileId, tilePixelX, tilePixelY,
+            (flags & OBJ_FLAG_X_FLIP) ? true : false, (flags & OBJ_FLAG_Y_FLIP) ? true : false);
         bool bgHasPriority = (flags & OBJ_FLAG_PRIORITY) && bgColorId > 0;
         if (objColorId != 0 && !bgHasPriority)
         {
