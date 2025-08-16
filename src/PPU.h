@@ -32,6 +32,7 @@ private:
     uint8_t getBGTileAtScreenPixel(int x, int y);
     int getBGTilePixel(uint8_t tileId, int tilePixelX, int tilePixelY);
     int getBGPixelOnScreen(int x, int y);
+    LCD::Color getPaletteColor(uint8_t palette, int colorId);
     LCD::Color getScreenPixel(int x, int y);
 
     static constexpr int MODE_2_DOTS = 80;
@@ -50,4 +51,7 @@ private:
 
     static constexpr int SPRITE_BYTES = 4;
     static constexpr int MAX_SPRITES_PER_LINE = 10;
+
+    static constexpr uint8_t OBJ_FLAG_PRIORITY = (1 << 7);
+    static constexpr uint8_t OBJ_FLAG_DMG_PAL = (1 << 4);
 };

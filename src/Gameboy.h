@@ -62,6 +62,9 @@ private:
     static constexpr uint16_t SCX_ADDR = 0xFF43;
     static constexpr uint16_t LY_ADDR = 0xFF44;
     static constexpr uint16_t DMA_ADDR = 0xFF46;
+    static constexpr uint16_t BGP_ADDR = 0xFF47;
+    static constexpr uint16_t OBP0_ADDR = 0xFF48;
+    static constexpr uint16_t OBP1_ADDR = 0xFF49;
     static constexpr uint16_t HRAM_ADDR = 0xFF80;
     static constexpr uint16_t IE_ADDR = 0xFFFF;
 

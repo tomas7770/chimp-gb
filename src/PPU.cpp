@@ -95,12 +95,28 @@ int PPU::getBGPixelOnScreen(int x, int y)
     return getBGTilePixel(tileId, tilePixelX, tilePixelY);
 }
 
+LCD::Color PPU::getPaletteColor(uint8_t palette, int colorId)
+{
+    switch (colorId)
+    {
+    default:
+    case 0:
+        return static_cast<LCD::Color>(palette & 0b11);
+    case 1:
+        return static_cast<LCD::Color>((palette >> 2) & 0b11);
+    case 2:
+        return static_cast<LCD::Color>((palette >> 4) & 0b11);
+    case 3:
+        return static_cast<LCD::Color>((palette >> 6) & 0b11);
+    }
+}
+
 LCD::Color PPU::getScreenPixel(int pixelX, int pixelY)
 {
     // TODO WIP
-    // TODO PALETTES
     int bgColorId = getBGPixelOnScreen(pixelX, pixelY);
     int colorId = bgColorId;
+    uint8_t palette = mLCD->BGP;
     // The smaller the X coordinate, the higher the object priority.
     // 256 > any unsigned byte
     int lowestX = 256;
@@ -128,11 +144,19 @@ LCD::Color PPU::getScreenPixel(int pixelX, int pixelY)
         int tilePixelY = (pixelY - y) % TILE_LENGTH;
         int objColorId = getBGTilePixel(tileId, tilePixelX, tilePixelY);
         uint8_t flags = oam[i + 3]; // Byte 3: attributes/flags
-        bool bgHasPriority = (flags & 0b10000000) && bgColorId > 0;
+        bool bgHasPriority = (flags & OBJ_FLAG_PRIORITY) && bgColorId > 0;
         if (objColorId != 0 && !bgHasPriority)
         {
             colorId = objColorId;
+            if (flags & OBJ_FLAG_DMG_PAL)
+            {
+                palette = mLCD->OBP1;
+            }
+            else
+            {
+                palette = mLCD->OBP0;
+            }
         }
     }
-    return static_cast<LCD::Color>(colorId);
+    return getPaletteColor(palette, colorId);
 }
