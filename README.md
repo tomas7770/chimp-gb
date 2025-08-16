@@ -93,3 +93,5 @@ This is a non-exhaustive list of references used in the development of this emul
 - [Blargg's Gameboy hardware test ROMs](https://github.com/retrio/gb-test-roms)
 
 - [Gameboy Doctor](https://github.com/robert/gameboy-doctor)
+
+- [dmg-acid2](https://github.com/mattcurrie/dmg-acid2)
