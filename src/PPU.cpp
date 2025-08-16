@@ -143,9 +143,15 @@ LCD::Color PPU::getPaletteColor(uint8_t palette, int colorId)
 LCD::Color PPU::getScreenPixel(int pixelX, int pixelY)
 {
     // TODO WIP
-    int bgColorId = getBGPixelOnScreen(pixelX, pixelY);
-    int colorId = bgColorId;
-    uint8_t palette = mLCD->BGP;
+    int colorId = 0;
+    uint8_t palette = 0;
+    int bgColorId = 0;
+    if (mLCD->LCDC & LCD::LCDC_FLAG_BG_WINDOW_ENABLE)
+    {
+        bgColorId = getBGPixelOnScreen(pixelX, pixelY);
+        colorId = bgColorId;
+        palette = mLCD->BGP;
+    }
     // The smaller the X coordinate, the higher the object priority.
     // 256 > any unsigned byte
     int lowestX = 256;

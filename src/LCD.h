@@ -28,6 +28,8 @@ struct LCD
     uint8_t OBP0;
     uint8_t OBP1;
 
+    static constexpr uint8_t LCDC_FLAG_BG_WINDOW_ENABLE = (1 << 0);
+
     static constexpr uint8_t STAT_LYC_INT_BITMASK = (1 << 6);
     static constexpr uint8_t STAT_LYC_LY_BITMASK = (1 << 2);
     static constexpr uint8_t STAT_MODE_BITMASK = (1 << 1) | (1 << 0);
