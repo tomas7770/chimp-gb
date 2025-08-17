@@ -30,6 +30,7 @@ struct LCD
 
     static constexpr uint8_t LCDC_FLAG_BG_WINDOW_TILE_DATA = (1 << 4);
     static constexpr uint8_t LCDC_FLAG_BG_TILE_MAP = (1 << 3);
+    static constexpr uint8_t LCDC_FLAG_OBJ_SIZE = (1 << 2);
     static constexpr uint8_t LCDC_FLAG_OBJ_ENABLE = (1 << 1);
     static constexpr uint8_t LCDC_FLAG_BG_WINDOW_ENABLE = (1 << 0);
 

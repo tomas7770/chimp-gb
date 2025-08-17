@@ -41,8 +41,7 @@ void PPU::doDot()
             for (int i = 0; i < oamSize; i += SPRITE_BYTES)
             {
                 int y = oam[i] - 16; // Byte 0: y+16 (value=0 means y=-16)
-                // TODO implement support for 16 pixel tall sprites
-                if (mLCD->LY < y || mLCD->LY >= y + 8)
+                if (mLCD->LY < y || mLCD->LY >= y + ((mLCD->LCDC & LCD::LCDC_FLAG_OBJ_SIZE) ? 16 : 8))
                 {
                     continue;
                 }
@@ -191,13 +190,28 @@ LCD::Color PPU::getScreenPixel(int pixelX, int pixelY)
             }
             lowestX = oam[i + 1];
             int y = oam[i] - 16; // Byte 0: y+16 (value=0 means y=-16)
-            // TODO implement support for 16 pixel tall sprites (2 tiles)
+
+            uint8_t flags = oam[i + 3]; // Byte 3: attributes/flags
+            bool yFlip = (flags & OBJ_FLAG_Y_FLIP) ? true : false;
             uint8_t tileId = oam[i + 2]; // Byte 2: tile index
+            if (mLCD->LCDC & LCD::LCDC_FLAG_OBJ_SIZE)
+            {
+                if (yFlip)
+                {
+                    tileId |= 1;
+                    tileId -= ((pixelY - y) >= 8 ? 1 : 0);
+                }
+                else
+                {
+                    tileId &= ~1;
+                    tileId += ((pixelY - y) >= 8 ? 1 : 0);
+                }
+            }
+
             int tilePixelX = (pixelX - x) % TILE_LENGTH;
             int tilePixelY = (pixelY - y) % TILE_LENGTH;
-            uint8_t flags = oam[i + 3]; // Byte 3: attributes/flags
             int objColorId = getBGTilePixel(tileId, tilePixelX, tilePixelY, true,
-                                            (flags & OBJ_FLAG_X_FLIP) ? true : false, (flags & OBJ_FLAG_Y_FLIP) ? true : false);
+                                            (flags & OBJ_FLAG_X_FLIP) ? true : false, yFlip);
             bool bgHasPriority = (flags & OBJ_FLAG_PRIORITY) && bgColorId > 0;
             if (objColorId != 0 && !bgHasPriority)
             {
