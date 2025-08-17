@@ -26,15 +26,17 @@ private:
 
     int mMode = 2;
     int mCurrentDot = 0; // current dot in current line, not total
+    bool mIncrementedWindowLine = false;
 
     std::vector<int> spritesInScanline; // list of sprites to draw, stored as an offset from OAM start
 
     void setMode(int mode);
 
-    uint8_t getBGTileAtScreenPixel(int x, int y);
+    uint8_t getBGTileAtScreenPixel(int x, int y, bool isWindow);
     int getBGTilePixel(uint8_t tileId, int tilePixelX, int tilePixelY, bool drawingObj,
         bool xFlip = false, bool yFlip = false);
     int getBGPixelOnScreen(int x, int y);
+    int getWindowPixel(int x, int y);
     LCD::Color getPaletteColor(uint8_t palette, int colorId);
     LCD::Color getScreenPixel(int x, int y);
 

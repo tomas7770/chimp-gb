@@ -130,6 +130,14 @@ uint8_t Gameboy::readByte(uint16_t address)
     {
         return mLCD.OBP1;
     }
+    else if (address == WY_ADDR)
+    {
+        return mLCD.WY;
+    }
+    else if (address == WX_ADDR)
+    {
+        return mLCD.WX;
+    }
     else if (address >= HRAM_ADDR && address < IE_ADDR)
     {
         return hram[address - HRAM_ADDR];
@@ -236,6 +244,14 @@ void Gameboy::writeByte(uint16_t address, uint8_t value)
     else if (address == OBP1_ADDR)
     {
         mLCD.OBP1 = value;
+    }
+    else if (address == WY_ADDR)
+    {
+        mLCD.WY = value;
+    }
+    else if (address == WX_ADDR)
+    {
+        mLCD.WX = value;
     }
     else if (address >= HRAM_ADDR && address < IE_ADDR)
     {

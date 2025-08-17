@@ -30,12 +30,14 @@ void PPU::doDot()
         mLCD->LY %= LCD::SCREEN_H + VBLANK_LINES;
         if (mLCD->LY == LCD::SCREEN_H)
         {
+            mLCD->windowLineCounter = 0;
             setMode(1);
             mGameboy->requestInterrupt(CPU::InterruptSource::VBlank);
         }
         else if (mLCD->LY < LCD::SCREEN_H)
         {
             setMode(2);
+            mIncrementedWindowLine = false;
             // OAM scan
             spritesInScanline.clear();
             for (int i = 0; i < oamSize; i += SPRITE_BYTES)
@@ -86,10 +88,10 @@ void PPU::setMode(int mode)
     mLCD->STAT |= mode;
 }
 
-uint8_t PPU::getBGTileAtScreenPixel(int x, int y)
+uint8_t PPU::getBGTileAtScreenPixel(int x, int y, bool isWindow)
 {
     uint16_t tileMapAddr;
-    if (mLCD->LCDC & LCD::LCDC_FLAG_BG_TILE_MAP)
+    if (mLCD->LCDC & (isWindow ? LCD::LCDC_FLAG_WINDOW_TILE_MAP : LCD::LCDC_FLAG_BG_TILE_MAP))
     {
         tileMapAddr = TILE_MAP_1_ADDR;
     }
@@ -133,7 +135,15 @@ int PPU::getBGPixelOnScreen(int x, int y)
 {
     x = (x + mLCD->SCX) % 256;
     y = (y + mLCD->SCY) % 256;
-    uint8_t tileId = getBGTileAtScreenPixel(x, y);
+    uint8_t tileId = getBGTileAtScreenPixel(x, y, false);
+    int tilePixelX = x % TILE_LENGTH;
+    int tilePixelY = y % TILE_LENGTH;
+    return getBGTilePixel(tileId, tilePixelX, tilePixelY, false);
+}
+
+int PPU::getWindowPixel(int x, int y)
+{
+    uint8_t tileId = getBGTileAtScreenPixel(x, y, true);
     int tilePixelX = x % TILE_LENGTH;
     int tilePixelY = y % TILE_LENGTH;
     return getBGTilePixel(tileId, tilePixelX, tilePixelY, false);
@@ -163,7 +173,19 @@ LCD::Color PPU::getScreenPixel(int pixelX, int pixelY)
     int bgColorId = 0;
     if (mLCD->LCDC & LCD::LCDC_FLAG_BG_WINDOW_ENABLE)
     {
-        bgColorId = getBGPixelOnScreen(pixelX, pixelY);
+        if ((mLCD->LCDC & LCD::LCDC_FLAG_WINDOW_ENABLE) && pixelX >= mLCD->WX - 7 && pixelY >= mLCD->WY)
+        {
+            if (!mIncrementedWindowLine)
+            {
+                mLCD->windowLineCounter++;
+                mIncrementedWindowLine = true;
+            }
+            bgColorId = getWindowPixel(pixelX - mLCD->WX + 7, mLCD->windowLineCounter - 1);
+        }
+        else
+        {
+            bgColorId = getBGPixelOnScreen(pixelX, pixelY);
+        }
         colorId = bgColorId;
         palette = mLCD->BGP;
     }

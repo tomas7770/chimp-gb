@@ -15,6 +15,8 @@ ChimpGB is in early development stages.
 
 - Passes 100% of [Blargg's](https://github.com/retrio/gb-test-roms/tree/master) cpu\_instrs, instr\_timing, and mem\_timing tests
 
+- Passes [dmg-acid2](https://github.com/mattcurrie/dmg-acid2) PPU test
+
 - Tested on Ubuntu 24.04
 
 - Tested, working games (**note:** graphics may be missing due to incomplete PPU):

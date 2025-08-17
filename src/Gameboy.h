@@ -67,6 +67,8 @@ private:
     static constexpr uint16_t BGP_ADDR = 0xFF47;
     static constexpr uint16_t OBP0_ADDR = 0xFF48;
     static constexpr uint16_t OBP1_ADDR = 0xFF49;
+    static constexpr uint16_t WY_ADDR = 0xFF4A;
+    static constexpr uint16_t WX_ADDR = 0xFF4B;
     static constexpr uint16_t HRAM_ADDR = 0xFF80;
     static constexpr uint16_t IE_ADDR = 0xFFFF;
 
