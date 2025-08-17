@@ -7,7 +7,7 @@ uint8_t Gameboy::readByte(uint16_t address)
 {
     if (address < VRAM_ADDR)
     {
-        return mCart.getData().at(address);
+        return mCart.readByte(address);
     }
     else if (address >= VRAM_ADDR && address < SRAM_ADDR)
     {
@@ -144,7 +144,11 @@ uint8_t Gameboy::readByte(uint16_t address)
 
 void Gameboy::writeByte(uint16_t address, uint8_t value)
 {
-    if (address >= VRAM_ADDR && address < SRAM_ADDR)
+    if (address < VRAM_ADDR)
+    {
+        mCart.writeByte(address, value);
+    }
+    else if (address >= VRAM_ADDR && address < SRAM_ADDR)
     {
         // if (mPPU.getMode() != 3)
         // {

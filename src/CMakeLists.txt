@@ -14,6 +14,8 @@ set(SOURCE_FILES
     CPUDebug.cpp
     Timer.cpp
     PPU.cpp
+    MBC/NoMBC.cpp
+    MBC/MBC1.cpp
 )
 
 add_executable(ChimpGB ${SOURCE_FILES})

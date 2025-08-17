@@ -1,0 +1,18 @@
+#pragma once
+
+#include "MBC.h"
+
+class MBC1 : public MBC
+{
+    // TODO handle 1MB+ ROMs differently
+    // TODO ignore upper bits in bank register depending on ROM size
+public:
+    uint8_t readByte(std::vector<uint8_t> &romData, uint16_t address) override;
+    void writeByte(std::vector<uint8_t> &romData, uint16_t address, uint8_t value) override;
+
+private:
+    int mROMBank = 1;
+
+    static constexpr uint16_t ROM_BANK_SELECT_START = 0x2000;
+    static constexpr uint16_t ROM_BANK_SELECT_END = 0x3FFF;
+};

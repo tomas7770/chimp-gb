@@ -13,11 +13,19 @@ ChimpGB is in early development stages.
 
 - Passes 100% of the [Gameboy CPU (Sharp LR35902) Tests](https://github.com/SingleStepTests/GameboyCPUTests)
 
-- Passes 100% of [Blargg's cpu\_instrs individual tests](https://github.com/retrio/gb-test-roms/tree/master/cpu_instrs)
+- Passes 100% of [Blargg's](https://github.com/retrio/gb-test-roms/tree/master) cpu\_instrs, instr\_timing, and mem\_timing tests
 
 - Tested on Ubuntu 24.04
 
-- Tetris is playable (ROM MD5: 982ed5d2b12a0377eb14bcdc4123744e)
+- Tested, working games (**note:** graphics may be missing due to incomplete PPU):
+
+    - Tetris
+
+    - Dr. Mario
+
+    - Super Mario Land
+
+    - Kirby's Dream Land
 
 Detailed status:
 
@@ -27,7 +35,7 @@ Detailed status:
 
 - **APU:** not implemented
 
-- **MBCs:** not implemented
+- **Implemented MBCs:** MBC1 with ROM <= 512 KiB
 
 - **Misc:** Timer and Divider implemented, Joypad input partially implemented
 
