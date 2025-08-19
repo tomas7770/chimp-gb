@@ -10,10 +10,10 @@ set(SOURCE_FILES
     Cartridge.cpp
     RomHeader.cpp
     CPU.cpp
-    Clock.cpp
     CPUDebug.cpp
     Timer.cpp
     PPU.cpp
+    APU.cpp
     MBC/NoMBC.cpp
     MBC/MBC1.cpp
 )

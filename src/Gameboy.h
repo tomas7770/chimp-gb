@@ -1,18 +1,17 @@
 #pragma once
 
-#include "Clock.h"
 #include "Cartridge.h"
 #include "CPU.h"
 #include "Timer.h"
 #include "LCD.h"
 #include "PPU.h"
+#include "APU.h"
 #include "Joypad.h"
 
 class Gameboy
 {
 public:
-    Gameboy(const Cartridge &cart, bool debug) : mFrameClock(FRAME_PERIOD),
-                                                 mCart(std::move(cart)), mCPU(this, debug), mPPU(this, &(this->mLCD)) {}
+    Gameboy(const Cartridge &cart, bool debug) : mCart(std::move(cart)), mCPU(this, debug), mPPU(this, &(this->mLCD)) {}
 
     uint8_t readByte(uint16_t address);
     void writeByte(uint16_t address, uint8_t value);
@@ -27,21 +26,23 @@ public:
     void tickSystemCounter();
 
     const LCD::Color *getPixels() const;
+    float getLeftAudioSample() const;
+    float getRightAudioSample() const;
 
-    void tick(uint64_t deltaTime);
     void doTCycle();
-    uint64_t getFrameClockTimeLeft();
-    void setFastForward(bool enabled);
     void onKeyPress(int key);
     void onKeyRelease(int key);
 
+    static constexpr int CYCLES_PER_FRAME = 70224;
+    static constexpr int CLOCK_RATE = 4194304;
+
 private:
-    Clock mFrameClock;
     Cartridge mCart;
     CPU mCPU;
     Timer mTimer;
     LCD mLCD;
     PPU mPPU;
+    APU mAPU;
     Joypad mJoypad;
     uint16_t mSysCounter = 0xABCC;
 
@@ -57,6 +58,15 @@ private:
     static constexpr uint16_t TMA_ADDR = 0xFF06;
     static constexpr uint16_t TAC_ADDR = 0xFF07;
     static constexpr uint16_t IF_ADDR = 0xFF0F;
+    static constexpr uint16_t NR10_ADDR = 0xFF10;
+    static constexpr uint16_t NR11_ADDR = 0xFF11;
+    static constexpr uint16_t NR12_ADDR = 0xFF12;
+    static constexpr uint16_t NR13_ADDR = 0xFF13;
+    static constexpr uint16_t NR14_ADDR = 0xFF14;
+    static constexpr uint16_t NR21_ADDR = 0xFF16;
+    static constexpr uint16_t NR22_ADDR = 0xFF17;
+    static constexpr uint16_t NR23_ADDR = 0xFF18;
+    static constexpr uint16_t NR24_ADDR = 0xFF19;
     static constexpr uint16_t LCDC_ADDR = 0xFF40;
     static constexpr uint16_t STAT_ADDR = 0xFF41;
     static constexpr uint16_t SCY_ADDR = 0xFF42;
@@ -71,7 +81,4 @@ private:
     static constexpr uint16_t WX_ADDR = 0xFF4B;
     static constexpr uint16_t HRAM_ADDR = 0xFF80;
     static constexpr uint16_t IE_ADDR = 0xFFFF;
-
-    static constexpr uint64_t FRAME_PERIOD = 1e9 / 60; // nanoseconds
-    static constexpr int CYCLES_PER_FRAME = 70224;
 };

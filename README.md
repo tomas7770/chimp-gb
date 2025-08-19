@@ -35,7 +35,7 @@ Detailed status:
 
 - **PPU/LCD:** partially implemented
 
-- **APU:** not implemented
+- **APU:** partially implemented
 
 - **Implemented MBCs:** MBC1 with ROM <= 512 KiB
 
@@ -97,6 +97,8 @@ This is a non-exhaustive list of references used in the development of this emul
 - [Game Boy: Complete Technical Reference](https://gekkio.fi/files/gb-docs/gbctr.pdf)
 
 - [RGBDS CPU opcode reference](https://rgbds.gbdev.io/docs/v0.9.3/gbz80.7)
+
+- [Gameboy sound hardware](https://gbdev.gg8.se/wiki/articles/Gameboy_sound_hardware)
 
 - [Gameboy CPU (Sharp LR35902) Tests](https://github.com/SingleStepTests/GameboyCPUTests)
 

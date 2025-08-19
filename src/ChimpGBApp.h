@@ -23,12 +23,18 @@ private:
     };
     SDL_Scancode FAST_FORWARD_KEY = SDL_SCANCODE_TAB;
     //
+    constexpr static int AUDIO_SAMPLE_RATE = 44100;
+    constexpr static uint16_t AUDIO_INTERNAL_BUFFER_SIZE = 1024;
+    constexpr static int AUDIO_BUFFER_SIZE = 1024;
 
     SDL_Window *mWindowSDL = NULL;
     SDL_Renderer *mRendererSDL = NULL;
     SDL_Texture *mTextureSDL = NULL;
     SDL_Event mEventSDL;
+    SDL_AudioDeviceID mAudioDevSDL;
     uint32_t mTexturePixels[LCD::SCREEN_W * LCD::SCREEN_H];
+
+    bool mFastForward = false;
 
     Gameboy *mGameboy = nullptr;
 

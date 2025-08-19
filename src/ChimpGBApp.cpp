@@ -5,7 +5,7 @@
 ChimpGBApp::ChimpGBApp(const Cartridge &cart, bool debug)
 {
     // Initialize SDL
-    if (SDL_Init(SDL_INIT_VIDEO) < 0)
+    if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO) < 0)
     {
         std::cout << "SDL could not initialize! SDL_Error: " << SDL_GetError() << std::endl;
         terminate(-1);
@@ -34,6 +34,20 @@ ChimpGBApp::ChimpGBApp(const Cartridge &cart, bool debug)
         std::cout << "Blit texture could not be created! SDL_Error: " << SDL_GetError() << std::endl;
         terminate(-1);
     }
+
+    SDL_AudioSpec desiredAudioSpec, obtainedAudioSpec;
+    desiredAudioSpec.freq = AUDIO_SAMPLE_RATE;
+    desiredAudioSpec.format = AUDIO_F32;
+    desiredAudioSpec.channels = 2;
+    desiredAudioSpec.samples = AUDIO_INTERNAL_BUFFER_SIZE;
+    desiredAudioSpec.callback = NULL;
+    mAudioDevSDL = SDL_OpenAudioDevice(NULL, 0, &desiredAudioSpec, &obtainedAudioSpec, 0);
+    if (mAudioDevSDL == 0)
+    {
+        std::cout << "Audio device could not be opened! SDL_Error: " << SDL_GetError() << std::endl;
+        terminate(-1);
+    }
+    SDL_PauseAudioDevice(mAudioDevSDL, 0);
 
     try
     {
@@ -106,7 +120,7 @@ void ChimpGBApp::mainLoop()
                 }
                 if (mEventSDL.key.keysym.scancode == FAST_FORWARD_KEY)
                 {
-                    mGameboy->setFastForward(true);
+                    mFastForward = true;
                 }
             }
             else if (mEventSDL.type == SDL_KEYUP)
@@ -121,23 +135,56 @@ void ChimpGBApp::mainLoop()
                 }
                 if (mEventSDL.key.keysym.scancode == FAST_FORWARD_KEY)
                 {
-                    mGameboy->setFastForward(false);
+                    mFastForward = false;
                 }
             }
         }
-        uint64_t deltaTime = SDL_GetTicks64() - frameTimestamp;
-        frameTimestamp = SDL_GetTicks64();
-        try
+        int i = 0, j = 0;
+        std::vector<float> audioSamples;
+        while (i < Gameboy::CYCLES_PER_FRAME)
         {
-            mGameboy->tick(1e6 * deltaTime);
+            try
+            {
+                mGameboy->doTCycle();
+            }
+            catch (std::runtime_error err)
+            {
+                SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, WINDOW_TITLE, err.what(), mWindowSDL);
+                terminate(-1);
+            }
+            if (j == 0)
+            {
+                auto leftSample = mGameboy->getLeftAudioSample();
+                auto rightSample = mGameboy->getRightAudioSample();
+
+                // Clip to ensure bugs don't cause loud audio
+                if (leftSample < -1.0F)
+                    leftSample = -1.0F;
+                else if (leftSample > 1.0F)
+                    leftSample = 1.0F;
+
+                if (rightSample < -1.0F)
+                    rightSample = -1.0F;
+                else if (rightSample > 1.0F)
+                    rightSample = 1.0F;
+
+                // TODO -1.0 to 1.0 is too loud so the range is decreased
+                audioSamples.push_back(leftSample);
+                audioSamples.push_back(rightSample);
+            }
+            i++;
+            j = (j + 1) % (Gameboy::CLOCK_RATE / AUDIO_SAMPLE_RATE);
         }
-        catch (std::runtime_error err)
+        if (mFastForward)
         {
-            SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, WINDOW_TITLE, err.what(), mWindowSDL);
-            terminate(-1);
+            SDL_ClearQueuedAudio(mAudioDevSDL);
         }
+        SDL_QueueAudio(mAudioDevSDL, audioSamples.data(), audioSamples.size() * sizeof(float));
         drawDisplay();
-        mainSleep(mGameboy->getFrameClockTimeLeft());
+        while (SDL_GetQueuedAudioSize(mAudioDevSDL) > AUDIO_BUFFER_SIZE * sizeof(float) * 2)
+        {
+            mainSleep(1e6);
+        }
     }
 
     terminate(0);
@@ -149,6 +196,8 @@ void ChimpGBApp::terminate(int error_code)
         SDL_DestroyWindow(mWindowSDL);
     if (mRendererSDL)
         SDL_DestroyRenderer(mRendererSDL);
+    if (mAudioDevSDL)
+        SDL_CloseAudioDevice(mAudioDevSDL);
     SDL_Quit();
     if (mGameboy != nullptr)
         delete mGameboy;

@@ -94,6 +94,42 @@ uint8_t Gameboy::readByte(uint16_t address)
     {
         return mCPU.IF;
     }
+    else if (address == NR10_ADDR)
+    {
+        return mAPU.NR10 | 0x80;
+    }
+    else if (address == NR11_ADDR)
+    {
+        return mAPU.NRx1[0] | 0x3F;
+    }
+    else if (address == NR12_ADDR)
+    {
+        return mAPU.NRx2[0];
+    }
+    else if (address == NR13_ADDR)
+    {
+        return 0xFF;
+    }
+    else if (address == NR14_ADDR)
+    {
+        return mAPU.NRx4[0] | 0xBF;
+    }
+    else if (address == NR21_ADDR)
+    {
+        return mAPU.NRx1[1] | 0x3F;
+    }
+    else if (address == NR22_ADDR)
+    {
+        return mAPU.NRx2[1];
+    }
+    else if (address == NR23_ADDR)
+    {
+        return 0xFF;
+    }
+    else if (address == NR24_ADDR)
+    {
+        return mAPU.NRx4[1] | 0xBF;
+    }
     else if (address == LCDC_ADDR)
     {
         return mLCD.LCDC;
@@ -208,6 +244,42 @@ void Gameboy::writeByte(uint16_t address, uint8_t value)
     {
         mCPU.IF = value;
     }
+    else if (address == NR10_ADDR)
+    {
+        mAPU.NR10 = value;
+    }
+    else if (address == NR11_ADDR)
+    {
+        mAPU.writeNRx1(1, value);
+    }
+    else if (address == NR12_ADDR)
+    {
+        mAPU.NRx2[0] = value;
+    }
+    else if (address == NR13_ADDR)
+    {
+        mAPU.NRx3[0] = value;
+    }
+    else if (address == NR14_ADDR)
+    {
+        mAPU.writeNRx4(1, value);
+    }
+    else if (address == NR21_ADDR)
+    {
+        mAPU.writeNRx1(2, value);
+    }
+    else if (address == NR22_ADDR)
+    {
+        mAPU.NRx2[1] = value;
+    }
+    else if (address == NR23_ADDR)
+    {
+        mAPU.NRx3[1] = value;
+    }
+    else if (address == NR24_ADDR)
+    {
+        mAPU.writeNRx4(2, value);
+    }
     else if (address == LCDC_ADDR)
     {
         mLCD.LCDC = value;
@@ -282,39 +354,21 @@ const LCD::Color* Gameboy::getPixels() const
     return mLCD.pixels;
 }
 
-void Gameboy::tick(uint64_t deltaTime)
+float Gameboy::getLeftAudioSample() const
 {
-    bool doTick = mFrameClock.tick(deltaTime);
-    if (doTick)
-    {
-        for (int i = 0; i < CYCLES_PER_FRAME; i++)
-        {
-            doTCycle();
-        }
-    }
+    return mAPU.getLeftAudioSample();
+}
+
+float Gameboy::getRightAudioSample() const
+{
+    return mAPU.getRightAudioSample();
 }
 
 void Gameboy::doTCycle()
 {
     mCPU.doTCycle();
     mPPU.doDot();
-}
-
-uint64_t Gameboy::getFrameClockTimeLeft()
-{
-    return mFrameClock.getTimeLeft();
-}
-
-void Gameboy::setFastForward(bool enabled)
-{
-    if (enabled)
-    {
-        mFrameClock.setPeriod(0);
-    }
-    else
-    {
-        mFrameClock.setPeriod(FRAME_PERIOD);
-    }
+    mAPU.doTCycle();
 }
 
 void Gameboy::onKeyPress(int key)
