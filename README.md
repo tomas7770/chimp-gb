@@ -19,7 +19,7 @@ ChimpGB is in early development stages.
 
 - Tested on Ubuntu 24.04
 
-- Tested, working games (**note:** graphics may be missing due to incomplete PPU):
+- Tested, working games:
 
     - Tetris
 
@@ -33,9 +33,9 @@ Detailed status:
 
 - **CPU:** fully implemented, except for **STOP** opcode
 
-- **PPU/LCD:** partially implemented
+- **PPU/LCD:** mostly implemented
 
-- **APU:** partially implemented
+- **APU:** mostly implemented
 
 - **Implemented MBCs:** MBC1 with ROM <= 512 KiB
 
