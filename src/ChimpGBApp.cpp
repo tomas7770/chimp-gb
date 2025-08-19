@@ -168,9 +168,9 @@ void ChimpGBApp::mainLoop()
                 else if (rightSample > 1.0F)
                     rightSample = 1.0F;
 
-                // TODO -1.0 to 1.0 is too loud so the range is decreased
-                audioSamples.push_back(leftSample);
-                audioSamples.push_back(rightSample);
+                // -1.0 to 1.0 is too loud so the range is decreased
+                audioSamples.push_back(leftSample * 0.5F);
+                audioSamples.push_back(rightSample * 0.5F);
             }
             i++;
             j = (j + 1) % (Gameboy::CLOCK_RATE / AUDIO_SAMPLE_RATE);
