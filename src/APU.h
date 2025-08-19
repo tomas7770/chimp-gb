@@ -16,11 +16,15 @@ public:
     void writeNRx4(int channel, uint8_t value);
 
     uint8_t NR10 = 0x80;
+    uint8_t NR30 = 0x7F;
 
     uint8_t NRx1[4];
-    uint8_t NRx2[4] = {0xF3, 0x00};
-    uint8_t NRx3[4] = {0xFF, 0xFF};
+    uint8_t NRx2[4] = {0xF3, 0x00, 0x9F};
+    uint8_t NRx3[4] = {0xFF, 0xFF, 0xFF};
     uint8_t NRx4[4];
+
+    static constexpr int waveRamSize = 16;
+    uint8_t waveRam[waveRamSize];
 
 private:
     float getAudioSample() const;
@@ -32,17 +36,21 @@ private:
     int mFrameSequencerStep = 0;
     int mFrameSequencerTimer = FRAME_SEQUENCER_PERIOD;
 
-    // TODO master controls
+    // TODO master controls and DAC on/off
+
+    int mChannelLengthCounter[3];
+    bool mChannelEnabled[3] = {false, false, false};
+    int mChannelFrequencyTimer[3];
 
     int mSquareWaveCounter[2] = {0, 0};
-    int mSquareFrequencyTimer[2];
-    int mSquareLengthCounter[2];
     int mSquareVolume[2];
     int mSquareEnvDir[2];
     int mSquareEnvPace[2];
     int mSquareEnvCounter[2];
-    bool mSquareEnabled[2] = {false, false};
     // TODO square 1 frequency sweep
+
+    int mWaveSampleBuffer = 0;
+    int mWavePositionCounter;
 
     static constexpr int CLOCK_RATE = 4194304;
     static constexpr int FRAME_SEQUENCER_PERIOD = CLOCK_RATE / 512;
@@ -56,7 +64,8 @@ private:
     static constexpr uint8_t ENV_PACE_BITMASK = 0b111;
     static constexpr uint8_t PERIOD_HIGH_BITMASK = 0b111;
     static constexpr uint8_t LENGTH_ENABLE_BITMASK = (1 << 6);
-    static constexpr uint8_t TRIGGER_BIT = 7;
+    static constexpr uint8_t TRIGGER_BITMASK = (1 << 7);
+    static constexpr uint8_t WAVE_CHANNEL_VOLUME_BIT = 5;
 
     static constexpr int SQUARE_DUTY_WAVES[4][8] = {
         {0, 0, 0, 0, 0, 0, 0, 1},

@@ -67,6 +67,13 @@ private:
     static constexpr uint16_t NR22_ADDR = 0xFF17;
     static constexpr uint16_t NR23_ADDR = 0xFF18;
     static constexpr uint16_t NR24_ADDR = 0xFF19;
+    static constexpr uint16_t NR30_ADDR = 0xFF1A;
+    static constexpr uint16_t NR31_ADDR = 0xFF1B;
+    static constexpr uint16_t NR32_ADDR = 0xFF1C;
+    static constexpr uint16_t NR33_ADDR = 0xFF1D;
+    static constexpr uint16_t NR34_ADDR = 0xFF1E;
+    static constexpr uint16_t WAVE_RAM_START_ADDR = 0xFF30;
+    static constexpr uint16_t WAVE_RAM_END_ADDR = 0xFF3F;
     static constexpr uint16_t LCDC_ADDR = 0xFF40;
     static constexpr uint16_t STAT_ADDR = 0xFF41;
     static constexpr uint16_t SCY_ADDR = 0xFF42;

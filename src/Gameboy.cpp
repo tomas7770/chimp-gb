@@ -130,6 +130,30 @@ uint8_t Gameboy::readByte(uint16_t address)
     {
         return mAPU.NRx4[1] | 0xBF;
     }
+    else if (address == NR30_ADDR)
+    {
+        return mAPU.NR30 | 0x7F;
+    }
+    else if (address == NR31_ADDR)
+    {
+        return 0xFF;
+    }
+    else if (address == NR32_ADDR)
+    {
+        return mAPU.NRx2[2] | 0x9F;
+    }
+    else if (address == NR33_ADDR)
+    {
+        return 0xFF;
+    }
+    else if (address == NR34_ADDR)
+    {
+        return mAPU.NRx4[2] | 0xBF;
+    }
+    else if (address >= WAVE_RAM_START_ADDR && address <= WAVE_RAM_END_ADDR)
+    {
+        return mAPU.waveRam[address - WAVE_RAM_START_ADDR];
+    }
     else if (address == LCDC_ADDR)
     {
         return mLCD.LCDC;
@@ -279,6 +303,30 @@ void Gameboy::writeByte(uint16_t address, uint8_t value)
     else if (address == NR24_ADDR)
     {
         mAPU.writeNRx4(1, value);
+    }
+    else if (address == NR30_ADDR)
+    {
+        mAPU.NR30 = value;
+    }
+    else if (address == NR31_ADDR)
+    {
+        mAPU.writeNRx1(2, value);
+    }
+    else if (address == NR32_ADDR)
+    {
+        mAPU.NRx2[2] = value;
+    }
+    else if (address == NR33_ADDR)
+    {
+        mAPU.NRx3[2] = value;
+    }
+    else if (address == NR34_ADDR)
+    {
+        mAPU.writeNRx4(2, value);
+    }
+    else if (address >= WAVE_RAM_START_ADDR && address <= WAVE_RAM_END_ADDR)
+    {
+        mAPU.waveRam[address - WAVE_RAM_START_ADDR] = value;
     }
     else if (address == LCDC_ADDR)
     {
