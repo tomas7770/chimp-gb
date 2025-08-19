@@ -33,4 +33,10 @@ void MBC3::writeByte(std::vector<uint8_t> &romData, uint16_t address, uint8_t va
     {
         mRAMBank = value % 4;
     }
+    else if (address >= SRAM_ADDR)
+    {
+        int bigAddress = address;
+        bigAddress += RAM_BANK_SIZE * mRAMBank;
+        mRAM[bigAddress - SRAM_ADDR] = value;
+    }
 }
