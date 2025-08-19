@@ -2,11 +2,11 @@
 
 APU::APU()
 {
-    writeNRx1(1, 0xBF);
-    writeNRx4(1, 0xBF);
+    writeNRx1(0, 0xBF);
+    writeNRx4(0, 0xBF);
 
-    writeNRx1(2, 0x3F);
-    writeNRx4(2, 0xBF);
+    writeNRx1(1, 0x3F);
+    writeNRx4(1, 0xBF);
 }
 
 void APU::doTCycle()
@@ -50,7 +50,7 @@ void APU::doTCycle()
         mSquareFrequencyTimer[i]--;
         if (mSquareFrequencyTimer[i] == 0)
         {
-            reloadFrequencyTimer(i + 1);
+            reloadFrequencyTimer(i);
             mSquareWaveCounter[i] = (mSquareWaveCounter[i] + 1) % 8;
         }
     }
@@ -92,14 +92,14 @@ float APU::getRightAudioSample() const
 
 void APU::writeNRx1(int channel, uint8_t value)
 {
-    NRx1[channel - 1] = value;
-    mSquareLengthCounter[channel - 1] = 64 - (value & INITIAL_LENGTH_TIMER_BITMASK);
+    NRx1[channel] = value;
+    mSquareLengthCounter[channel] = 64 - (value & INITIAL_LENGTH_TIMER_BITMASK);
 }
 
 void APU::writeNRx4(int channel, uint8_t value)
 {
-    NRx4[channel - 1] = value;
-    if (NRx4[channel - 1] >> TRIGGER_BIT)
+    NRx4[channel] = value;
+    if (NRx4[channel] >> TRIGGER_BIT)
     {
         triggerChannel(channel);
     }
@@ -166,10 +166,10 @@ void APU::reloadFrequencyTimer(int channel)
 
     switch (channel)
     {
+    case 0:
     case 1:
-    case 2:
-        freq = ((NRx4[channel - 1] & PERIOD_HIGH_BITMASK) << 8) | NRx3[channel - 1];
-        mSquareFrequencyTimer[channel - 1] = (2048 - freq) * 4;
+        freq = ((NRx4[channel] & PERIOD_HIGH_BITMASK) << 8) | NRx3[channel];
+        mSquareFrequencyTimer[channel] = (2048 - freq) * 4;
         break;
 
     default:
@@ -179,14 +179,14 @@ void APU::reloadFrequencyTimer(int channel)
 
 void APU::triggerChannel(int channel)
 {
-    mSquareEnabled[channel - 1] = true;
-    if (mSquareLengthCounter[channel - 1] == 0)
+    mSquareEnabled[channel] = true;
+    if (mSquareLengthCounter[channel] == 0)
     {
-        mSquareLengthCounter[channel - 1] = 64;
+        mSquareLengthCounter[channel] = 64;
     }
     reloadFrequencyTimer(channel);
-    mSquareVolume[channel - 1] = NRx2[channel - 1] >> INITIAL_VOLUME_BIT;
-    mSquareEnvDir[channel - 1] = (NRx2[channel - 1] & ENV_DIR_BITMASK) ? 1 : 0;
-    mSquareEnvPace[channel - 1] = NRx2[channel - 1] & ENV_PACE_BITMASK;
-    mSquareEnvCounter[channel - 1] = mSquareEnvPace[channel - 1];
+    mSquareVolume[channel] = NRx2[channel] >> INITIAL_VOLUME_BIT;
+    mSquareEnvDir[channel] = (NRx2[channel] & ENV_DIR_BITMASK) ? 1 : 0;
+    mSquareEnvPace[channel] = NRx2[channel] & ENV_PACE_BITMASK;
+    mSquareEnvCounter[channel] = mSquareEnvPace[channel];
 }
