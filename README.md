@@ -37,7 +37,13 @@ Detailed status:
 
 - **APU:** mostly implemented
 
-- **Implemented MBCs:** MBC1 with ROM <= 512 KiB
+- **Implemented MBCs:**
+
+    - MBC1 with ROM <= 512 KiB
+
+    - MBC3 with RAM and battery
+
+        - Data saving is not implemented yet. **Saved data WILL BE LOST!**
 
 - **Misc:** Timer and Divider implemented, Joypad input partially implemented
 

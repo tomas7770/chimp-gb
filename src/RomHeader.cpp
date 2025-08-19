@@ -20,9 +20,18 @@ RomHeader::RomHeader(const std::vector<uint8_t> &romData)
         throw std::runtime_error("Provided ROM is not valid: Checksum mismatch");
     }
 
-    if (romData[0x0147] >= CART_TYPE_COUNT)
+    switch (romData[0x0147])
     {
+    case ROM_ONLY:
+    case MBC1:
+    case MBC3:
+    case MBC3_RAM:
+    case MBC3_RAM_BATTERY:
+        break;
+
+    default:
         throw std::runtime_error("Provided ROM is not yet supported");
+        break;
     }
 
     char titleChars[16];

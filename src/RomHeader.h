@@ -10,7 +10,9 @@ struct RomHeader
     {
         ROM_ONLY,
         MBC1,
-        CART_TYPE_COUNT
+        MBC3 = 0x11,
+        MBC3_RAM = 0x12,
+        MBC3_RAM_BATTERY = 0x13,
     };
 
     std::string title;

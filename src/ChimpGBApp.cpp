@@ -49,6 +49,11 @@ ChimpGBApp::ChimpGBApp(const Cartridge &cart, bool debug)
     }
     SDL_PauseAudioDevice(mAudioDevSDL, 0);
 
+    if (cart.hasBattery())
+    {
+        SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_WARNING, WINDOW_TITLE, "Data saving not implemented. Saved data WILL BE LOST!", mWindowSDL);
+    }
+
     try
     {
         mGameboy = new Gameboy(cart, debug);

@@ -21,6 +21,10 @@ uint8_t Gameboy::readByte(uint16_t address)
         // }
         return mPPU.vram[address - VRAM_ADDR];
     }
+    else if (address >= SRAM_ADDR && address < WRAM0_ADDR)
+    {
+        return mCart.readByte(address);
+    }
     else if (address >= WRAM0_ADDR && address < ECHO_ADDR)
     {
         return wram[address - WRAM0_ADDR];
@@ -239,6 +243,10 @@ void Gameboy::writeByte(uint16_t address, uint8_t value)
         //     mPPU.vram[address - VRAM_ADDR] = value;
         // }
         mPPU.vram[address - VRAM_ADDR] = value;
+    }
+    else if (address >= SRAM_ADDR && address < WRAM0_ADDR)
+    {
+        mCart.writeByte(address, value);
     }
     else if (address >= WRAM0_ADDR && address < ECHO_ADDR)
     {

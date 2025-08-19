@@ -17,6 +17,8 @@ public:
     uint8_t readByte(uint16_t address);
     void writeByte(uint16_t address, uint8_t value);
 
+    bool hasBattery() const;
+
 private:
     std::vector<uint8_t> mData;
     RomHeader mHeader;
