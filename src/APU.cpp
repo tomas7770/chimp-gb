@@ -69,11 +69,11 @@ void APU::doTCycle()
                 mWavePositionCounter = (mWavePositionCounter + 1) % (waveRamSize * 2);
                 if (mWavePositionCounter % 2)
                 {
-                    mWaveSampleBuffer = waveRam[mWavePositionCounter / 2] >> 4;
+                    mWaveSampleBuffer = waveRam[mWavePositionCounter / 2] & 0xF;
                 }
                 else
                 {
-                    mWaveSampleBuffer = waveRam[mWavePositionCounter / 2] & 0xF;
+                    mWaveSampleBuffer = waveRam[mWavePositionCounter / 2] >> 4;
                 }
                 break;
 
@@ -103,12 +103,17 @@ float convertVolume(int volume)
     return fVolume;
 }
 
-float convertToAnalog(int signal)
+float convertToAnalog(int signal, int volCode)
 {
-    // Map 0:15 to -1.0:1.0
-    float fSignal = signal; // 0.0:15.0
-    fSignal -= 7.5F;        // -7.5:7.5
-    fSignal /= 7.5F;        // -1.0:1.0
+    // Map 0:x to -1.0:1.0
+    if (volCode == 0)
+    {
+        return 0.0F;
+    }
+    float fSignal = signal;
+    float halfRange = APU::VOL_CODE_HALF_RANGES[volCode];
+    fSignal -= halfRange;
+    fSignal /= halfRange;
     return fSignal;
 }
 
@@ -126,7 +131,7 @@ float APU::getAudioSample() const
     if (mChannelEnabled[2])
     {
         int volCode = (NRx2[2] >> WAVE_CHANNEL_VOLUME_BIT) & 0b11;
-        sum += convertToAnalog(mWaveSampleBuffer >> ((volCode + 4) % 5));
+        sum += convertToAnalog(mWaveSampleBuffer >> ((volCode + 4) % 5), volCode);
     }
     if (mChannelEnabled[3])
     {

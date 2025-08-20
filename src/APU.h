@@ -26,6 +26,8 @@ public:
     static constexpr int waveRamSize = 16;
     uint8_t waveRam[waveRamSize];
 
+    static constexpr float VOL_CODE_HALF_RANGES[] = {0.0F, 7.5F, 3.5F, 1.5F};
+
 private:
     float getAudioSample() const;
     void decrementLengthCounters();
