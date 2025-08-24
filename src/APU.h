@@ -27,6 +27,7 @@ public:
     uint8_t NRx4[4];
 
     uint8_t NR50 = 0x77;
+    uint8_t NR51 = 0xF3;
 
     static constexpr int waveRamSize = 16;
     uint8_t waveRam[waveRamSize];
@@ -34,7 +35,7 @@ public:
     static constexpr float VOL_CODE_HALF_RANGES[] = {0.0F, 7.5F, 3.5F, 1.5F};
 
 private:
-    float getAudioSample() const;
+    float getAudioSample(bool left) const;
     void decrementLengthCounters();
     void decrementVolumeEnvelopes();
     void clockSweep();

@@ -134,46 +134,44 @@ float convertToAnalog(int signal, int volCode)
     return fSignal;
 }
 
-float APU::getAudioSample() const
+float APU::getAudioSample(bool left) const
 {
-    // TODO
     if (!mAPUEnabled)
     {
         return 0.0F;
     }
 
+    int leftChannelShift = left ? LEFT_VOL_BIT : 0;
     float sum = 0.0F;
     for (int i = 0; i < 2; i++)
     {
-        if (mChannelEnabled[i] && mDAC[i])
+        if (mChannelEnabled[i] && mDAC[i] && (NR51 & (1 << (i + leftChannelShift))))
         {
             sum += (SQUARE_DUTY_WAVES[NRx1[i] >> WAVE_DUTY_BIT][mSquareWaveCounter[i]] ? 1.0F : -1.0F) * convertVolume(mChannelVolume[i]);
         }
     }
-    if (mChannelEnabled[2] && mDAC[2])
+    if (mChannelEnabled[2] && mDAC[2] && (NR51 & (1 << (2 + leftChannelShift))))
     {
         int volCode = (NRx2[2] >> WAVE_CHANNEL_VOLUME_BIT) & 0b11;
         sum += convertToAnalog(mWaveSampleBuffer >> ((volCode + 4) % 5), volCode);
     }
-    if (mChannelEnabled[3] && mDAC[3])
+    if (mChannelEnabled[3] && mDAC[3] && (NR51 & (1 << (3 + leftChannelShift))))
     {
         // Waveform output is bit 0 of the LFSR, INVERTED.
         sum += ((mLFSR & 1) ? -1.0F : 1.0F) * convertVolume(mChannelVolume[3]);
     }
-    sum *= float((NR50 & VOL_BITMASK) + 1) / 8.0F;
+    sum *= float(((NR50 >> leftChannelShift) & VOL_BITMASK) + 1) / 8.0F;
     return sum * 0.25F; // reduce audio amplitude from -4.0:4.0 (4 channels sum) to -1.0:1.0
 }
 
 float APU::getLeftAudioSample() const
 {
-    // TODO
-    return getAudioSample();
+    return getAudioSample(true);
 }
 
 float APU::getRightAudioSample() const
 {
-    // TODO
-    return getAudioSample();
+    return getAudioSample(false);
 }
 
 void APU::writeNRx1(int channel, uint8_t value)
