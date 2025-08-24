@@ -10,6 +10,8 @@ struct RomHeader
     {
         ROM_ONLY,
         MBC1,
+        MBC1_RAM,
+        MBC1_RAM_BATTERY,
         MBC3 = 0x11,
         MBC3_RAM = 0x12,
         MBC3_RAM_BATTERY = 0x13,

@@ -22,7 +22,11 @@ Cartridge::Cartridge(std::istream &dataStream, std::streamsize size)
         mMBC = std::make_shared<NoMBC>();
         break;
     case RomHeader::CartridgeType::MBC1:
-        mMBC = std::make_shared<MBC1>();
+    case RomHeader::CartridgeType::MBC1_RAM:
+        mMBC = std::make_shared<MBC1>(false);
+        break;
+    case RomHeader::CartridgeType::MBC1_RAM_BATTERY:
+        mMBC = std::make_shared<MBC1>(true);
         break;
     case RomHeader::CartridgeType::MBC3:
     case RomHeader::CartridgeType::MBC3_RAM:
