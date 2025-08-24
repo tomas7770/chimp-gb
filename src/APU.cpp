@@ -30,7 +30,7 @@ void APU::doTCycle()
 
         case 2:
             decrementLengthCounters();
-            // Sweep
+            clockSweep();
             break;
 
         case 4:
@@ -39,7 +39,7 @@ void APU::doTCycle()
 
         case 6:
             decrementLengthCounters();
-            // Sweep
+            clockSweep();
             break;
 
         case 7:
@@ -234,9 +234,27 @@ void APU::decrementVolumeEnvelopes()
     }
 }
 
+void APU::clockSweep()
+{
+    if (mSquare1SweepEnabled && ((NR10 >> SWEEP_PACE_BIT) & SWEEP_PACE_BITMASK))
+    {
+        mSquare1SweepTimer--;
+        if (mSquare1SweepTimer == 0)
+        {
+            mSquare1SweepTimer = ((NR10 >> SWEEP_PACE_BIT) & SWEEP_PACE_BITMASK);
+            sweepFreqCalcAndOverflowCheck(true);
+        }
+    }
+}
+
+int APU::calcFrequency(int channel)
+{
+    return ((NRx4[channel] & PERIOD_HIGH_BITMASK) << 8) | NRx3[channel];
+}
+
 void APU::reloadFrequencyTimer(int channel)
 {
-    int freq = ((NRx4[channel] & PERIOD_HIGH_BITMASK) << 8) | NRx3[channel];
+    int freq = calcFrequency(channel);
 
     switch (channel)
     {
@@ -259,6 +277,28 @@ void APU::reloadFrequencyTimer(int channel)
     }
 }
 
+void APU::sweepFreqCalcAndOverflowCheck(bool writePeriodAndRepeat)
+{
+    int calcFreq = mSquare1FreqSweepShadow >> (NR10 & SWEEP_STEP_BITMASK);
+    if (NR10 & SWEEP_DIRECTION_BITMASK)
+    {
+        calcFreq = -calcFreq;
+    }
+    calcFreq += mSquare1FreqSweepShadow;
+    if (calcFreq > 2047)
+    {
+        mChannelEnabled[0] = false;
+    }
+    else if (writePeriodAndRepeat && (NR10 & SWEEP_STEP_BITMASK))
+    {
+        mSquare1FreqSweepShadow = calcFreq;
+        NRx3[0] = mSquare1FreqSweepShadow & 0xFF;
+        NRx4[0] &= ~PERIOD_HIGH_BITMASK;
+        NRx4[0] |= (mSquare1FreqSweepShadow >> 8) & PERIOD_HIGH_BITMASK;
+        sweepFreqCalcAndOverflowCheck();
+    }
+}
+
 void APU::triggerChannel(int channel)
 {
     mChannelEnabled[channel] = true;
@@ -272,6 +312,13 @@ void APU::triggerChannel(int channel)
     case 3:
         mLFSR = 0x7FFF;
     case 0:
+        mSquare1FreqSweepShadow = calcFrequency(channel);
+        mSquare1SweepTimer = ((NR10 >> SWEEP_PACE_BIT) & SWEEP_PACE_BITMASK);
+        mSquare1SweepEnabled = (NR10 & SWEEP_STEP_BITMASK) || ((NR10 >> SWEEP_PACE_BIT) & SWEEP_PACE_BITMASK);
+        if (NR10 & SWEEP_STEP_BITMASK)
+        {
+            sweepFreqCalcAndOverflowCheck();
+        }
     case 1:
         mChannelVolume[channel] = NRx2[channel] >> INITIAL_VOLUME_BIT;
         mChannelEnvDir[channel] = (NRx2[channel] & ENV_DIR_BITMASK) ? 1 : 0;

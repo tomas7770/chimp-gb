@@ -32,7 +32,10 @@ private:
     float getAudioSample() const;
     void decrementLengthCounters();
     void decrementVolumeEnvelopes();
+    void clockSweep();
+    int calcFrequency(int channel);
     void reloadFrequencyTimer(int channel);
+    void sweepFreqCalcAndOverflowCheck(bool writePeriodAndRepeat = false);
     void triggerChannel(int channel);
 
     int mFrameSequencerStep = 0;
@@ -50,7 +53,9 @@ private:
     int mChannelEnvCounter[4];
 
     int mSquareWaveCounter[2] = {0, 0};
-    // TODO square 1 frequency sweep
+    bool mSquare1SweepEnabled;
+    uint16_t mSquare1FreqSweepShadow;
+    int mSquare1SweepTimer;
 
     int mWaveSampleBuffer = 0;
     int mWavePositionCounter;
@@ -70,6 +75,10 @@ private:
     static constexpr uint8_t PERIOD_HIGH_BITMASK = 0b111;
     static constexpr uint8_t LENGTH_ENABLE_BITMASK = (1 << 6);
     static constexpr uint8_t TRIGGER_BITMASK = (1 << 7);
+    static constexpr uint8_t SWEEP_STEP_BITMASK = 0b111;
+    static constexpr uint8_t SWEEP_PACE_BIT = 4;
+    static constexpr uint8_t SWEEP_PACE_BITMASK = 0b111;
+    static constexpr uint8_t SWEEP_DIRECTION_BITMASK = (1 << 3);
     static constexpr uint8_t WAVE_CHANNEL_VOLUME_BIT = 5;
     static constexpr uint8_t NOISE_CLOCK_DIVIDER_BITMASK = 0b111;
     static constexpr uint8_t NOISE_CLOCK_SHIFT_BIT = 4;
