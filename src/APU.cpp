@@ -53,6 +53,15 @@ void APU::doTCycle()
 
     for (int i = 0; i < 4; i++)
     {
+        if (i == 2)
+        {
+            mDAC[i] = (NR30 >> DAC_BIT_WAVE_CHANNEL) ? true : false;
+        }
+        else
+        {
+            mDAC[i] = (NRx2[i] >> DAC_BIT) ? true : false;
+        }
+
         mChannelFrequencyTimer[i]--;
         if (mChannelFrequencyTimer[i] == 0)
         {
@@ -123,17 +132,17 @@ float APU::getAudioSample() const
     float sum = 0.0F;
     for (int i = 0; i < 2; i++)
     {
-        if (mChannelEnabled[i])
+        if (mChannelEnabled[i] && mDAC[i])
         {
             sum += (SQUARE_DUTY_WAVES[NRx1[i] >> WAVE_DUTY_BIT][mSquareWaveCounter[i]] ? 1.0F : -1.0F) * convertVolume(mChannelVolume[i]);
         }
     }
-    if (mChannelEnabled[2])
+    if (mChannelEnabled[2] && mDAC[2])
     {
         int volCode = (NRx2[2] >> WAVE_CHANNEL_VOLUME_BIT) & 0b11;
         sum += convertToAnalog(mWaveSampleBuffer >> ((volCode + 4) % 5), volCode);
     }
-    if (mChannelEnabled[3])
+    if (mChannelEnabled[3] && mDAC[3])
     {
         // Waveform output is bit 0 of the LFSR, INVERTED.
         sum += ((mLFSR & 1) ? -1.0F : 1.0F) * convertVolume(mChannelVolume[3]);
@@ -301,7 +310,7 @@ void APU::sweepFreqCalcAndOverflowCheck(bool writePeriodAndRepeat)
 
 void APU::triggerChannel(int channel)
 {
-    mChannelEnabled[channel] = true;
+    mChannelEnabled[channel] = mDAC[channel];
     if (mChannelLengthCounter[channel] == 0)
     {
         mChannelLengthCounter[channel] = channel == 2 ? 256 : 64;

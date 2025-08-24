@@ -42,6 +42,7 @@ private:
     int mFrameSequencerTimer = FRAME_SEQUENCER_PERIOD;
 
     // TODO master controls and DAC on/off
+    bool mDAC[4] = {false, false, false, false};
 
     int mChannelLengthCounter[4];
     bool mChannelEnabled[4] = {false, false, false, false};
@@ -83,6 +84,8 @@ private:
     static constexpr uint8_t NOISE_CLOCK_DIVIDER_BITMASK = 0b111;
     static constexpr uint8_t NOISE_CLOCK_SHIFT_BIT = 4;
     static constexpr uint8_t NOISE_LFSR_WIDTH_BITMASK = (1 << 3);
+    static constexpr uint8_t DAC_BIT = 5;
+    static constexpr uint8_t DAC_BIT_WAVE_CHANNEL = 7;
 
     static constexpr int SQUARE_DUTY_WAVES[4][8] = {
         {0, 0, 0, 0, 0, 0, 0, 1},
