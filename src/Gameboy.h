@@ -76,6 +76,7 @@ private:
     static constexpr uint16_t NR42_ADDR = 0xFF21;
     static constexpr uint16_t NR43_ADDR = 0xFF22;
     static constexpr uint16_t NR44_ADDR = 0xFF23;
+    static constexpr uint16_t NR52_ADDR = 0xFF26;
     static constexpr uint16_t WAVE_RAM_START_ADDR = 0xFF30;
     static constexpr uint16_t WAVE_RAM_END_ADDR = 0xFF3F;
     static constexpr uint16_t LCDC_ADDR = 0xFF40;

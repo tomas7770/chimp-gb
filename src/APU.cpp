@@ -21,7 +21,10 @@ void APU::doTCycle()
     if (mFrameSequencerTimer == 0)
     {
         mFrameSequencerTimer = FRAME_SEQUENCER_PERIOD;
-        mFrameSequencerStep = (mFrameSequencerStep + 1) % 8;
+        if (!mAPUEnabled)
+        {
+            return;
+        }
         switch (mFrameSequencerStep)
         {
         case 0:
@@ -49,6 +52,11 @@ void APU::doTCycle()
         default:
             break;
         }
+        mFrameSequencerStep = (mFrameSequencerStep + 1) % 8;
+    }
+    else if (!mAPUEnabled)
+    {
+        return;
     }
 
     for (int i = 0; i < 4; i++)
@@ -129,6 +137,11 @@ float convertToAnalog(int signal, int volCode)
 float APU::getAudioSample() const
 {
     // TODO
+    if (!mAPUEnabled)
+    {
+        return 0.0F;
+    }
+
     float sum = 0.0F;
     for (int i = 0; i < 2; i++)
     {
@@ -341,5 +354,35 @@ void APU::triggerChannel(int channel)
 
     default:
         break;
+    }
+}
+
+uint8_t APU::readNR52()
+{
+    uint8_t NR52 = 0x70;
+    if (mAPUEnabled)
+    {
+        NR52 += AUDIO_ON_OFF_BITMASK;
+    }
+    for (int i = 0; i < 4; i++)
+    {
+        if (mChannelEnabled[i])
+        {
+            NR52 += (1 << i);
+        }
+    }
+    return NR52;
+}
+
+void APU::writeNR52(uint8_t value)
+{
+    bool wasOff = !mAPUEnabled;
+    mAPUEnabled = (value & AUDIO_ON_OFF_BITMASK) ? true : false;
+    if (wasOff && mAPUEnabled)
+    {
+        mFrameSequencerStep = 0;
+        mSquareWaveCounter[0] = 0;
+        mSquareWaveCounter[1] = 0;
+        mWaveSampleBuffer = 0;
     }
 }

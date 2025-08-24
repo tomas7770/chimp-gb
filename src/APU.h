@@ -15,6 +15,9 @@ public:
     void writeNRx1(int channel, uint8_t value);
     void writeNRx4(int channel, uint8_t value);
 
+    uint8_t readNR52();
+    void writeNR52(uint8_t value);
+
     uint8_t NR10 = 0x80;
     uint8_t NR30 = 0x7F;
 
@@ -42,6 +45,7 @@ private:
     int mFrameSequencerTimer = FRAME_SEQUENCER_PERIOD;
 
     // TODO master controls and DAC on/off
+    bool mAPUEnabled = true;
     bool mDAC[4] = {false, false, false, false};
 
     int mChannelLengthCounter[4];
@@ -86,6 +90,7 @@ private:
     static constexpr uint8_t NOISE_LFSR_WIDTH_BITMASK = (1 << 3);
     static constexpr uint8_t DAC_BIT = 5;
     static constexpr uint8_t DAC_BIT_WAVE_CHANNEL = 7;
+    static constexpr uint8_t AUDIO_ON_OFF_BITMASK = (1 << 7);
 
     static constexpr int SQUARE_DUTY_WAVES[4][8] = {
         {0, 0, 0, 0, 0, 0, 0, 1},
