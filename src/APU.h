@@ -26,6 +26,8 @@ public:
     uint8_t NRx3[4] = {0xFF, 0xFF, 0xFF, 0x00};
     uint8_t NRx4[4];
 
+    uint8_t NR50 = 0x77;
+
     static constexpr int waveRamSize = 16;
     uint8_t waveRam[waveRamSize];
 
@@ -91,6 +93,8 @@ private:
     static constexpr uint8_t DAC_BIT = 5;
     static constexpr uint8_t DAC_BIT_WAVE_CHANNEL = 7;
     static constexpr uint8_t AUDIO_ON_OFF_BITMASK = (1 << 7);
+    static constexpr uint8_t VOL_BITMASK = 0b111;
+    static constexpr uint8_t LEFT_VOL_BIT = 4;
 
     static constexpr int SQUARE_DUTY_WAVES[4][8] = {
         {0, 0, 0, 0, 0, 0, 0, 1},

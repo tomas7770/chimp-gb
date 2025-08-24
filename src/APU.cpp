@@ -160,6 +160,7 @@ float APU::getAudioSample() const
         // Waveform output is bit 0 of the LFSR, INVERTED.
         sum += ((mLFSR & 1) ? -1.0F : 1.0F) * convertVolume(mChannelVolume[3]);
     }
+    sum *= float((NR50 & VOL_BITMASK) + 1) / 8.0F;
     return sum * 0.25F; // reduce audio amplitude from -4.0:4.0 (4 channels sum) to -1.0:1.0
 }
 

@@ -170,6 +170,10 @@ uint8_t Gameboy::readByte(uint16_t address)
     {
         return mAPU.NRx4[3] | 0xBF;
     }
+    else if (address == NR50_ADDR)
+    {
+        return mAPU.NR50;
+    }
     else if (address == NR52_ADDR)
     {
         return mAPU.readNR52();
@@ -367,6 +371,10 @@ void Gameboy::writeByte(uint16_t address, uint8_t value)
     else if (address == NR44_ADDR)
     {
         mAPU.writeNRx4(3, value);
+    }
+    else if (address == NR50_ADDR)
+    {
+        mAPU.NR50 = value;
     }
     else if (address == NR52_ADDR)
     {
