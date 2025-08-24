@@ -47,7 +47,6 @@ private:
     int mFrameSequencerStep = 0;
     int mFrameSequencerTimer = FRAME_SEQUENCER_PERIOD;
 
-    // TODO master controls and DAC on/off
     bool mAPUEnabled = true;
     bool mDAC[4] = {false, false, false, false};
 
