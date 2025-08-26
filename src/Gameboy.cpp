@@ -394,7 +394,7 @@ void Gameboy::writeByte(uint16_t address, uint8_t value)
     }
     else if (address == LCDC_ADDR)
     {
-        mLCD.LCDC = value;
+        mPPU.writeLCDC(value);
     }
     else if (address == STAT_ADDR)
     {

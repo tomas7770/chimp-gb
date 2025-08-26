@@ -9,8 +9,37 @@ int PPU::getMode() const
     return mMode;
 }
 
+void PPU::writeLCDC(uint8_t value)
+{
+    if (!(mLCD->LCDC & LCD::LCDC_FLAG_LCD_PPU_ENABLE) && (value & LCD::LCDC_FLAG_LCD_PPU_ENABLE))
+    {
+        // Enable LCD/PPU
+        mEnabled = true;
+        // Reset PPU
+        mMode = 2;
+        mCurrentDot = 0;
+        mIncrementedWindowLine = false;
+    }
+    else if ((mLCD->LCDC & LCD::LCDC_FLAG_LCD_PPU_ENABLE) && !(value & LCD::LCDC_FLAG_LCD_PPU_ENABLE))
+    {
+        // Disable LCD/PPU
+        mEnabled = false;
+        // Clear LCD
+        for (int i = 0; i < LCD::SCREEN_W * LCD::SCREEN_H; i++)
+        {
+            mLCD->pixels[i] = LCD::Color::White;
+        }
+    }
+    mLCD->LCDC = value;
+}
+
 void PPU::doDot()
 {
+    if (!mEnabled)
+    {
+        return;
+    }
+
     if (mMode == 3 && mCurrentDot >= MODE_2_DOTS + MODE_3_DUMMY_DOTS && mCurrentDot < MODE_2_DOTS + MODE_3_DOTS)
     {
         // Draw pixel

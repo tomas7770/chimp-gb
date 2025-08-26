@@ -17,6 +17,7 @@ public:
     uint8_t oam[oamSize];
 
     int getMode() const;
+    void writeLCDC(uint8_t value);
 
     void doDot();
 
@@ -24,6 +25,7 @@ private:
     Gameboy *mGameboy;
     LCD *mLCD;
 
+    bool mEnabled = true;
     int mMode = 2;
     int mCurrentDot = 0; // current dot in current line, not total
     bool mIncrementedWindowLine = false;

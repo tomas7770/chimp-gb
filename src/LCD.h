@@ -31,6 +31,7 @@ struct LCD
     uint8_t WX = 0;
     uint8_t windowLineCounter = 0;
 
+    static constexpr uint8_t LCDC_FLAG_LCD_PPU_ENABLE = (1 << 7);
     static constexpr uint8_t LCDC_FLAG_WINDOW_TILE_MAP = (1 << 6);
     static constexpr uint8_t LCDC_FLAG_WINDOW_ENABLE = (1 << 5);
     static constexpr uint8_t LCDC_FLAG_BG_WINDOW_TILE_DATA = (1 << 4);
