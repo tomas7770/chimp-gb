@@ -130,7 +130,7 @@ float convertToAnalog(int signal, int volCode)
     float fSignal = signal;
     float halfRange = APU::VOL_CODE_HALF_RANGES[volCode];
     fSignal -= halfRange;
-    fSignal /= halfRange;
+    fSignal /= 7.5F;
     return fSignal;
 }
 
