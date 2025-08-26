@@ -466,14 +466,19 @@ const LCD::Color* Gameboy::getPixels() const
     return mLCD.pixels;
 }
 
+void Gameboy::computeAudioSamples()
+{
+    mAPU.computeAudioSamples();
+}
+
 float Gameboy::getLeftAudioSample() const
 {
-    return mAPU.getLeftAudioSample();
+    return mAPU.leftAudioSample;
 }
 
 float Gameboy::getRightAudioSample() const
 {
-    return mAPU.getRightAudioSample();
+    return mAPU.rightAudioSample;
 }
 
 void Gameboy::doTCycle()

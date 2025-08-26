@@ -9,8 +9,7 @@ public:
 
     void doTCycle();
 
-    float getLeftAudioSample() const;
-    float getRightAudioSample() const;
+    void computeAudioSamples();
 
     void writeNRx1(int channel, uint8_t value);
     void writeNRx4(int channel, uint8_t value);
@@ -31,6 +30,8 @@ public:
 
     static constexpr int waveRamSize = 16;
     uint8_t waveRam[waveRamSize];
+
+    float leftAudioSample = 0.0F, rightAudioSample = 0.0F;
 
     static constexpr float VOL_CODE_HALF_RANGES[] = {0.0F, 7.5F, 3.5F, 1.5F};
 

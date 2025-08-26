@@ -26,6 +26,7 @@ public:
     void tickSystemCounter();
 
     const LCD::Color *getPixels() const;
+    void computeAudioSamples();
     float getLeftAudioSample() const;
     float getRightAudioSample() const;
 

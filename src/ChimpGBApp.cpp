@@ -105,6 +105,8 @@ void ChimpGBApp::mainLoop()
 {
     uint64_t frameTimestamp = SDL_GetTicks64();
     bool running = true;
+    double audioTimeAccum = 0.0;
+    std::vector<float> leftAudioSamples, rightAudioSamples;
     while (running)
     {
         while (SDL_PollEvent(&mEventSDL) != 0)
@@ -144,9 +146,8 @@ void ChimpGBApp::mainLoop()
                 }
             }
         }
-        int i = 0, j = 0;
         std::vector<float> audioSamples;
-        while (i < Gameboy::CYCLES_PER_FRAME)
+        for (int i = 0; i < Gameboy::CYCLES_PER_FRAME; i++)
         {
             try
             {
@@ -157,10 +158,29 @@ void ChimpGBApp::mainLoop()
                 SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, WINDOW_TITLE, err.what(), mWindowSDL);
                 terminate(-1);
             }
-            if (j == 0)
+
+            mGameboy->computeAudioSamples();
+            leftAudioSamples.push_back(mGameboy->getLeftAudioSample());
+            rightAudioSamples.push_back(mGameboy->getRightAudioSample());
+
+            audioTimeAccum += 1.0;
+            if (audioTimeAccum >= CYCLES_PER_SAMPLE)
             {
-                auto leftSample = mGameboy->getLeftAudioSample();
-                auto rightSample = mGameboy->getRightAudioSample();
+                audioTimeAccum -= CYCLES_PER_SAMPLE;
+
+                float leftSample = 0.0F, rightSample = 0.0F;
+                for (float sample : leftAudioSamples)
+                {
+                    leftSample += sample;
+                }
+                for (float sample : rightAudioSamples)
+                {
+                    rightSample += sample;
+                }
+                leftSample /= leftAudioSamples.size();
+                rightSample /= rightAudioSamples.size();
+                leftAudioSamples.clear();
+                rightAudioSamples.clear();
 
                 // Clip to ensure bugs don't cause loud audio
                 if (leftSample < -1.0F)
@@ -177,8 +197,6 @@ void ChimpGBApp::mainLoop()
                 audioSamples.push_back(leftSample * 0.5F);
                 audioSamples.push_back(rightSample * 0.5F);
             }
-            i++;
-            j = (j + 1) % (Gameboy::CLOCK_RATE / AUDIO_SAMPLE_RATE);
         }
         if (mFastForward)
         {

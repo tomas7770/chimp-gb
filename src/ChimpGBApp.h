@@ -27,6 +27,8 @@ private:
     constexpr static uint16_t AUDIO_INTERNAL_BUFFER_SIZE = 1024;
     constexpr static int AUDIO_BUFFER_SIZE = 1024;
 
+    constexpr static double CYCLES_PER_SAMPLE = double(Gameboy::CLOCK_RATE) / double(AUDIO_SAMPLE_RATE);
+
     SDL_Window *mWindowSDL = NULL;
     SDL_Renderer *mRendererSDL = NULL;
     SDL_Texture *mTextureSDL = NULL;
