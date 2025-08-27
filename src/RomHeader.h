@@ -15,6 +15,9 @@ struct RomHeader
         MBC3 = 0x11,
         MBC3_RAM = 0x12,
         MBC3_RAM_BATTERY = 0x13,
+        MBC5 = 0x19,
+        MBC5_RAM = 0x1A,
+        MBC5_RAM_BATTERY = 0x1B,
     };
 
     std::string title;

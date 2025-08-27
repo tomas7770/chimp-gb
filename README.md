@@ -9,8 +9,6 @@ ChimpGB is an open source, cross platform Game Boy (DMG) emulator written in C++
 
 ## Development status
 
-ChimpGB is in early development stages.
-
 - Passes 100% of the [Gameboy CPU (Sharp LR35902) Tests](https://github.com/SingleStepTests/GameboyCPUTests)
 
 - Passes 100% of [Blargg's](https://github.com/retrio/gb-test-roms/tree/master) cpu\_instrs, instr\_timing, and mem\_timing tests
@@ -19,15 +17,7 @@ ChimpGB is in early development stages.
 
 - Tested on Ubuntu 24.04
 
-- Tested, working games:
-
-    - Tetris
-
-    - Dr. Mario
-
-    - Super Mario Land
-
-    - Kirby's Dream Land
+- Most GB-compatible games should run
 
 Detailed status:
 
@@ -39,11 +29,13 @@ Detailed status:
 
 - **Implemented MBCs:**
 
-    - MBC1 with ROM <= 512 KiB
+    - MBC1 with ROM <= 512 KiB, RAM and battery
 
     - MBC3 with RAM and battery
 
-        - Data saving is not implemented yet. **Saved data WILL BE LOST!**
+    - MBC5 with RAM and battery
+
+    - Data saving is not implemented yet. **Saved data WILL BE LOST!**
 
 - **Misc:** Timer and Divider implemented, Joypad input partially implemented
 
@@ -103,6 +95,8 @@ This is a non-exhaustive list of references used in the development of this emul
 - [Game Boy: Complete Technical Reference](https://gekkio.fi/files/gb-docs/gbctr.pdf)
 
 - [RGBDS CPU opcode reference](https://rgbds.gbdev.io/docs/v0.9.3/gbz80.7)
+
+- [Game Boy CPU internals](https://gist.github.com/SonoSooS/c0055300670d678b5ae8433e20bea595)
 
 - [Gameboy sound hardware](https://gbdev.gg8.se/wiki/articles/Gameboy_sound_hardware)
 

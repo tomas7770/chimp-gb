@@ -17,6 +17,7 @@ set(SOURCE_FILES
     MBC/NoMBC.cpp
     MBC/MBC1.cpp
     MBC/MBC3.cpp
+    MBC/MBC5.cpp
 )
 
 add_executable(ChimpGB ${SOURCE_FILES})

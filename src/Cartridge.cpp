@@ -3,6 +3,7 @@
 #include "MBC/NoMBC.h"
 #include "MBC/MBC1.h"
 #include "MBC/MBC3.h"
+#include "MBC/MBC5.h"
 
 Cartridge::Cartridge(std::istream &dataStream, std::streamsize size)
 {
@@ -34,6 +35,13 @@ Cartridge::Cartridge(std::istream &dataStream, std::streamsize size)
         break;
     case RomHeader::CartridgeType::MBC3_RAM_BATTERY:
         mMBC = std::make_shared<MBC3>(true);
+        break;
+    case RomHeader::CartridgeType::MBC5:
+    case RomHeader::CartridgeType::MBC5_RAM:
+        mMBC = std::make_shared<MBC5>(false);
+        break;
+    case RomHeader::CartridgeType::MBC5_RAM_BATTERY:
+        mMBC = std::make_shared<MBC5>(true);
         break;
     }
 }

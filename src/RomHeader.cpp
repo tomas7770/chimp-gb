@@ -29,6 +29,9 @@ RomHeader::RomHeader(const std::vector<uint8_t> &romData)
     case MBC3:
     case MBC3_RAM:
     case MBC3_RAM_BATTERY:
+    case MBC5:
+    case MBC5_RAM:
+    case MBC5_RAM_BATTERY:
         break;
 
     default:
