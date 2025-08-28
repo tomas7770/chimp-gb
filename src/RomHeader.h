@@ -20,8 +20,13 @@ struct RomHeader
         MBC5_RAM_BATTERY = 0x1B,
     };
 
+    static constexpr int MBC_BYTE = 0x0147;
+    static constexpr int RAM_SIZE_BYTE = 0x0149;
+    static constexpr int RAM_SIZES[] = {0, 0, 8192, 32768, 131072, 65536};
+
     std::string title;
     CartridgeType cartType;
+    int ramSize;
 
     RomHeader(const std::vector<uint8_t> &romData);
     RomHeader() = default;

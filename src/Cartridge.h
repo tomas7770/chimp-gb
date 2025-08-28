@@ -18,6 +18,8 @@ public:
     void writeByte(uint16_t address, uint8_t value);
 
     bool hasBattery() const;
+    const uint8_t *getSRAM() const;
+    void loadSRAM(std::istream &dataStream, std::streamsize size);
 
 private:
     std::vector<uint8_t> mData;

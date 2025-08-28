@@ -35,8 +35,6 @@ Detailed status:
 
     - MBC5 with RAM and battery
 
-    - Data saving is not implemented yet. **Saved data WILL BE LOST!**
-
 - **Misc:** Timer and Divider implemented, Joypad input partially implemented
 
 ## Compiling

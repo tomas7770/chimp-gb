@@ -20,7 +20,7 @@ RomHeader::RomHeader(const std::vector<uint8_t> &romData)
         throw std::runtime_error("Provided ROM is not valid: Checksum mismatch");
     }
 
-    switch (romData[0x0147])
+    switch (romData[MBC_BYTE])
     {
     case ROM_ONLY:
     case MBC1:
@@ -43,5 +43,15 @@ RomHeader::RomHeader(const std::vector<uint8_t> &romData)
     std::memcpy(titleChars, romData.data() + 0x0134, 16);
     title = std::string(titleChars);
 
-    cartType = static_cast<CartridgeType>(romData[0x0147]);
+    cartType = static_cast<CartridgeType>(romData[MBC_BYTE]);
+
+    int ramSizeIndex = romData[RAM_SIZE_BYTE];
+    if (ramSizeIndex > 5)
+    {
+        ramSize = RAM_SIZES[4]; // largest
+    }
+    else
+    {
+        ramSize = RAM_SIZES[ramSizeIndex];
+    }
 }

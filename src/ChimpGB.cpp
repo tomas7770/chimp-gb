@@ -3,6 +3,7 @@
 
 #include <iostream>
 #include <fstream>
+#include <filesystem>
 
 int main(int argc, char *args[])
 {
@@ -12,8 +13,8 @@ int main(int argc, char *args[])
         return 0;
     }
 
-    std::string filename(args[1]);
-    std::ifstream dataStream(filename, std::ios::binary | std::ios::ate);
+    std::string filepath(args[1]);
+    std::ifstream dataStream(filepath, std::ios::binary | std::ios::ate);
     auto size = dataStream.tellg();
     dataStream.seekg(0);
 
@@ -23,7 +24,10 @@ int main(int argc, char *args[])
         debug = true;
     }
 
-    ChimpGBApp *app = new ChimpGBApp(Cartridge(dataStream, size), debug);
+    std::string romFilename = std::filesystem::path(filepath).filename().stem().string();
+
+    ChimpGBApp *app = new ChimpGBApp(Cartridge(dataStream, size),
+                                     romFilename, debug);
     app->mainLoop();
 
     return 0;

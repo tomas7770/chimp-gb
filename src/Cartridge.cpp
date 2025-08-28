@@ -65,3 +65,13 @@ bool Cartridge::hasBattery() const
 {
     return mMBC->hasBattery();
 }
+
+const uint8_t *Cartridge::getSRAM() const
+{
+    return mMBC->getRAM();
+}
+
+void Cartridge::loadSRAM(std::istream &dataStream, std::streamsize size)
+{
+    dataStream.read(reinterpret_cast<char *>(mMBC->getRAM()), size);
+}

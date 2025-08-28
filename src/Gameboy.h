@@ -34,6 +34,8 @@ public:
     void onKeyPress(int key);
     void onKeyRelease(int key);
 
+    Cartridge &getCart();
+
     static constexpr int CYCLES_PER_FRAME = 70224;
     static constexpr int CLOCK_RATE = 4194304;
 

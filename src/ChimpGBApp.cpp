@@ -1,8 +1,10 @@
 #include "ChimpGBApp.h"
 #include "Platform.h"
 #include <iostream>
+#include <fstream>
+#include <filesystem>
 
-ChimpGBApp::ChimpGBApp(const Cartridge &cart, bool debug)
+ChimpGBApp::ChimpGBApp(const Cartridge &cart, std::string &romFilename, bool debug)
 {
     // Initialize SDL
     if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO) < 0)
@@ -49,20 +51,25 @@ ChimpGBApp::ChimpGBApp(const Cartridge &cart, bool debug)
     }
     SDL_PauseAudioDevice(mAudioDevSDL, 0);
 
-    if (cart.hasBattery())
-    {
-        SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_WARNING, WINDOW_TITLE, "Data saving not implemented. Saved data WILL BE LOST!", mWindowSDL);
-    }
+    createDataDirectories();
+
+    mRomFilename = std::move(romFilename);
 
     try
     {
         mGameboy = new Gameboy(cart, debug);
+        loadGame();
     }
     catch (std::exception err)
     {
         SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, WINDOW_TITLE, err.what(), mWindowSDL);
         terminate(-1);
     }
+}
+
+void ChimpGBApp::createDataDirectories()
+{
+    std::filesystem::create_directories(getSavesPath());
 }
 
 void ChimpGBApp::drawDisplay()
@@ -213,8 +220,52 @@ void ChimpGBApp::mainLoop()
     terminate(0);
 }
 
+void ChimpGBApp::saveGame()
+{
+    const Cartridge &cart = mGameboy->getCart();
+    if (cart.hasBattery())
+    {
+        const uint8_t *sram = cart.getSRAM();
+        if (sram == nullptr)
+        {
+            return;
+        }
+
+        std::string saveFilepath = getSavesPath() + mRomFilename + std::string(SAVE_EXTENSION);
+        std::ofstream dataStream(saveFilepath, std::ios::binary | std::ios::trunc);
+
+        int ramSize = cart.getHeader().ramSize;
+        dataStream.write(reinterpret_cast<const char *>(sram), ramSize);
+    }
+}
+
+void ChimpGBApp::loadGame()
+{
+    std::string saveFilepath = getSavesPath() + mRomFilename + std::string(SAVE_EXTENSION);
+    std::ifstream dataStream(saveFilepath, std::ios::binary | std::ios::ate);
+    auto size = dataStream.tellg();
+    dataStream.seekg(0);
+
+    mGameboy->getCart().loadSRAM(dataStream, size);
+}
+
 void ChimpGBApp::terminate(int error_code)
 {
+    if (mGameboy != nullptr)
+    {
+        if (error_code == 0)
+        {
+            try
+            {
+                saveGame();
+            }
+            catch (std::exception err)
+            {
+                SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, WINDOW_TITLE, err.what(), mWindowSDL);
+            }
+        }
+        delete mGameboy;
+    }
     if (mWindowSDL)
         SDL_DestroyWindow(mWindowSDL);
     if (mRendererSDL)
@@ -222,7 +273,5 @@ void ChimpGBApp::terminate(int error_code)
     if (mAudioDevSDL)
         SDL_CloseAudioDevice(mAudioDevSDL);
     SDL_Quit();
-    if (mGameboy != nullptr)
-        delete mGameboy;
     std::exit(error_code);
 }

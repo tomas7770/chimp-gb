@@ -497,3 +497,8 @@ void Gameboy::onKeyRelease(int key)
 {
     mJoypad.keys[key] = false;
 }
+
+Cartridge &Gameboy::getCart()
+{
+    return mCart;
+}

@@ -14,7 +14,6 @@ public:
 private:
     int mROMBank = 1;
     int mRAMBank = 0;
-    uint8_t mRAM[131072];
 
     static constexpr uint16_t ROM_BANK_SELECT_LOW_START = 0x2000;
     static constexpr uint16_t ROM_BANK_SELECT_LOW_END = 0x2FFF;
