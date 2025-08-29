@@ -69,7 +69,11 @@ ChimpGBApp::ChimpGBApp(const Cartridge &cart, std::string &romFilename, bool deb
 
 void ChimpGBApp::createDataDirectories()
 {
-    std::filesystem::create_directories(getSavesPath());
+    std::string savesPath = getSavesPath();
+    if (savesPath != "")
+    {
+        std::filesystem::create_directories(savesPath);
+    }
 }
 
 void ChimpGBApp::drawDisplay()
@@ -241,12 +245,16 @@ void ChimpGBApp::saveGame()
 
 void ChimpGBApp::loadGame()
 {
-    std::string saveFilepath = getSavesPath() + mRomFilename + std::string(SAVE_EXTENSION);
-    std::ifstream dataStream(saveFilepath, std::ios::binary | std::ios::ate);
-    auto size = dataStream.tellg();
-    dataStream.seekg(0);
+    Cartridge &cart = mGameboy->getCart();
+    if (cart.hasBattery())
+    {
+        std::string saveFilepath = getSavesPath() + mRomFilename + std::string(SAVE_EXTENSION);
+        std::ifstream dataStream(saveFilepath, std::ios::binary | std::ios::ate);
+        auto size = dataStream.tellg();
+        dataStream.seekg(0);
 
-    mGameboy->getCart().loadSRAM(dataStream, size);
+        cart.loadSRAM(dataStream, size);
+    }
 }
 
 void ChimpGBApp::terminate(int error_code)
