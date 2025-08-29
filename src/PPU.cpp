@@ -239,7 +239,6 @@ LCD::Color PPU::getScreenPixel(int pixelX, int pixelY)
             {
                 continue;
             }
-            lowestX = oam[i + 1];
             int y = oam[i] - 16; // Byte 0: y+16 (value=0 means y=-16)
 
             uint8_t flags = oam[i + 3]; // Byte 3: attributes/flags
@@ -275,6 +274,7 @@ LCD::Color PPU::getScreenPixel(int pixelX, int pixelY)
                 {
                     palette = mLCD->OBP0;
                 }
+                lowestX = oam[i + 1];
             }
         }
     }
