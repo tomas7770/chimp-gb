@@ -4,6 +4,7 @@
 #ifdef _WIN32
 #include <windows.h>
 #include <shlwapi.h>
+#include <ShlObj.h>
 #else
 #include <unistd.h>
 #include <linux/limits.h>
@@ -24,8 +25,33 @@ constexpr char const *FOLDER_NAME = "ChimpGB";
 std::string getSavesPath()
 {
 #ifdef _WIN32
-    // TODO
-    return "";
+    PWSTR savedGamesWideChars = NULL;
+
+    SHGetKnownFolderPath(FOLDERID_SavedGames, KF_FLAG_CREATE, NULL, &savedGamesWideChars);
+    if (savedGamesWideChars == NULL)
+    {
+        return "";
+    }
+
+    int savedGamesLen = WideCharToMultiByte(CP_UTF8, 0, savedGamesWideChars, -1, NULL, 0, NULL, NULL);
+    if (savedGamesLen == 0)
+    {
+        CoTaskMemFree(savedGamesWideChars);
+        return "";
+    }
+
+    char *savedGamesChars = new char[savedGamesLen];
+    int conversionResult = WideCharToMultiByte(CP_UTF8, 0, savedGamesWideChars, -1, savedGamesChars, savedGamesLen, NULL, NULL);
+    CoTaskMemFree(savedGamesWideChars);
+    if (conversionResult == 0)
+    {
+        delete savedGamesChars;
+        return "";
+    }
+
+    std::string savesPath = std::string(savedGamesChars) + "\\" + FOLDER_NAME + "\\";
+    delete savedGamesChars;
+    return savesPath;
 #else
     std::string dataHome;
 
