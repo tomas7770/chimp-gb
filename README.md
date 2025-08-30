@@ -49,8 +49,6 @@ ChimpGB requires the following tools and libraries to build:
 
 - SDL2
 
-- nlohmann_json 3.11.0 or newer
-
 Run the following commands:
 
 ```
