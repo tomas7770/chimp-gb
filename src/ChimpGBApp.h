@@ -39,6 +39,7 @@ private:
 
     void createDataDirectories();
     void loadConfig();
+    void saveConfig();
     void drawDisplay();
     void saveGame();
     void loadGame();

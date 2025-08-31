@@ -12,4 +12,5 @@ public:
     int keyFastForward;
 
     void load(std::stringstream &configString);
+    void save(std::string &configFilepath);
 };

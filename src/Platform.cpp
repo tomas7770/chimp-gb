@@ -75,3 +75,58 @@ std::string getSavesPath()
     return savesPath;
 #endif
 }
+
+// App-specific subfolder under 'AppData/Local' on Windows, XDG_CONFIG_HOME (~/.config) on Linux
+std::string getConfigsPath()
+{
+#ifdef _WIN32
+    PWSTR localAppDataWideChars = NULL;
+
+    SHGetKnownFolderPath(FOLDERID_LocalAppData, KF_FLAG_CREATE, NULL, &localAppDataWideChars);
+    if (localAppDataWideChars == NULL)
+    {
+        return "";
+    }
+
+    int localAppDataLen = WideCharToMultiByte(CP_UTF8, 0, localAppDataWideChars, -1, NULL, 0, NULL, NULL);
+    if (localAppDataLen == 0)
+    {
+        CoTaskMemFree(localAppDataWideChars);
+        return "";
+    }
+
+    char *localAppDataChars = new char[localAppDataLen];
+    int conversionResult = WideCharToMultiByte(CP_UTF8, 0, localAppDataWideChars, -1, localAppDataChars, localAppDataLen, NULL, NULL);
+    CoTaskMemFree(localAppDataWideChars);
+    if (conversionResult == 0)
+    {
+        delete localAppDataChars;
+        return "";
+    }
+
+    std::string configsPath = std::string(localAppDataChars) + "\\" + FOLDER_NAME + "\\";
+    delete localAppDataChars;
+    return configsPath;
+#else
+    std::string configHome;
+
+    if (const char *configHomeChars = std::getenv("XDG_CONFIG_HOME"))
+    {
+        configHome = std::string(configHomeChars);
+    }
+    else
+    {
+        if (const char *userHomeChars = std::getenv("HOME"))
+        {
+            configHome = std::string(userHomeChars) + "/.config";
+        }
+        else
+        {
+            return "";
+        }
+    }
+
+    std::string configsPath = configHome + "/" + FOLDER_NAME + "/";
+    return configsPath;
+#endif
+}

@@ -76,13 +76,42 @@ void ChimpGBApp::createDataDirectories()
     {
         std::filesystem::create_directories(savesPath);
     }
+
+    std::string configsPath = getConfigsPath();
+    if (configsPath != "")
+    {
+        std::filesystem::create_directories(configsPath);
+    }
 }
 
 void ChimpGBApp::loadConfig()
 {
+    // Load default values
     std::stringstream defaultIniBuffer;
     defaultIniBuffer << defaultIni;
     mConfig.load(defaultIniBuffer);
+
+    // Load user values, if available
+    std::string configFilepath = getConfigsPath() + CONFIG_NAME;
+    std::ifstream configFileStream(configFilepath);
+    std::stringstream userIniBuffer;
+    userIniBuffer << configFileStream.rdbuf();
+    mConfig.load(userIniBuffer);
+}
+
+void ChimpGBApp::saveConfig()
+{
+    // Load default INI and modify it with config values.
+    // If the default INI is updated, the user gets the updates.
+    std::stringstream defaultIniBuffer;
+    defaultIniBuffer << defaultIni;
+
+    std::string configFilepath = getConfigsPath() + CONFIG_NAME;
+    std::ofstream configFileStream(configFilepath, std::ios::trunc);
+    configFileStream << defaultIniBuffer.rdbuf();
+    configFileStream.close();
+
+    mConfig.save(configFilepath);
 }
 
 void ChimpGBApp::drawDisplay()
@@ -283,6 +312,7 @@ void ChimpGBApp::terminate(int error_code)
         }
         delete mGameboy;
     }
+
     if (mWindowSDL)
         SDL_DestroyWindow(mWindowSDL);
     if (mRendererSDL)
@@ -290,5 +320,18 @@ void ChimpGBApp::terminate(int error_code)
     if (mAudioDevSDL)
         SDL_CloseAudioDevice(mAudioDevSDL);
     SDL_Quit();
+
+    if (error_code == 0)
+    {
+        try
+        {
+            saveConfig();
+        }
+        catch (std::exception err)
+        {
+            SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, WINDOW_TITLE, err.what(), mWindowSDL);
+        }
+    }
+
     std::exit(error_code);
 }

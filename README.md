@@ -15,8 +15,6 @@ ChimpGB is an open source, cross platform Game Boy (DMG) emulator written in C++
 
 - Passes [dmg-acid2](https://github.com/mattcurrie/dmg-acid2) PPU test
 
-- Tested on Ubuntu 24.04
-
 - Most GB-compatible games should run
 
 Detailed status:
@@ -66,9 +64,7 @@ ChimpGB <rom file> [-debug]
 
 `<rom file>` is the path to a valid Game Boy ROM. `-debug` is an optional parameter that prints executed CPU opcodes to stdout.
 
-## Controls
-
-Currently, the controls are hardcoded. They'll be configurable in a future version.
+## Default controls
 
 - **D-Pad:** Arrow keys
 
@@ -80,7 +76,27 @@ Currently, the controls are hardcoded. They'll be configurable in a future versi
 
 - **Select:** Right shift
 
-In addition, holding **Tab** will run the emulator at fast forward speed.
+- **Fast Forward:** Tab
+
+Controls can be changed in the configuration file.
+
+## Saves location
+
+- **Windows:** `C:\Users\username\Saved Games\ChimpGB`
+
+- **Linux:** `$XDG_DATA_HOME/ChimpGB`
+
+    - If `$XDG_DATA_HOME` is not set, it defaults to `~/.local/share`.
+
+Note that not all games save data, in which case a save file won't be present.
+
+## Config location
+
+- **Windows:** `C:\Users\username\AppData\Local\ChimpGB\ChimpGB.ini`
+
+- **Linux:** `$XDG_CONFIG_HOME/ChimpGB/ChimpGB.ini`
+
+    - If `$XDG_CONFIG_HOME` is not set, it defaults to `~/.config`.
 
 ## References
 

@@ -35,3 +35,23 @@ void Config::load(std::stringstream &configString)
 
     loadIntKey(ini, keyFastForward, "keysEmulator", "fastForward");
 }
+
+void Config::save(std::string &configFilepath)
+{
+    mINI::INIFile file(configFilepath);
+    mINI::INIStructure ini;
+    file.read(ini);
+
+    ini["keysGame"]["up"] = std::to_string(keysGame[0]);
+    ini["keysGame"]["down"] = std::to_string(keysGame[1]);
+    ini["keysGame"]["left"] = std::to_string(keysGame[2]);
+    ini["keysGame"]["right"] = std::to_string(keysGame[3]);
+    ini["keysGame"]["a"] = std::to_string(keysGame[4]);
+    ini["keysGame"]["b"] = std::to_string(keysGame[5]);
+    ini["keysGame"]["start"] = std::to_string(keysGame[6]);
+    ini["keysGame"]["select"] = std::to_string(keysGame[7]);
+
+    ini["keysEmulator"]["fastForward"] = std::to_string(keyFastForward);
+
+    file.write(ini, true);
+}
