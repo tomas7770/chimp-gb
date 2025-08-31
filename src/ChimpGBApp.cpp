@@ -1,5 +1,6 @@
 #include "ChimpGBApp.h"
 #include "Platform.h"
+#include "../res/default.ini.h"
 #include <iostream>
 #include <fstream>
 #include <filesystem>
@@ -52,6 +53,7 @@ ChimpGBApp::ChimpGBApp(const Cartridge &cart, std::string &romFilename, bool deb
     SDL_PauseAudioDevice(mAudioDevSDL, 0);
 
     createDataDirectories();
+    loadConfig();
 
     mRomFilename = std::move(romFilename);
 
@@ -74,6 +76,13 @@ void ChimpGBApp::createDataDirectories()
     {
         std::filesystem::create_directories(savesPath);
     }
+}
+
+void ChimpGBApp::loadConfig()
+{
+    std::stringstream defaultIniBuffer;
+    defaultIniBuffer << defaultIni;
+    mConfig.load(defaultIniBuffer);
 }
 
 void ChimpGBApp::drawDisplay()
@@ -130,13 +139,13 @@ void ChimpGBApp::mainLoop()
             {
                 for (int i = 0; i < 8; i++)
                 {
-                    if (mEventSDL.key.keysym.scancode == KEYMAP[i])
+                    if (mEventSDL.key.keysym.scancode == mConfig.keysGame[i])
                     {
                         mGameboy->onKeyPress(i);
                         break;
                     }
                 }
-                if (mEventSDL.key.keysym.scancode == FAST_FORWARD_KEY)
+                if (mEventSDL.key.keysym.scancode == mConfig.keyFastForward)
                 {
                     mFastForward = true;
                 }
@@ -145,13 +154,13 @@ void ChimpGBApp::mainLoop()
             {
                 for (int i = 0; i < 8; i++)
                 {
-                    if (mEventSDL.key.keysym.scancode == KEYMAP[i])
+                    if (mEventSDL.key.keysym.scancode == mConfig.keysGame[i])
                     {
                         mGameboy->onKeyRelease(i);
                         break;
                     }
                 }
-                if (mEventSDL.key.keysym.scancode == FAST_FORWARD_KEY)
+                if (mEventSDL.key.keysym.scancode == mConfig.keyFastForward)
                 {
                     mFastForward = false;
                 }

@@ -103,3 +103,11 @@ This is a non-exhaustive list of references used in the development of this emul
 - [Gameboy Doctor](https://github.com/robert/gameboy-doctor)
 
 - [dmg-acid2](https://github.com/mattcurrie/dmg-acid2)
+
+## Credits
+
+ChimpGB was developed by [tomas7770](https://github.com/tomas7770).
+
+It contains the following third-party libraries:
+
+- [A fork of mINI](https://github.com/IruzzArcana/mINI) with support for stringstream.

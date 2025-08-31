@@ -1,0 +1,20 @@
+#pragma once
+
+const char *defaultIni =
+    "; Keyboard keys assigned to each Game Boy button.\n"
+    "; Each key is stored as an SDL keyboard scancode.\n"
+    "; Possible values:\n"
+    ";   https://wiki.libsdl.org/SDL2/SDL_Scancode\n"
+    "[keysGame]\n"
+    "up = 82\n"
+    "down = 81\n"
+    "left = 80\n"
+    "right = 79\n"
+    "a = 29\n"
+    "b = 27\n"
+    "start = 40\n"
+    "select = 229\n"
+    "\n"
+    "; Keyboard keys assigned to various emulator functions.\n"
+    "[keysEmulator]\n"
+    "fastForward = 43\n";
