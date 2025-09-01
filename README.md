@@ -78,6 +78,8 @@ ChimpGB <rom file> [-debug]
 
 - **Fast Forward:** Tab
 
+- **Fullscreen:** F11
+
 Controls can be changed in the configuration file.
 
 ## Saves location
