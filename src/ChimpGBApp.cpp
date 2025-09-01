@@ -67,6 +67,8 @@ ChimpGBApp::ChimpGBApp(const Cartridge &cart, std::string &romFilename, bool deb
         SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, WINDOW_TITLE, err.what(), mWindowSDL);
         terminate(-1);
     }
+
+    setFullscreen();
 }
 
 void ChimpGBApp::createDataDirectories()
@@ -112,6 +114,32 @@ void ChimpGBApp::saveConfig()
     configFileStream.close();
 
     mConfig.save(configFilepath);
+}
+
+void ChimpGBApp::setFullscreen()
+{
+    if (mConfig.fullscreen)
+    {
+        int displayIndex = SDL_GetWindowDisplayIndex(mWindowSDL);
+        if (displayIndex < 0)
+        {
+            return;
+        }
+        SDL_DisplayMode currentMode;
+        if (SDL_GetCurrentDisplayMode(displayIndex, &currentMode) != 0)
+        {
+            return;
+        }
+        if (SDL_SetWindowDisplayMode(mWindowSDL, &currentMode) != 0)
+        {
+            return;
+        }
+        SDL_SetWindowFullscreen(mWindowSDL, SDL_WINDOW_FULLSCREEN);
+    }
+    else
+    {
+        SDL_SetWindowFullscreen(mWindowSDL, 0);
+    }
 }
 
 void ChimpGBApp::drawDisplay()
@@ -166,17 +194,23 @@ void ChimpGBApp::mainLoop()
             }
             else if (mEventSDL.type == SDL_KEYDOWN)
             {
+                auto scancode = mEventSDL.key.keysym.scancode;
                 for (int i = 0; i < 8; i++)
                 {
-                    if (mEventSDL.key.keysym.scancode == mConfig.keysGame[i])
+                    if (scancode == mConfig.keysGame[i])
                     {
                         mGameboy->onKeyPress(i);
                         break;
                     }
                 }
-                if (mEventSDL.key.keysym.scancode == mConfig.keyFastForward)
+                if (scancode == mConfig.keyFastForward)
                 {
                     mFastForward = true;
+                }
+                else if (scancode == mConfig.keyToggleFullscreen)
+                {
+                    mConfig.fullscreen = !mConfig.fullscreen;
+                    setFullscreen();
                 }
             }
             else if (mEventSDL.type == SDL_KEYUP)

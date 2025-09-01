@@ -40,6 +40,7 @@ private:
     void createDataDirectories();
     void loadConfig();
     void saveConfig();
+    void setFullscreen();
     void drawDisplay();
     void saveGame();
     void loadGame();
