@@ -16,7 +16,7 @@ void PPU::writeLCDC(uint8_t value)
         // Enable LCD/PPU
         mEnabled = true;
         // Reset PPU
-        mMode = 2;
+        setMode(2);
         mCurrentDot = 0;
         mIncrementedWindowLine = false;
     }
@@ -24,6 +24,7 @@ void PPU::writeLCDC(uint8_t value)
     {
         // Disable LCD/PPU
         mEnabled = false;
+        mLCD->STAT &= ~LCD::STAT_MODE_BITMASK;
         // Clear LCD
         for (int i = 0; i < LCD::SCREEN_W * LCD::SCREEN_H; i++)
         {
