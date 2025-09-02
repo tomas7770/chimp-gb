@@ -502,3 +502,8 @@ Cartridge &Gameboy::getCart()
 {
     return mCart;
 }
+
+void Gameboy::setDrawCallback(void (*drawCallback)(void *), void *userdata)
+{
+    mPPU.setDrawCallback(drawCallback, userdata);
+}

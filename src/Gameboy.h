@@ -36,6 +36,8 @@ public:
 
     Cartridge &getCart();
 
+    void setDrawCallback(void (*drawCallback)(void *), void *userdata);
+
     static constexpr int CYCLES_PER_FRAME = 70224;
     static constexpr int CLOCK_RATE = 4194304;
 

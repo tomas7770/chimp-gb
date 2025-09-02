@@ -5,6 +5,8 @@
 #include <fstream>
 #include <filesystem>
 
+void drawDisplayCallback(void *userdata);
+
 ChimpGBApp::ChimpGBApp(const Cartridge &cart, std::string &romFilename, bool debug)
 {
     // Initialize SDL
@@ -60,6 +62,7 @@ ChimpGBApp::ChimpGBApp(const Cartridge &cart, std::string &romFilename, bool deb
     try
     {
         mGameboy = new Gameboy(cart, debug);
+        mGameboy->setDrawCallback(drawDisplayCallback, this);
         loadGame();
     }
     catch (std::exception err)
@@ -140,6 +143,12 @@ void ChimpGBApp::setFullscreen()
     {
         SDL_SetWindowFullscreen(mWindowSDL, 0);
     }
+}
+
+void drawDisplayCallback(void *userdata)
+{
+    ChimpGBApp *app = (ChimpGBApp *)userdata;
+    app->drawDisplay();
 }
 
 void ChimpGBApp::drawDisplay()
@@ -286,7 +295,6 @@ void ChimpGBApp::mainLoop()
             SDL_ClearQueuedAudio(mAudioDevSDL);
         }
         SDL_QueueAudio(mAudioDevSDL, audioSamples.data(), audioSamples.size() * sizeof(float));
-        drawDisplay();
         while (SDL_GetQueuedAudioSize(mAudioDevSDL) > AUDIO_BUFFER_SIZE * sizeof(float) * 2)
         {
             mainSleep(1e6);

@@ -30,8 +30,18 @@ void PPU::writeLCDC(uint8_t value)
         {
             mLCD->pixels[i] = LCD::Color::White;
         }
+        if (drawCallback != nullptr)
+        {
+            drawCallback(mDrawCallbackUserdata);
+        }
     }
     mLCD->LCDC = value;
+}
+
+void PPU::setDrawCallback(void (*drawCallback)(void *), void *userdata)
+{
+    this->drawCallback = drawCallback;
+    mDrawCallbackUserdata = userdata;
 }
 
 void PPU::doDot()
@@ -63,6 +73,10 @@ void PPU::doDot()
             mLCD->windowLineCounter = 0;
             setMode(1);
             mGameboy->requestInterrupt(CPU::InterruptSource::VBlank);
+            if (drawCallback != nullptr)
+            {
+                drawCallback(mDrawCallbackUserdata);
+            }
         }
         else if (mLCD->LY < LCD::SCREEN_H)
         {

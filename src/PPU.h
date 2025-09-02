@@ -18,6 +18,7 @@ public:
 
     int getMode() const;
     void writeLCDC(uint8_t value);
+    void setDrawCallback(void (*drawCallback)(void *), void *userdata);
 
     void doDot();
 
@@ -32,11 +33,14 @@ private:
 
     std::vector<int> spritesInScanline; // list of sprites to draw, stored as an offset from OAM start
 
+    void (*drawCallback)(void *userdata) = nullptr;
+    void *mDrawCallbackUserdata = nullptr;
+
     void setMode(int mode);
 
     uint8_t getBGTileAtScreenPixel(int x, int y, bool isWindow);
     int getBGTilePixel(uint8_t tileId, int tilePixelX, int tilePixelY, bool drawingObj,
-        bool xFlip = false, bool yFlip = false);
+                       bool xFlip = false, bool yFlip = false);
     int getBGPixelOnScreen(int x, int y);
     int getWindowPixel(int x, int y);
     LCD::Color getPaletteColor(uint8_t palette, int colorId);
