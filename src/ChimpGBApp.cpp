@@ -192,6 +192,7 @@ void ChimpGBApp::mainLoop()
     uint64_t frameTimestamp = SDL_GetTicks64();
     bool running = true;
     double audioTimeAccum = 0.0;
+    double sleepTimeAccum = 0.0;
     std::vector<float> leftAudioSamples, rightAudioSamples;
     while (running)
     {
@@ -297,8 +298,18 @@ void ChimpGBApp::mainLoop()
         SDL_QueueAudio(mAudioDevSDL, audioSamples.data(), audioSamples.size() * sizeof(float));
         while (SDL_GetQueuedAudioSize(mAudioDevSDL) > AUDIO_BUFFER_SIZE * sizeof(float) * 2)
         {
-            mainSleep(1e6);
+            uint64_t deltaTime = SDL_GetTicks64() - frameTimestamp;
+            sleepTimeAccum -= deltaTime;
+            sleepTimeAccum += FRAME_TIME;
+            uint64_t startTime = SDL_GetTicks64();
+            if (sleepTimeAccum < 0.0)
+            {
+                sleepTimeAccum = 0.0;
+            }
+            mainSleep(sleepTimeAccum * 1e6);
+            sleepTimeAccum -= SDL_GetTicks64() - startTime;
         }
+        frameTimestamp = SDL_GetTicks64();
     }
 
     terminate(0);
