@@ -91,7 +91,7 @@ private:
     static constexpr uint8_t NOISE_CLOCK_DIVIDER_BITMASK = 0b111;
     static constexpr uint8_t NOISE_CLOCK_SHIFT_BIT = 4;
     static constexpr uint8_t NOISE_LFSR_WIDTH_BITMASK = (1 << 3);
-    static constexpr uint8_t DAC_BIT = 5;
+    static constexpr uint8_t DAC_BIT = 3;
     static constexpr uint8_t DAC_BIT_WAVE_CHANNEL = 7;
     static constexpr uint8_t AUDIO_ON_OFF_BITMASK = (1 << 7);
     static constexpr uint8_t VOL_BITMASK = 0b111;
