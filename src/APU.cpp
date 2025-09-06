@@ -70,6 +70,11 @@ void APU::doTCycle()
             mDAC[i] = (NRx2[i] >> DAC_BIT) ? true : false;
         }
 
+        if (!mDAC[i])
+        {
+            mChannelEnabled[i] = false;
+        }
+
         mChannelFrequencyTimer[i]--;
         if (mChannelFrequencyTimer[i] == 0)
         {
@@ -344,10 +349,12 @@ void APU::triggerChannel(int channel)
         mChannelLengthCounter[channel] = channel == 2 ? 256 : 64;
     }
     reloadFrequencyTimer(channel);
+    if (channel == 3)
+    {
+        mLFSR = 0x7FFF;
+    }
     switch (channel)
     {
-    case 3:
-        mLFSR = 0x7FFF;
     case 0:
         mSquare1FreqSweepShadow = calcFrequency(channel);
         mSquare1SweepTimer = ((NR10 >> SWEEP_PACE_BIT) & SWEEP_PACE_BITMASK);
@@ -357,6 +364,7 @@ void APU::triggerChannel(int channel)
             sweepFreqCalcAndOverflowCheck();
         }
     case 1:
+    case 3:
         mChannelVolume[channel] = NRx2[channel] >> INITIAL_VOLUME_BIT;
         mChannelEnvDir[channel] = (NRx2[channel] & ENV_DIR_BITMASK) ? 1 : 0;
         mChannelEnvPace[channel] = NRx2[channel] & ENV_PACE_BITMASK;
