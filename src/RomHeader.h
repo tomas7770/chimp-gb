@@ -27,6 +27,7 @@ struct RomHeader
     std::string title;
     CartridgeType cartType;
     int ramSize;
+    uint8_t checksum;
 
     RomHeader(const std::vector<uint8_t> &romData);
     RomHeader() = default;

@@ -2,6 +2,18 @@
 #include "Gameboy.h"
 #include "CPUDebug.h"
 
+CPU::CPU(Gameboy *gameboy, bool debug)
+{
+    mGameboy = gameboy;
+    mDebugPrint = debug;
+
+    mRegF = FLAG_ZERO;
+    if (mGameboy->getCart().getHeader().checksum != 0x00)
+    {
+        mRegF |= FLAG_HALFCARRY | FLAG_CARRY;
+    }
+}
+
 void CPU::requestInterrupt(InterruptSource source)
 {
     IF |= (1 << source);

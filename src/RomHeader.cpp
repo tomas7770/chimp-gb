@@ -10,7 +10,7 @@ RomHeader::RomHeader(const std::vector<uint8_t> &romData)
         throw std::logic_error("ROM data smaller than header size");
     }
 
-    uint8_t checksum = 0;
+    checksum = 0;
     for (uint16_t address = 0x0134; address <= 0x014C; address++)
     {
         checksum = checksum - romData[address] - 1;
