@@ -7,7 +7,7 @@ class APU
 public:
     APU();
 
-    void doTCycle();
+    void doCycle();
 
     void computeAudioSamples();
 

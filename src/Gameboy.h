@@ -21,6 +21,8 @@ public:
     uint8_t wram[wramSize];
     uint8_t hram[hramSize];
 
+    unsigned int tCycleCounter = 0;
+
     void requestInterrupt(CPU::InterruptSource source);
 
     void tickSystemCounter();
@@ -40,6 +42,9 @@ public:
 
     static constexpr int CYCLES_PER_FRAME = 70224;
     static constexpr int CLOCK_RATE = 4194304;
+
+    static constexpr int CPU_CYCLE_DIV = 4;
+    static constexpr int APU_CYCLE_DIV = 2;
 
 private:
     Cartridge mCart;

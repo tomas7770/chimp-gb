@@ -252,9 +252,12 @@ void ChimpGBApp::mainLoop()
                 terminate(-1);
             }
 
-            mGameboy->computeAudioSamples();
-            leftAudioSamples.push_back(mGameboy->getLeftAudioSample());
-            rightAudioSamples.push_back(mGameboy->getRightAudioSample());
+            if (!(mGameboy->tCycleCounter % Gameboy::APU_CYCLE_DIV))
+            {
+                mGameboy->computeAudioSamples();
+                leftAudioSamples.push_back(mGameboy->getLeftAudioSample());
+                rightAudioSamples.push_back(mGameboy->getRightAudioSample());
+            }
 
             audioTimeAccum += 1.0;
             if (audioTimeAccum >= CYCLES_PER_SAMPLE)

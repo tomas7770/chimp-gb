@@ -15,9 +15,13 @@ APU::APU()
     writeNRx4(3, 0xBF);
 }
 
-void APU::doTCycle()
+void APU::doCycle()
 {
-    mFrameSequencerTimer--;
+    // 2 MHz cycle (2 T-cycles)
+    // Technically the APU runs at 4 MHz, but in practice important events only happen every 2 cycles,
+    // so performance can be optimized by emulating 2 cycles at once.
+
+    mFrameSequencerTimer -= 2;
     if (mFrameSequencerTimer == 0)
     {
         mFrameSequencerTimer = FRAME_SEQUENCER_PERIOD;
@@ -75,7 +79,7 @@ void APU::doTCycle()
             mChannelEnabled[i] = false;
         }
 
-        mChannelFrequencyTimer[i]--;
+        mChannelFrequencyTimer[i] -= 2;
         if (mChannelFrequencyTimer[i] == 0)
         {
             reloadFrequencyTimer(i);

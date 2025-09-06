@@ -10,7 +10,7 @@ class CPU
 public:
     CPU(Gameboy *gameboy, bool debug) : mGameboy(gameboy), mDebugPrint(debug) {}
 
-    void doTCycle();
+    void doMCycle();
 
     enum InterruptSource
     {
@@ -30,8 +30,6 @@ public:
     uint8_t IF = 0;
 
 private:
-    void doMCycle();
-
     uint8_t readByteAtPC() const;
 
     uint8_t readR8(uint8_t bitmask) const;
@@ -295,8 +293,6 @@ private:
     // Function to call on next M-cycle
     void (CPU::*mMCycleFunc)() = &CPU::decodeExecuteOpcode;
 
-    int mTCycleCounter = 0;
-
     bool mDebugPrint;
 
     // Interrupts
@@ -321,8 +317,6 @@ private:
     static constexpr uint8_t FLAG_CARRY = (1 << 4);
 
     static constexpr int HL_BITMASK = 6;
-
-    static constexpr int T_CYCLES_PER_M_CYCLE = 4;
 
     static constexpr uint16_t INTERRUPT_HANDLERS[] = {0x40, 0x48, 0x50, 0x58, 0x60};
 

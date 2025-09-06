@@ -2,16 +2,6 @@
 #include "Gameboy.h"
 #include "CPUDebug.h"
 
-void CPU::doTCycle()
-{
-    mTCycleCounter++;
-    if (mTCycleCounter >= T_CYCLES_PER_M_CYCLE)
-    {
-        mTCycleCounter = 0;
-        doMCycle();
-    }
-}
-
 void CPU::requestInterrupt(InterruptSource source)
 {
     IF |= (1 << source);

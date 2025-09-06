@@ -483,9 +483,16 @@ float Gameboy::getRightAudioSample() const
 
 void Gameboy::doTCycle()
 {
-    mCPU.doTCycle();
+    if (!(tCycleCounter % CPU_CYCLE_DIV))
+    {
+        mCPU.doMCycle();
+    }
     mPPU.doDot();
-    mAPU.doTCycle();
+    if (!(tCycleCounter % APU_CYCLE_DIV))
+    {
+        mAPU.doCycle();
+    }
+    tCycleCounter++;
 }
 
 void Gameboy::onKeyPress(int key)
