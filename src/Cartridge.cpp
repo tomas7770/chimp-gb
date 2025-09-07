@@ -29,6 +29,10 @@ Cartridge::Cartridge(std::istream &dataStream, std::streamsize size)
     case RomHeader::CartridgeType::MBC1_RAM_BATTERY:
         mMBC = std::make_shared<MBC1>(true);
         break;
+    case RomHeader::CartridgeType::MBC3_TIMER_BATTERY:
+    case RomHeader::CartridgeType::MBC3_TIMER_RAM_BATTERY:
+        mMBC = std::make_shared<MBC3>(true, true);
+        break;
     case RomHeader::CartridgeType::MBC3:
     case RomHeader::CartridgeType::MBC3_RAM:
         mMBC = std::make_shared<MBC3>(false);

@@ -12,6 +12,8 @@ struct RomHeader
         MBC1,
         MBC1_RAM,
         MBC1_RAM_BATTERY,
+        MBC3_TIMER_BATTERY = 0x0F,
+        MBC3_TIMER_RAM_BATTERY = 0x10,
         MBC3 = 0x11,
         MBC3_RAM = 0x12,
         MBC3_RAM_BATTERY = 0x13,

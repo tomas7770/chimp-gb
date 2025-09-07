@@ -26,6 +26,8 @@ RomHeader::RomHeader(const std::vector<uint8_t> &romData)
     case MBC1:
     case MBC1_RAM:
     case MBC1_RAM_BATTERY:
+    case MBC3_TIMER_BATTERY:
+    case MBC3_TIMER_RAM_BATTERY:
     case MBC3:
     case MBC3_RAM:
     case MBC3_RAM_BATTERY:

@@ -114,6 +114,8 @@ This is a non-exhaustive list of references used in the development of this emul
 
 - [Gameboy sound hardware](https://gbdev.gg8.se/wiki/articles/Gameboy_sound_hardware)
 
+- [MBC3 RTC save format](https://bgb.bircd.org/rtcsave.html)
+
 - [Gameboy CPU (Sharp LR35902) Tests](https://github.com/SingleStepTests/GameboyCPUTests)
 
 - [Blargg's Gameboy hardware test ROMs](https://github.com/retrio/gb-test-roms)
@@ -121,6 +123,8 @@ This is a non-exhaustive list of references used in the development of this emul
 - [Gameboy Doctor](https://github.com/robert/gameboy-doctor)
 
 - [dmg-acid2](https://github.com/mattcurrie/dmg-acid2)
+
+- [MBC3 RTC test ROM](https://github.com/aaaaaa123456789/rtc3test)
 
 ## Credits
 
