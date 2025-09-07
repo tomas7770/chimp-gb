@@ -323,17 +323,36 @@ void ChimpGBApp::saveGame()
     const Cartridge &cart = mGameboy->getCart();
     if (cart.hasBattery())
     {
-        const uint8_t *sram = cart.getSRAM();
-        if (sram == nullptr)
-        {
-            return;
-        }
-
         std::string saveFilepath = getSavesPath() + mRomFilename + std::string(SAVE_EXTENSION);
         std::ofstream dataStream(saveFilepath, std::ios::binary | std::ios::trunc);
 
-        int ramSize = cart.getHeader().ramSize;
-        dataStream.write(reinterpret_cast<const char *>(sram), ramSize);
+        const uint8_t *sram = cart.getSRAM();
+        if (sram != nullptr)
+        {
+            int ramSize = cart.getHeader().ramSize;
+            dataStream.write(reinterpret_cast<const char *>(sram), ramSize);
+        }
+
+        if (cart.hasClock())
+        {
+            const MBC::RTC *rtc = cart.getRTC();
+            if (rtc != nullptr)
+            {
+                uint8_t rtcBytes[48] = {0};
+                rtcBytes[0] = rtc->timeSeconds;
+                rtcBytes[4] = rtc->timeMinutes;
+                rtcBytes[8] = rtc->timeHours;
+                rtcBytes[12] = rtc->timeDays;
+                rtcBytes[16] = rtc->timeDaysHigh;
+                rtcBytes[20] = rtc->latchedTimeSeconds;
+                rtcBytes[24] = rtc->latchedTimeMinutes;
+                rtcBytes[28] = rtc->latchedTimeHours;
+                rtcBytes[32] = rtc->latchedTimeDays;
+                rtcBytes[36] = rtc->latchedTimeDaysHigh;
+                memcpy(rtcBytes + 40, &(rtc->timestamp), 8);
+                dataStream.write(reinterpret_cast<char *>(rtcBytes), 48);
+            }
+        }
     }
 }
 
@@ -343,11 +362,31 @@ void ChimpGBApp::loadGame()
     if (cart.hasBattery())
     {
         std::string saveFilepath = getSavesPath() + mRomFilename + std::string(SAVE_EXTENSION);
-        std::ifstream dataStream(saveFilepath, std::ios::binary | std::ios::ate);
-        auto size = dataStream.tellg();
-        dataStream.seekg(0);
+        std::ifstream dataStream(saveFilepath, std::ios::binary);
 
-        cart.loadSRAM(dataStream, size);
+        int ramSize = cart.getHeader().ramSize;
+        cart.loadSRAM(dataStream, ramSize);
+
+        if (cart.hasClock())
+        {
+            uint8_t rtcBytes[48];
+            dataStream.read(reinterpret_cast<char *>(rtcBytes), 48);
+
+            MBC::RTC rtcData;
+            rtcData.timeSeconds = rtcBytes[0];
+            rtcData.timeMinutes = rtcBytes[4];
+            rtcData.timeHours = rtcBytes[8];
+            rtcData.timeDays = rtcBytes[12];
+            rtcData.timeDaysHigh = rtcBytes[16];
+            rtcData.latchedTimeSeconds = rtcBytes[20];
+            rtcData.latchedTimeMinutes = rtcBytes[24];
+            rtcData.latchedTimeHours = rtcBytes[28];
+            rtcData.latchedTimeDays = rtcBytes[32];
+            rtcData.latchedTimeDaysHigh = rtcBytes[36];
+            memcpy(&(rtcData.timestamp), rtcBytes + 40, 8);
+
+            cart.loadRTC(rtcData);
+        }
     }
 }
 

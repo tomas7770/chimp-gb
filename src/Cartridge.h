@@ -21,6 +21,10 @@ public:
     const uint8_t *getSRAM() const;
     void loadSRAM(std::istream &dataStream, std::streamsize size);
 
+    bool hasClock() const;
+    const MBC::RTC *getRTC() const;
+    void loadRTC(MBC::RTC &rtcData);
+
 private:
     std::vector<uint8_t> mData;
     RomHeader mHeader;

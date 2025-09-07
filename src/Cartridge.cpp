@@ -79,3 +79,18 @@ void Cartridge::loadSRAM(std::istream &dataStream, std::streamsize size)
 {
     dataStream.read(reinterpret_cast<char *>(mMBC->getRAM()), size);
 }
+
+bool Cartridge::hasClock() const
+{
+    return mMBC->hasClock();
+}
+
+const MBC::RTC *Cartridge::getRTC() const
+{
+    return mMBC->getRTC();
+}
+
+void Cartridge::loadRTC(MBC::RTC &rtcData)
+{
+    *(mMBC->getRTC()) = rtcData;
+}

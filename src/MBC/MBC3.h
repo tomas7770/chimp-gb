@@ -14,20 +14,8 @@ public:
     uint8_t readByte(std::vector<uint8_t> &romData, uint16_t address) override;
     void writeByte(std::vector<uint8_t> &romData, uint16_t address, uint8_t value) override;
 
-    struct RTC
-    {
-        uint8_t timeSeconds;
-        uint8_t timeMinutes;
-        uint8_t timeHours;
-        uint8_t timeDays;
-        uint8_t timeDaysHigh;
-        uint8_t latchedTimeSeconds;
-        uint8_t latchedTimeMinutes;
-        uint8_t latchedTimeHours;
-        uint8_t latchedTimeDays;
-        uint8_t latchedTimeDaysHigh;
-        uint64_t timestamp;
-    };
+    RTC *getRTC() override { return &mRTC; }
+    bool hasClock() override { return mHasClock; }
 
 private:
     int mROMBank = 1;

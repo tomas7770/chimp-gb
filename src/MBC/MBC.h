@@ -14,6 +14,23 @@ public:
     bool hasBattery() const { return mHasBattery; }
     uint8_t *getRAM() { return mRAM; }
 
+    struct RTC
+    {
+        uint8_t timeSeconds;
+        uint8_t timeMinutes;
+        uint8_t timeHours;
+        uint8_t timeDays;
+        uint8_t timeDaysHigh;
+        uint8_t latchedTimeSeconds;
+        uint8_t latchedTimeMinutes;
+        uint8_t latchedTimeHours;
+        uint8_t latchedTimeDays;
+        uint8_t latchedTimeDaysHigh;
+        uint64_t timestamp;
+    };
+    virtual RTC *getRTC() { return nullptr; }
+    virtual bool hasClock() { return false; }
+
     static constexpr uint16_t SWITCHABLE_BANK_ADDR = 0x4000;
     static constexpr uint16_t ROM_END = 0x7FFF;
     static constexpr uint16_t ROM_BANK_SIZE = (1 << 14);
