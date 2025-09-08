@@ -15,6 +15,9 @@ public:
     // video
     int fullscreen;
 
+    // emulation
+    std::string dmgBootRomPath;
+
     void load(std::stringstream &configString);
     void save(std::string &configFilepath);
 };

@@ -23,6 +23,8 @@ public:
     void requestInterrupt(InterruptSource source);
     void startDMATransfer(uint8_t value);
 
+    void loadBootRom();
+
     // Interrupts (these registers are accessible through memory map)
     // Interrupt enable
     uint8_t IE = 0;

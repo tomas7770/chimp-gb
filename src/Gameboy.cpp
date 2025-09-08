@@ -7,6 +7,10 @@ uint8_t Gameboy::readByte(uint16_t address)
 {
     if (address < VRAM_ADDR)
     {
+        if (!(mBootRomFinished) && address <= BOOT_ROM_END_ADDR)
+        {
+            return bootRom[address];
+        }
         return mCart.readByte(address);
     }
     else if (address >= VRAM_ADDR && address < SRAM_ADDR)
@@ -437,6 +441,13 @@ void Gameboy::writeByte(uint16_t address, uint8_t value)
     {
         mLCD.WX = value;
     }
+    else if (address == BANK_ADDR)
+    {
+        if (!(mBootRomFinished) && value)
+        {
+            mBootRomFinished = true;
+        }
+    }
     else if (address >= HRAM_ADDR && address < IE_ADDR)
     {
         hram[address - HRAM_ADDR] = value;
@@ -513,4 +524,11 @@ Cartridge &Gameboy::getCart()
 void Gameboy::setDrawCallback(void (*drawCallback)(void *), void *userdata)
 {
     mPPU.setDrawCallback(drawCallback, userdata);
+}
+
+void Gameboy::setBootRom(std::istream &dataStream)
+{
+    dataStream.read(reinterpret_cast<char *>(bootRom), bootRomSize);
+    mBootRomFinished = false;
+    mCPU.loadBootRom();
 }

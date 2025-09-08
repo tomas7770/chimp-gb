@@ -18,6 +18,15 @@ void loadIntKey(mINI::INIStructure &ini, int &dest, const char *section, const c
     }
 }
 
+void loadStringKey(mINI::INIStructure &ini, std::string &dest, const char *section, const char *key)
+{
+    if (!ini.has(section) || !ini[section].has(key))
+    {
+        return;
+    }
+    dest = ini[section][key];
+}
+
 void Config::load(std::stringstream &configString)
 {
     mINI::INIFile file(&configString);
@@ -37,6 +46,8 @@ void Config::load(std::stringstream &configString)
     loadIntKey(ini, keyToggleFullscreen, "keysEmulator", "toggleFullscreen");
 
     loadIntKey(ini, fullscreen, "video", "fullscreen");
+
+    loadStringKey(ini, dmgBootRomPath, "emulation", "dmgBootRomPath");
 }
 
 void Config::save(std::string &configFilepath)
@@ -58,6 +69,8 @@ void Config::save(std::string &configFilepath)
     ini["keysEmulator"]["toggleFullscreen"] = std::to_string(keyToggleFullscreen);
 
     ini["video"]["fullscreen"] = std::to_string(fullscreen);
+
+    ini["emulation"]["dmgBootRomPath"] = dmgBootRomPath;
 
     file.write(ini, true);
 }

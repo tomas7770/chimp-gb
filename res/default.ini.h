@@ -21,4 +21,7 @@ const char *defaultIni =
     "toggleFullscreen = 68\n"
     "\n"
     "[video]\n"
-    "fullscreen = 0\n";
+    "fullscreen = 0\n"
+    "\n"
+    "[emulation]\n"
+    "dmgBootRomPath =\n";

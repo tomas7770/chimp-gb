@@ -32,6 +32,11 @@ void CPU::startDMATransfer(uint8_t value)
     mDMACopying = true;
 }
 
+void CPU::loadBootRom()
+{
+    mPC = 0;
+}
+
 void CPU::doMCycle()
 {
     mGameboy->tickSystemCounter();

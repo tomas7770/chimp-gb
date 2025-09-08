@@ -63,6 +63,11 @@ ChimpGBApp::ChimpGBApp(const Cartridge &cart, std::string &romFilename, bool deb
     {
         mGameboy = new Gameboy(cart, debug);
         mGameboy->setDrawCallback(drawDisplayCallback, this);
+        std::ifstream bootRomDataStream(mConfig.dmgBootRomPath, std::ios::binary);
+        if (bootRomDataStream.good())
+        {
+            mGameboy->setBootRom(bootRomDataStream);
+        }
         loadGame();
     }
     catch (std::exception err)

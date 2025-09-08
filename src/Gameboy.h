@@ -18,8 +18,10 @@ public:
 
     static constexpr int wramSize = 8192;
     static constexpr int hramSize = 0xFFFE - 0xFF80 + 1;
+    static constexpr int bootRomSize = 256;
     uint8_t wram[wramSize];
     uint8_t hram[hramSize];
+    uint8_t bootRom[bootRomSize];
 
     unsigned int tCycleCounter = 0;
 
@@ -39,6 +41,7 @@ public:
     Cartridge &getCart();
 
     void setDrawCallback(void (*drawCallback)(void *), void *userdata);
+    void setBootRom(std::istream &dataStream);
 
     static constexpr int CYCLES_PER_FRAME = 70224;
     static constexpr int CLOCK_RATE = 4194304;
@@ -55,7 +58,9 @@ private:
     APU mAPU;
     Joypad mJoypad;
     uint16_t mSysCounter = 0xABCC;
+    bool mBootRomFinished = true;
 
+    static constexpr uint16_t BOOT_ROM_END_ADDR = 0x00FF;
     static constexpr uint16_t VRAM_ADDR = 0x8000;
     static constexpr uint16_t SRAM_ADDR = 0xA000;
     static constexpr uint16_t WRAM0_ADDR = 0xC000;
@@ -103,6 +108,7 @@ private:
     static constexpr uint16_t OBP1_ADDR = 0xFF49;
     static constexpr uint16_t WY_ADDR = 0xFF4A;
     static constexpr uint16_t WX_ADDR = 0xFF4B;
+    static constexpr uint16_t BANK_ADDR = 0xFF50;
     static constexpr uint16_t HRAM_ADDR = 0xFF80;
     static constexpr uint16_t IE_ADDR = 0xFFFF;
 };
