@@ -15,10 +15,7 @@ void PPU::writeLCDC(uint8_t value)
     {
         // Enable LCD/PPU
         mEnabled = true;
-        // Reset PPU
         setMode(2);
-        mCurrentDot = 0;
-        mIncrementedWindowLine = false;
     }
     else if ((mLCD->LCDC & LCD::LCDC_FLAG_LCD_PPU_ENABLE) && !(value & LCD::LCDC_FLAG_LCD_PPU_ENABLE))
     {
@@ -34,8 +31,27 @@ void PPU::writeLCDC(uint8_t value)
         {
             drawCallback(mDrawCallbackUserdata);
         }
+        // Reset registers
+        mCurrentDot = 0;
+        mIncrementedWindowLine = false;
+        mStatInterruptLine = 0;
+        mLCD->LY = 0;
+        mLCD->windowLineCounter = 0;
     }
     mLCD->LCDC = value;
+}
+
+void PPU::writeSTAT(uint8_t value)
+{
+    mLCD->STAT &= LCD::STAT_LYC_LY_BITMASK & LCD::STAT_MODE_BITMASK;
+    mLCD->STAT |= (value & ~(LCD::STAT_LYC_LY_BITMASK & LCD::STAT_MODE_BITMASK));
+    updateStatInterruptLine();
+}
+
+void PPU::writeLYC(uint8_t value)
+{
+    mLCD->LYC = value;
+    updateStatInterruptLine();
 }
 
 void PPU::setDrawCallback(void (*drawCallback)(void *), void *userdata)
@@ -102,15 +118,12 @@ void PPU::doDot()
         if (mLCD->LYC == mLCD->LY)
         {
             mLCD->STAT |= LCD::STAT_LYC_LY_BITMASK;
-            if (mLCD->STAT & LCD::STAT_LYC_INT_BITMASK)
-            {
-                mGameboy->requestInterrupt(CPU::InterruptSource::LCD);
-            }
         }
         else
         {
             mLCD->STAT &= ~LCD::STAT_LYC_LY_BITMASK;
         }
+        updateStatInterruptLine();
     }
     else if (mLCD->LY < LCD::SCREEN_H)
     {
@@ -130,6 +143,46 @@ void PPU::setMode(int mode)
     mMode = mode;
     mLCD->STAT &= ~LCD::STAT_MODE_BITMASK;
     mLCD->STAT |= mode;
+    updateStatInterruptLine();
+}
+
+void PPU::updateStatInterruptLine()
+{
+    int line = 0;
+    if ((mLCD->STAT & LCD::STAT_LYC_INT_BITMASK) && (mLCD->LYC == mLCD->LY))
+    {
+        line |= LCD::STAT_LYC_INT_BITMASK;
+    }
+    switch (mMode)
+    {
+    case 0:
+        if (mLCD->STAT & LCD::STAT_MODE_0_INT_BITMASK)
+        {
+            line |= LCD::STAT_MODE_0_INT_BITMASK;
+        }
+        break;
+    case 1:
+        if (mLCD->STAT & LCD::STAT_MODE_1_INT_BITMASK)
+        {
+            line |= LCD::STAT_MODE_1_INT_BITMASK;
+        }
+        break;
+    case 2:
+        if (mLCD->STAT & LCD::STAT_MODE_2_INT_BITMASK)
+        {
+            line |= LCD::STAT_MODE_2_INT_BITMASK;
+        }
+        break;
+
+    default:
+        break;
+    }
+
+    if (!mStatInterruptLine && line)
+    {
+        mGameboy->requestInterrupt(CPU::InterruptSource::LCD);
+    }
+    mStatInterruptLine = line;
 }
 
 uint8_t PPU::getBGTileAtScreenPixel(int x, int y, bool isWindow)

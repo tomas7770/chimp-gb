@@ -402,8 +402,7 @@ void Gameboy::writeByte(uint16_t address, uint8_t value)
     }
     else if (address == STAT_ADDR)
     {
-        mLCD.STAT &= LCD::STAT_LYC_LY_BITMASK & LCD::STAT_MODE_BITMASK;
-        mLCD.STAT |= (value & ~(LCD::STAT_LYC_LY_BITMASK & LCD::STAT_MODE_BITMASK));
+        mPPU.writeSTAT(value);
     }
     else if (address == SCY_ADDR)
     {
@@ -415,7 +414,7 @@ void Gameboy::writeByte(uint16_t address, uint8_t value)
     }
     else if (address == LYC_ADDR)
     {
-        mLCD.LYC = value;
+        mPPU.writeLYC(value);
     }
     else if (address == DMA_ADDR)
     {

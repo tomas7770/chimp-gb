@@ -18,6 +18,8 @@ public:
 
     int getMode() const;
     void writeLCDC(uint8_t value);
+    void writeSTAT(uint8_t value);
+    void writeLYC(uint8_t value);
     void setDrawCallback(void (*drawCallback)(void *), void *userdata);
 
     void doDot();
@@ -30,6 +32,7 @@ private:
     int mMode = 2;
     int mCurrentDot = 0; // current dot in current line, not total
     bool mIncrementedWindowLine = false;
+    int mStatInterruptLine = 0;
 
     std::vector<int> spritesInScanline; // list of sprites to draw, stored as an offset from OAM start
 
@@ -37,6 +40,7 @@ private:
     void *mDrawCallbackUserdata = nullptr;
 
     void setMode(int mode);
+    void updateStatInterruptLine();
 
     uint8_t getBGTileAtScreenPixel(int x, int y, bool isWindow);
     int getBGTilePixel(uint8_t tileId, int tilePixelX, int tilePixelY, bool drawingObj,
