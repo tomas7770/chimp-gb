@@ -63,21 +63,21 @@ uint8_t Gameboy::readByte(uint16_t address)
             if (mJoypad.keys[5])
                 value &= ~Joypad::B_LEFT_BITMASK;
             if (mJoypad.keys[6])
-                value &= ~Joypad::START_DOWN_BITMASK;
-            if (mJoypad.keys[7])
                 value &= ~Joypad::SELECT_UP_BITMASK;
+            if (mJoypad.keys[7])
+                value &= ~Joypad::START_DOWN_BITMASK;
         }
         if (mJoypad.selectDPad)
         {
             value &= ~Joypad::SEL_DPAD_BITMASK;
-            if (mJoypad.keys[3])
-                value &= ~Joypad::A_RIGHT_BITMASK;
-            if (mJoypad.keys[2])
-                value &= ~Joypad::B_LEFT_BITMASK;
-            if (mJoypad.keys[1])
-                value &= ~Joypad::START_DOWN_BITMASK;
             if (mJoypad.keys[0])
+                value &= ~Joypad::A_RIGHT_BITMASK;
+            if (mJoypad.keys[1])
+                value &= ~Joypad::B_LEFT_BITMASK;
+            if (mJoypad.keys[2])
                 value &= ~Joypad::SELECT_UP_BITMASK;
+            if (mJoypad.keys[3])
+                value &= ~Joypad::START_DOWN_BITMASK;
         }
 
         return value;
@@ -471,7 +471,7 @@ void Gameboy::tickSystemCounter()
     }
 }
 
-const LCD::Color* Gameboy::getPixels() const
+const LCD::Color *Gameboy::getPixels() const
 {
     return mLCD.pixels;
 }
@@ -507,6 +507,11 @@ void Gameboy::doTCycle()
 
 void Gameboy::onKeyPress(int key)
 {
+    if ((key < Joypad::BUTTONS_INDEX && mJoypad.selectDPad && !mJoypad.keys[key] && !mJoypad.keys[key + Joypad::BUTTONS_INDEX])
+        || (key >= Joypad::BUTTONS_INDEX && mJoypad.selectButtons && !mJoypad.keys[key] && !mJoypad.keys[key - Joypad::BUTTONS_INDEX]))
+    {
+        requestInterrupt(CPU::InterruptSource::Joypad);
+    }
     mJoypad.keys[key] = true;
 }
 

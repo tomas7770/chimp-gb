@@ -2,7 +2,7 @@
 
 struct Joypad
 {
-    bool keys[8] = {false}; // Order of joypad keys: Up, Down, Left, Right, A, B, Start, Select
+    bool keys[8] = {false}; // Order of joypad keys: Right, Left, Up, Down, A, B, Select, Start
     bool selectButtons = false;
     bool selectDPad = false;
 
@@ -12,4 +12,6 @@ struct Joypad
     static constexpr int SELECT_UP_BITMASK = (1 << 2);
     static constexpr int B_LEFT_BITMASK = (1 << 1);
     static constexpr int A_RIGHT_BITMASK = (1 << 0);
+
+    static constexpr int BUTTONS_INDEX = 4;
 };

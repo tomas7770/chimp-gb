@@ -29,11 +29,9 @@ Detailed status:
 
     - MBC1 with ROM <= 512 KiB, RAM and battery
 
-    - MBC3 with RAM and battery
+    - MBC3 with RAM, battery, and RTC
 
     - MBC5 with RAM and battery
-
-- **Misc:** Timer and Divider implemented, Joypad input partially implemented
 
 ## Compiling
 
