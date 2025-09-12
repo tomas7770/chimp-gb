@@ -264,7 +264,6 @@ LCD::Color PPU::getPaletteColor(uint8_t palette, int colorId)
 
 LCD::Color PPU::getScreenPixel(int pixelX, int pixelY)
 {
-    // TODO WIP
     int colorId = 0;
     uint8_t palette = 0;
     int bgColorId = 0;
