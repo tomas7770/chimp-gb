@@ -2,18 +2,6 @@
 #include "Gameboy.h"
 #include "CPUDebug.h"
 
-CPU::CPU(Gameboy *gameboy, bool debug)
-{
-    mGameboy = gameboy;
-    mDebugPrint = debug;
-
-    mRegF = FLAG_ZERO;
-    if (mGameboy->getCart().getHeader().checksum != 0x00)
-    {
-        mRegF |= FLAG_HALFCARRY | FLAG_CARRY;
-    }
-}
-
 void CPU::requestInterrupt(InterruptSource source)
 {
     IF |= (1 << source);
@@ -35,6 +23,75 @@ void CPU::startDMATransfer(uint8_t value)
 void CPU::loadBootRom()
 {
     mPC = 0;
+}
+
+void CPU::simulateBootRom()
+{
+    switch (mGameboy->getSystemType())
+    {
+    case Gameboy::SystemType::DMG:
+        mRegA = 0x01;
+        mRegF = FLAG_ZERO;
+        if (mGameboy->getCart().getHeader().checksum != 0x00)
+        {
+            mRegF |= FLAG_HALFCARRY | FLAG_CARRY;
+        }
+
+        mRegB = 0x00;
+        mRegC = 0x13;
+
+        mRegD = 0x00;
+        mRegE = 0xD8;
+
+        mRegH = 0x01;
+        mRegL = 0x4D;
+
+        break;
+
+    case Gameboy::SystemType::CGB:
+        mRegA = 0x11;
+        mRegF = FLAG_ZERO;
+        mRegC = 0x00;
+
+        if (mGameboy->inDMGMode())
+        {
+            auto header = mGameboy->getCart().getHeader();
+            mRegB = 0x00;
+            if (header.oldLicenseeCode == 0x01 ||
+                (header.oldLicenseeCode == 0x33 && header.newLicenseeCode[0] == 0x30 && header.newLicenseeCode[1] == 0x31))
+            {
+                for (int i = 0; i < 16; i++)
+                {
+                    mRegB += header.titleChars[i];
+                }
+            }
+            mRegD = 0x00;
+            mRegE = 0x08;
+            if (mRegB == 0x43 || mRegB == 0x58)
+            {
+                mRegH = 0x99;
+                mRegL = 0x1A;
+            }
+            else
+            {
+                mRegH = 0x00;
+                mRegL = 0x7C;
+            }
+        }
+        else
+        {
+            mRegB = 0x00;
+            mRegD = 0xFF;
+            mRegE = 0x56;
+            mRegH = 0x00;
+            mRegL = 0x0D;
+        }
+
+        break;
+
+    default:
+        break;
+    }
 }
 
 void CPU::doMCycle()

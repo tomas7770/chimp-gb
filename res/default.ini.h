@@ -24,4 +24,5 @@ const char *defaultIni =
     "fullscreen = 0\n"
     "\n"
     "[emulation]\n"
-    "dmgBootRomPath =\n";
+    "dmgBootRomPath =\n"
+    "cgbBootRomPath =\n";

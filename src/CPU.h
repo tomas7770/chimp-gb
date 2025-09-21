@@ -8,7 +8,7 @@ class Gameboy;
 class CPU
 {
 public:
-    CPU(Gameboy *gameboy, bool debug);
+    CPU(Gameboy *gameboy, bool debug) : mGameboy(gameboy), mDebugPrint(debug) {}
 
     void doMCycle();
 
@@ -24,6 +24,7 @@ public:
     void startDMATransfer(uint8_t value);
 
     void loadBootRom();
+    void simulateBootRom();
 
     // Interrupts (these registers are accessible through memory map)
     // Interrupt enable

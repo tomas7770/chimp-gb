@@ -41,9 +41,7 @@ RomHeader::RomHeader(const std::vector<uint8_t> &romData)
         break;
     }
 
-    char titleChars[16];
     std::memcpy(titleChars, romData.data() + 0x0134, 16);
-    title = std::string(titleChars);
 
     cartType = static_cast<CartridgeType>(romData[MBC_BYTE]);
 
@@ -56,4 +54,9 @@ RomHeader::RomHeader(const std::vector<uint8_t> &romData)
     {
         ramSize = RAM_SIZES[ramSizeIndex];
     }
+
+    oldLicenseeCode = romData[0x14B];
+    newLicenseeCode[0] = romData[0x144];
+    newLicenseeCode[1] = romData[0x145];
+    cgbFlag = romData[0x143];
 }

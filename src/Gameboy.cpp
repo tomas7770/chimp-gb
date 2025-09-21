@@ -234,6 +234,10 @@ uint8_t Gameboy::readByte(uint16_t address)
     {
         return mLCD.WX;
     }
+    else if (address == KEY0_ADDR)
+    {
+        return mKEY0;
+    }
     else if (address >= HRAM_ADDR && address < IE_ADDR)
     {
         return hram[address - HRAM_ADDR];
@@ -243,7 +247,7 @@ uint8_t Gameboy::readByte(uint16_t address)
         return mCPU.IE;
     }
 
-    return 0;
+    return 0xFF;
 }
 
 void Gameboy::writeByte(uint16_t address, uint8_t value)
@@ -440,6 +444,13 @@ void Gameboy::writeByte(uint16_t address, uint8_t value)
     {
         mLCD.WX = value;
     }
+    else if (address == KEY0_ADDR)
+    {
+        if (!(mBootRomFinished))
+        {
+            mKEY0 = value & (1 << 2);
+        }
+    }
     else if (address == BANK_ADDR)
     {
         if (!(mBootRomFinished) && value)
@@ -535,4 +546,31 @@ void Gameboy::setBootRom(std::istream &dataStream)
     dataStream.read(reinterpret_cast<char *>(bootRom), bootRomSize);
     mBootRomFinished = false;
     mCPU.loadBootRom();
+}
+
+void Gameboy::simulateBootRom()
+{
+    if (mSystemType == SystemType::CGB)
+    {
+        uint8_t cgbFlag = mCart.getHeader().cgbFlag;
+        if (cgbFlag & (1 << 7))
+        {
+            mKEY0 = cgbFlag;
+        }
+        else
+        {
+            mKEY0 = 0x04;
+        }
+    }
+    mCPU.simulateBootRom();
+}
+
+Gameboy::SystemType Gameboy::getSystemType()
+{
+    return mSystemType;
+}
+
+bool Gameboy::inDMGMode()
+{
+    return mKEY0;
 }

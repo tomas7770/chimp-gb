@@ -17,6 +17,7 @@ public:
 
     // emulation
     std::string dmgBootRomPath;
+    std::string cgbBootRomPath;
 
     void load(std::stringstream &configString);
     void save(std::string &configFilepath);

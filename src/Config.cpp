@@ -48,6 +48,7 @@ void Config::load(std::stringstream &configString)
     loadIntKey(ini, fullscreen, "video", "fullscreen");
 
     loadStringKey(ini, dmgBootRomPath, "emulation", "dmgBootRomPath");
+    loadStringKey(ini, cgbBootRomPath, "emulation", "cgbBootRomPath");
 }
 
 void Config::save(std::string &configFilepath)
@@ -71,6 +72,7 @@ void Config::save(std::string &configFilepath)
     ini["video"]["fullscreen"] = std::to_string(fullscreen);
 
     ini["emulation"]["dmgBootRomPath"] = dmgBootRomPath;
+    ini["emulation"]["cgbBootRomPath"] = cgbBootRomPath;
 
     file.write(ini, true);
 }

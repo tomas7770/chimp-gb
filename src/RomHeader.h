@@ -26,10 +26,13 @@ struct RomHeader
     static constexpr int RAM_SIZE_BYTE = 0x0149;
     static constexpr int RAM_SIZES[] = {0, 0, 8192, 32768, 131072, 65536};
 
-    std::string title;
+    char titleChars[16];
     CartridgeType cartType;
     int ramSize;
     uint8_t checksum;
+    uint8_t oldLicenseeCode;
+    uint8_t newLicenseeCode[2];
+    uint8_t cgbFlag;
 
     RomHeader(const std::vector<uint8_t> &romData);
     RomHeader() = default;

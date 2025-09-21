@@ -59,15 +59,42 @@ ChimpGBApp::ChimpGBApp(const Cartridge &cart, std::string &romFilename, bool deb
 
     mRomFilename = std::move(romFilename);
 
+    Gameboy::SystemType systemType = Gameboy::SystemType::DMG;
+    if (cart.getHeader().cgbFlag & (1 << 7))
+    {
+        // CGB game
+        systemType = Gameboy::SystemType::CGB;
+    }
+
     try
     {
-        mGameboy = new Gameboy(cart, debug);
+        mGameboy = new Gameboy(cart, debug, systemType);
         mGameboy->setDrawCallback(drawDisplayCallback, this);
-        std::ifstream bootRomDataStream(mConfig.dmgBootRomPath, std::ios::binary);
+
+        std::string bootRomPath;
+        switch (systemType)
+        {
+        case Gameboy::SystemType::DMG:
+            bootRomPath = mConfig.dmgBootRomPath;
+            break;
+
+        case Gameboy::SystemType::CGB:
+            bootRomPath = mConfig.cgbBootRomPath;
+            break;
+
+        default:
+            break;
+        }
+        std::ifstream bootRomDataStream(bootRomPath, std::ios::binary);
         if (bootRomDataStream.good())
         {
             mGameboy->setBootRom(bootRomDataStream);
         }
+        else
+        {
+            mGameboy->simulateBootRom();
+        }
+
         loadGame();
     }
     catch (std::exception err)
