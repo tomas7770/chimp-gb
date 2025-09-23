@@ -23,7 +23,7 @@ public:
     uint8_t readByte(uint16_t address);
     void writeByte(uint16_t address, uint8_t value);
 
-    static constexpr int wramSize = 8192;
+    static constexpr int wramSize = 32768;
     static constexpr int hramSize = 0xFFFE - 0xFF80 + 1;
     static constexpr int bootRomSize = 256;
     uint8_t wram[wramSize];
@@ -53,6 +53,7 @@ public:
 
     SystemType getSystemType();
     bool inDMGMode();
+    bool inCGBMode();
 
     static constexpr int CYCLES_PER_FRAME = 70224;
     static constexpr int CLOCK_RATE = 4194304;
@@ -73,11 +74,15 @@ private:
 
     uint16_t mSysCounter = 0xABCC;
     uint8_t mKEY0;
+    int mWRAMBank = 1;
+
+    static constexpr uint16_t WRAM_BANK_SIZE = (1 << 12);
 
     static constexpr uint16_t BOOT_ROM_END_ADDR = 0x00FF;
     static constexpr uint16_t VRAM_ADDR = 0x8000;
     static constexpr uint16_t SRAM_ADDR = 0xA000;
     static constexpr uint16_t WRAM0_ADDR = 0xC000;
+    static constexpr uint16_t WRAM1_ADDR = 0xD000;
     static constexpr uint16_t ECHO_ADDR = 0xE000;
     static constexpr uint16_t OAM_ADDR = 0xFE00;
     static constexpr uint16_t UNUSABLE_ADDR = 0xFEA0;
@@ -124,6 +129,7 @@ private:
     static constexpr uint16_t WX_ADDR = 0xFF4B;
     static constexpr uint16_t KEY0_ADDR = 0xFF4C;
     static constexpr uint16_t BANK_ADDR = 0xFF50;
+    static constexpr uint16_t SVBK_ADDR = 0xFF70;
     static constexpr uint16_t HRAM_ADDR = 0xFF80;
     static constexpr uint16_t IE_ADDR = 0xFFFF;
 };

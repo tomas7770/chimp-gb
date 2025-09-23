@@ -31,7 +31,12 @@ uint8_t Gameboy::readByte(uint16_t address)
     }
     else if (address >= WRAM0_ADDR && address < ECHO_ADDR)
     {
-        return wram[address - WRAM0_ADDR];
+        int finalAddress = address - WRAM0_ADDR;
+        if (address >= WRAM1_ADDR)
+        {
+            finalAddress += WRAM_BANK_SIZE * (mWRAMBank - 1);
+        }
+        return wram[finalAddress];
     }
     else if (address >= ECHO_ADDR && address < OAM_ADDR)
     {
@@ -238,6 +243,10 @@ uint8_t Gameboy::readByte(uint16_t address)
     {
         return mKEY0;
     }
+    else if (address == SVBK_ADDR)
+    {
+        return mWRAMBank;
+    }
     else if (address >= HRAM_ADDR && address < IE_ADDR)
     {
         return hram[address - HRAM_ADDR];
@@ -270,7 +279,12 @@ void Gameboy::writeByte(uint16_t address, uint8_t value)
     }
     else if (address >= WRAM0_ADDR && address < ECHO_ADDR)
     {
-        wram[address - WRAM0_ADDR] = value;
+        int finalAddress = address - WRAM0_ADDR;
+        if (address >= WRAM1_ADDR)
+        {
+            finalAddress += WRAM_BANK_SIZE * (mWRAMBank - 1);
+        }
+        wram[finalAddress] = value;
     }
     else if (address >= ECHO_ADDR && address < OAM_ADDR)
     {
@@ -458,6 +472,14 @@ void Gameboy::writeByte(uint16_t address, uint8_t value)
             mBootRomFinished = true;
         }
     }
+    else if (address == SVBK_ADDR && inCGBMode())
+    {
+        mWRAMBank = value & 0b111;
+        if (mWRAMBank == 0)
+        {
+            mWRAMBank = 1;
+        }
+    }
     else if (address >= HRAM_ADDR && address < IE_ADDR)
     {
         hram[address - HRAM_ADDR] = value;
@@ -572,5 +594,10 @@ Gameboy::SystemType Gameboy::getSystemType()
 
 bool Gameboy::inDMGMode()
 {
-    return mKEY0;
+    return mKEY0 & 0x04;
+}
+
+bool Gameboy::inCGBMode()
+{
+    return mSystemType == CGB && !inDMGMode();
 }
