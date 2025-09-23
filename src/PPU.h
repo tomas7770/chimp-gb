@@ -11,10 +11,12 @@ class PPU
 public:
     PPU(Gameboy *gameboy, LCD *lcd) : mGameboy(gameboy), mLCD(lcd) {}
 
-    static constexpr int vramSize = 8192;
+    static constexpr int vramSize = 16384;
     uint8_t vram[vramSize];
     static constexpr int oamSize = 0xFE9F - 0xFE00 + 1;
     uint8_t oam[oamSize];
+
+    int VRAMBank = 0;
 
     int getMode() const;
     void writeLCDC(uint8_t value);
@@ -23,6 +25,8 @@ public:
     void setDrawCallback(void (*drawCallback)(void *), void *userdata);
 
     void doDot();
+
+    static constexpr uint16_t VRAM_BANK_SIZE = (1 << 13);
 
 private:
     Gameboy *mGameboy;

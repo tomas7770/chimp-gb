@@ -23,7 +23,12 @@ uint8_t Gameboy::readByte(uint16_t address)
         // {
         //     return mPPU.vram[address - VRAM_ADDR];
         // }
-        return mPPU.vram[address - VRAM_ADDR];
+        int finalAddress = address - VRAM_ADDR;
+        if (mPPU.VRAMBank)
+        {
+            finalAddress += PPU::VRAM_BANK_SIZE;
+        }
+        return mPPU.vram[finalAddress];
     }
     else if (address >= SRAM_ADDR && address < WRAM0_ADDR)
     {
@@ -243,6 +248,10 @@ uint8_t Gameboy::readByte(uint16_t address)
     {
         return mKEY0;
     }
+    else if (address == VBK_ADDR)
+    {
+        return mPPU.VRAMBank & 0xFE;
+    }
     else if (address == SVBK_ADDR)
     {
         return mWRAMBank;
@@ -271,7 +280,12 @@ void Gameboy::writeByte(uint16_t address, uint8_t value)
         // {
         //     mPPU.vram[address - VRAM_ADDR] = value;
         // }
-        mPPU.vram[address - VRAM_ADDR] = value;
+        int finalAddress = address - VRAM_ADDR;
+        if (mPPU.VRAMBank)
+        {
+            finalAddress += PPU::VRAM_BANK_SIZE;
+        }
+        mPPU.vram[finalAddress] = value;
     }
     else if (address >= SRAM_ADDR && address < WRAM0_ADDR)
     {
@@ -464,6 +478,10 @@ void Gameboy::writeByte(uint16_t address, uint8_t value)
         {
             mKEY0 = value & (1 << 2);
         }
+    }
+    else if (address == VBK_ADDR && inCGBMode())
+    {
+        mPPU.VRAMBank = value & 1;
     }
     else if (address == BANK_ADDR)
     {
