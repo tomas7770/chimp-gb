@@ -20,6 +20,57 @@ void CPU::startDMATransfer(uint8_t value)
     mDMACopying = true;
 }
 
+void CPU::startGeneralDMA(int hdmaLength)
+{
+    if (mHBlankDMACopying)
+    {
+        mHBlankDMACopying = false;
+        return;
+    }
+    mGeneralDMACopying = true;
+    mDMABytesCopied = 0;
+    mHDMALength = hdmaLength;
+}
+
+void CPU::startHBlankDMA(int hdmaLength)
+{
+    mHBlankDMACopying = true;
+    mDMABytesCopied = 0;
+    mHDMALength = hdmaLength;
+    mHBlankBytesCopied = 0;
+}
+
+uint8_t CPU::getDMALengthLeft()
+{
+    uint8_t result = 0;
+    if (!(mGeneralDMACopying || mHBlankDMACopying))
+    {
+        result |= (1 << 7);
+    }
+    result += ((mHDMALength - mDMABytesCopied) >> 4) - 1;
+    return result;
+}
+
+void CPU::copyDMABytes(int count)
+{
+    for (int i = 0; i < count; i++)
+    {
+        auto srcVal = mGameboy->readByte(hdmaSrc + mDMABytesCopied);
+        mGameboy->writeByte(hdmaDest + mDMABytesCopied, srcVal);
+        mDMABytesCopied++;
+        mHBlankBytesCopied++;
+    }
+    if (mDMABytesCopied >= mHDMALength)
+    {
+        mGeneralDMACopying = false;
+        mHBlankDMACopying = false;
+        // Minor "hack": When DMA finishes, the length left should return 0x7F
+        // ((0x800 - 0) >> 4) - 1 = 0x7F so we can use the general formula
+        mDMABytesCopied = 0;
+        mHDMALength = 0x800;
+    }
+}
+
 void CPU::loadBootRom()
 {
     mPC = 0;
@@ -100,6 +151,16 @@ void CPU::doMCycle()
 
     if (mHalted)
     {
+        return;
+    }
+
+    if (mHBlankDMACopying && !mGameboy->inHBlank())
+    {
+        mHBlankBytesCopied = 0;
+    }
+    if (mGeneralDMACopying || (mHBlankDMACopying && mGameboy->inHBlank() && mHBlankBytesCopied < 0x10))
+    {
+        copyDMABytes(2);
         return;
     }
 

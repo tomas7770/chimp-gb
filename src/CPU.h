@@ -22,6 +22,9 @@ public:
     };
     void requestInterrupt(InterruptSource source);
     void startDMATransfer(uint8_t value);
+    void startGeneralDMA(int hdmaLength);
+    void startHBlankDMA(int hdmaLength);
+    uint8_t getDMALengthLeft();
 
     void loadBootRom();
     void simulateBootRom();
@@ -31,6 +34,9 @@ public:
     uint8_t IE = 0;
     // Interrupt flag
     uint8_t IF = 0;
+
+    uint16_t hdmaSrc;
+    uint16_t hdmaDest = 0x8000;
 
 private:
     uint8_t readByteAtPC() const;
@@ -269,6 +275,8 @@ private:
     void decodeExecuteOpcode();
     void prefetchOpcode();
 
+    void copyDMABytes(int count);
+
     Gameboy *mGameboy;
 
     // AF
@@ -309,10 +317,17 @@ private:
     // Halt
     bool mHalted = false;
 
-    // DMA
+    // OAM DMA
     uint16_t mDMASourceStart;
     int mDMACycles;
     bool mDMACopying = false;
+
+    // CGB DMA
+    int mHDMALength;
+    bool mGeneralDMACopying = false;
+    bool mHBlankDMACopying = false;
+    int mDMABytesCopied;
+    int mHBlankBytesCopied;
 
     static constexpr uint8_t FLAG_ZERO = (1 << 7);
     static constexpr uint8_t FLAG_SUB = (1 << 6);

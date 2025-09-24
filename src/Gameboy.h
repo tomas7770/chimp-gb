@@ -55,6 +55,8 @@ public:
     bool inDMGMode();
     bool inCGBMode();
 
+    bool inHBlank();
+
     static constexpr int CYCLES_PER_FRAME = 70224;
     static constexpr int CLOCK_RATE = 4194304;
 
@@ -130,6 +132,11 @@ private:
     static constexpr uint16_t KEY0_ADDR = 0xFF4C;
     static constexpr uint16_t VBK_ADDR = 0xFF4F;
     static constexpr uint16_t BANK_ADDR = 0xFF50;
+    static constexpr uint16_t HDMA1_ADDR = 0xFF51;
+    static constexpr uint16_t HDMA2_ADDR = 0xFF52;
+    static constexpr uint16_t HDMA3_ADDR = 0xFF53;
+    static constexpr uint16_t HDMA4_ADDR = 0xFF54;
+    static constexpr uint16_t HDMA5_ADDR = 0xFF55;
     static constexpr uint16_t SVBK_ADDR = 0xFF70;
     static constexpr uint16_t HRAM_ADDR = 0xFF80;
     static constexpr uint16_t IE_ADDR = 0xFFFF;

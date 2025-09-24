@@ -252,6 +252,10 @@ uint8_t Gameboy::readByte(uint16_t address)
     {
         return mPPU.VRAMBank & 0xFE;
     }
+    else if (address == HDMA5_ADDR && inCGBMode())
+    {
+        return mCPU.getDMALengthLeft();
+    }
     else if (address == SVBK_ADDR)
     {
         return mWRAMBank;
@@ -490,6 +494,43 @@ void Gameboy::writeByte(uint16_t address, uint8_t value)
             mBootRomFinished = true;
         }
     }
+    else if (address == HDMA1_ADDR && inCGBMode())
+    {
+        mCPU.hdmaSrc &= 0xFF;
+        mCPU.hdmaSrc |= (value << 8);
+    }
+    else if (address == HDMA2_ADDR && inCGBMode())
+    {
+        mCPU.hdmaSrc &= 0xFF00;
+        mCPU.hdmaSrc |= (value & 0xF0);
+    }
+    else if (address == HDMA3_ADDR && inCGBMode())
+    {
+        mCPU.hdmaDest &= 0xE0FF;
+        mCPU.hdmaDest |= ((value & 0x1F) << 8);
+    }
+    else if (address == HDMA4_ADDR && inCGBMode())
+    {
+        mCPU.hdmaDest &= 0xFF00;
+        mCPU.hdmaDest |= (value & 0xF0);
+    }
+    else if (address == HDMA5_ADDR && inCGBMode())
+    {
+        int hdmaLength = ((value & 0x7F) + 1) << 4;
+        switch (value & (1 << 7))
+        {
+        case 0:
+            mCPU.startGeneralDMA(hdmaLength);
+            break;
+
+        case (1 << 7):
+            mCPU.startHBlankDMA(hdmaLength);
+            break;
+
+        default:
+            break;
+        }
+    }
     else if (address == SVBK_ADDR && inCGBMode())
     {
         mWRAMBank = value & 0b111;
@@ -618,4 +659,9 @@ bool Gameboy::inDMGMode()
 bool Gameboy::inCGBMode()
 {
     return mSystemType == CGB && !inDMGMode();
+}
+
+bool Gameboy::inHBlank()
+{
+    return mPPU.getMode() == 0;
 }
