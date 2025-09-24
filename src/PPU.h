@@ -46,9 +46,9 @@ private:
     void setMode(int mode);
     void updateStatInterruptLine();
 
-    uint8_t getBGTileAtScreenPixel(int x, int y, bool isWindow);
+    uint8_t getBGTileAtScreenPixel(int x, int y, bool isWindow, bool doGetAttributes = false);
     int getBGTilePixel(uint8_t tileId, int tilePixelX, int tilePixelY, bool drawingObj,
-                       bool xFlip = false, bool yFlip = false);
+                       bool xFlip = false, bool yFlip = false, int bank = 0);
     int getBGPixelOnScreen(int x, int y);
     int getWindowPixel(int x, int y);
     LCD::Color getPaletteColor(uint8_t palette, int colorId);
@@ -78,4 +78,9 @@ private:
     static constexpr uint8_t OBJ_FLAG_Y_FLIP = (1 << 6);
     static constexpr uint8_t OBJ_FLAG_X_FLIP = (1 << 5);
     static constexpr uint8_t OBJ_FLAG_DMG_PAL = (1 << 4);
+    static constexpr uint8_t OBJ_FLAG_BANK = (1 << 3);
+
+    static constexpr uint8_t BG_ATTRIB_FLAG_Y_FLIP = (1 << 6);
+    static constexpr uint8_t BG_ATTRIB_FLAG_X_FLIP = (1 << 5);
+    static constexpr uint8_t BG_ATTRIB_FLAG_BANK = (1 << 3);
 };

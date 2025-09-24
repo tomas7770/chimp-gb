@@ -3,6 +3,7 @@
 #include "Gameboy.h"
 #include "LCD.h"
 #include "CPU.h"
+#include <cstring>
 
 int PPU::getMode() const
 {
@@ -185,7 +186,7 @@ void PPU::updateStatInterruptLine()
     mStatInterruptLine = line;
 }
 
-uint8_t PPU::getBGTileAtScreenPixel(int x, int y, bool isWindow)
+uint8_t PPU::getBGTileAtScreenPixel(int x, int y, bool isWindow, bool doGetAttributes)
 {
     uint16_t tileMapAddr;
     if (mLCD->LCDC & (isWindow ? LCD::LCDC_FLAG_WINDOW_TILE_MAP : LCD::LCDC_FLAG_BG_TILE_MAP))
@@ -196,10 +197,10 @@ uint8_t PPU::getBGTileAtScreenPixel(int x, int y, bool isWindow)
     {
         tileMapAddr = TILE_MAP_0_ADDR;
     }
-    return vram[tileMapAddr + (x / TILE_LENGTH) + TILE_MAP_LENGTH * (y / TILE_LENGTH)];
+    return vram[tileMapAddr + (x / TILE_LENGTH) + TILE_MAP_LENGTH * (y / TILE_LENGTH) + (doGetAttributes ? VRAM_BANK_SIZE : 0)];
 }
 
-int PPU::getBGTilePixel(uint8_t tileId, int tilePixelX, int tilePixelY, bool drawingObj, bool xFlip, bool yFlip)
+int PPU::getBGTilePixel(uint8_t tileId, int tilePixelX, int tilePixelY, bool drawingObj, bool xFlip, bool yFlip, int bank)
 {
     int tileOffset;
     if ((mLCD->LCDC & LCD::LCDC_FLAG_BG_WINDOW_TILE_DATA) || drawingObj)
@@ -223,8 +224,8 @@ int PPU::getBGTilePixel(uint8_t tileId, int tilePixelX, int tilePixelY, bool dra
     int lineOffset = tilePixelY * 2;
     // The first byte specifies the LSB of the color ID of each pixel, and the second byte specifies the MSB.
     // Bit 7 represents the leftmost pixel, and bit 0 the rightmost.
-    int lsb = (vram[tileOffset + lineOffset] >> (7 - tilePixelX)) & 1;
-    int msb = (vram[tileOffset + lineOffset + 1] >> (7 - tilePixelX)) & 1;
+    int lsb = (vram[tileOffset + lineOffset + bank * VRAM_BANK_SIZE] >> (7 - tilePixelX)) & 1;
+    int msb = (vram[tileOffset + lineOffset + 1 + bank * VRAM_BANK_SIZE] >> (7 - tilePixelX)) & 1;
     return (msb << 1) + lsb;
 }
 
@@ -235,7 +236,18 @@ int PPU::getBGPixelOnScreen(int x, int y)
     uint8_t tileId = getBGTileAtScreenPixel(x, y, false);
     int tilePixelX = x % TILE_LENGTH;
     int tilePixelY = y % TILE_LENGTH;
-    return getBGTilePixel(tileId, tilePixelX, tilePixelY, false);
+    if (mGameboy->inCGBMode())
+    {
+        uint8_t attributes = getBGTileAtScreenPixel(x, y, false, true);
+        bool xFlip = attributes & BG_ATTRIB_FLAG_X_FLIP;
+        bool yFlip = attributes & BG_ATTRIB_FLAG_Y_FLIP;
+        int bank = (attributes & BG_ATTRIB_FLAG_BANK) >> 3;
+        return getBGTilePixel(tileId, tilePixelX, tilePixelY, false, xFlip, yFlip, bank);
+    }
+    else
+    {
+        return getBGTilePixel(tileId, tilePixelX, tilePixelY, false);
+    }
 }
 
 int PPU::getWindowPixel(int x, int y)
@@ -243,7 +255,18 @@ int PPU::getWindowPixel(int x, int y)
     uint8_t tileId = getBGTileAtScreenPixel(x, y, true);
     int tilePixelX = x % TILE_LENGTH;
     int tilePixelY = y % TILE_LENGTH;
-    return getBGTilePixel(tileId, tilePixelX, tilePixelY, false);
+    if (mGameboy->inCGBMode())
+    {
+        uint8_t attributes = getBGTileAtScreenPixel(x, y, true, true);
+        bool xFlip = attributes & BG_ATTRIB_FLAG_X_FLIP;
+        bool yFlip = attributes & BG_ATTRIB_FLAG_Y_FLIP;
+        int bank = (attributes & BG_ATTRIB_FLAG_BANK) >> 3;
+        return getBGTilePixel(tileId, tilePixelX, tilePixelY, false, xFlip, yFlip, bank);
+    }
+    else
+    {
+        return getBGTilePixel(tileId, tilePixelX, tilePixelY, false);
+    }
 }
 
 LCD::Color PPU::getPaletteColor(uint8_t palette, int colorId)
@@ -327,8 +350,9 @@ LCD::Color PPU::getScreenPixel(int pixelX, int pixelY)
 
             int tilePixelX = (pixelX - x) % TILE_LENGTH;
             int tilePixelY = (pixelY - y) % TILE_LENGTH;
+            int bank = mGameboy->inCGBMode() ? ((flags & OBJ_FLAG_BANK) >> 3) : 0;
             int objColorId = getBGTilePixel(tileId, tilePixelX, tilePixelY, true,
-                                            (flags & OBJ_FLAG_X_FLIP) ? true : false, yFlip);
+                                            (flags & OBJ_FLAG_X_FLIP) ? true : false, yFlip, bank);
             bool bgHasPriority = (flags & OBJ_FLAG_PRIORITY) && bgColorId > 0;
             if (objColorId != 0 && !bgHasPriority)
             {
