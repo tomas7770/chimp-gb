@@ -9,28 +9,36 @@ class Gameboy;
 class PPU
 {
 public:
-    PPU(Gameboy *gameboy, LCD *lcd) : mGameboy(gameboy), mLCD(lcd) {}
+    PPU(Gameboy *gameboy, LCD *lcd) : mGameboy(gameboy), mLCD(lcd) { setMode(OAMScan); }
 
     static constexpr int vramSize = 8192;
     uint8_t vram[vramSize];
     static constexpr int oamSize = 0xFE9F - 0xFE00 + 1;
     uint8_t oam[oamSize];
 
-    int getMode() const;
+    enum Mode
+    {
+        HBlank,
+        VBlank,
+        OAMScan,
+        Draw,
+    };
+
+    Mode getMode() const;
     void writeLCDC(uint8_t value);
     void writeSTAT(uint8_t value);
     void writeLYC(uint8_t value);
     void setDrawCallback(void (*drawCallback)(void *), void *userdata);
 
-    void doDot();
+    void doCycle();
 
 private:
     Gameboy *mGameboy;
     LCD *mLCD;
 
     bool mEnabled = true;
-    int mMode = 2;
-    int mCurrentDot = 0; // current dot in current line, not total
+    Mode mMode;
+    int mScanlineDots = 0;
     bool mIncrementedWindowLine = false;
     int mStatInterruptLine = 0;
 
@@ -39,8 +47,10 @@ private:
     void (*drawCallback)(void *userdata) = nullptr;
     void *mDrawCallbackUserdata = nullptr;
 
-    void setMode(int mode);
+    void setMode(Mode mode);
     void updateStatInterruptLine();
+
+    void newLine();
 
     uint8_t getBGTileAtScreenPixel(int x, int y, bool isWindow);
     int getBGTilePixel(uint8_t tileId, int tilePixelX, int tilePixelY, bool drawingObj,

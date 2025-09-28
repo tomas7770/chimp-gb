@@ -497,7 +497,7 @@ void Gameboy::doTCycle()
     {
         mCPU.doMCycle();
     }
-    mPPU.doDot();
+    mPPU.doCycle();
     if (!(tCycleCounter % APU_CYCLE_DIV))
     {
         mAPU.doCycle();

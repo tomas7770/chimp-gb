@@ -4,7 +4,7 @@
 #include "LCD.h"
 #include "CPU.h"
 
-int PPU::getMode() const
+PPU::Mode PPU::getMode() const
 {
     return mMode;
 }
@@ -15,7 +15,7 @@ void PPU::writeLCDC(uint8_t value)
     {
         // Enable LCD/PPU
         mEnabled = true;
-        setMode(2);
+        setMode(OAMScan);
     }
     else if ((mLCD->LCDC & LCD::LCDC_FLAG_LCD_PPU_ENABLE) && !(value & LCD::LCDC_FLAG_LCD_PPU_ENABLE))
     {
@@ -32,7 +32,7 @@ void PPU::writeLCDC(uint8_t value)
             drawCallback(mDrawCallbackUserdata);
         }
         // Reset registers
-        mCurrentDot = 0;
+        mScanlineDots = 0;
         mIncrementedWindowLine = false;
         mStatInterruptLine = 0;
         mLCD->LY = 0;
@@ -60,87 +60,82 @@ void PPU::setDrawCallback(void (*drawCallback)(void *), void *userdata)
     mDrawCallbackUserdata = userdata;
 }
 
-void PPU::doDot()
+void PPU::doCycle()
 {
     if (!mEnabled)
     {
         return;
     }
 
-    if (mMode == 3 && mCurrentDot >= MODE_2_DOTS + MODE_3_DUMMY_DOTS && mCurrentDot < MODE_2_DOTS + MODE_3_DOTS)
-    {
-        // Draw pixel
-        int pixelX = mCurrentDot - MODE_2_DOTS - MODE_3_DUMMY_DOTS;
-        int pixelY = mLCD->LY;
-        int pixelCoord = pixelY * LCD::SCREEN_W + pixelX;
-        mLCD->pixels[pixelCoord] = getScreenPixel(pixelX, pixelY);
-    }
+    mScanlineDots++;
 
-    mCurrentDot++;
-
-    if (mCurrentDot >= DOTS_PER_LINE)
+    switch (mMode)
     {
-        // Next line
-        mCurrentDot = 0;
-        mLCD->LY++;
-        mLCD->LY %= LCD::SCREEN_H + VBLANK_LINES;
-        if (mLCD->LY == LCD::SCREEN_H)
+    case HBlank:
+    case VBlank:
+        if (mScanlineDots >= DOTS_PER_LINE)
         {
-            mLCD->windowLineCounter = 0;
-            setMode(1);
-            mGameboy->requestInterrupt(CPU::InterruptSource::VBlank);
-            if (drawCallback != nullptr)
-            {
-                drawCallback(mDrawCallbackUserdata);
-            }
+            newLine();
         }
-        else if (mLCD->LY < LCD::SCREEN_H)
-        {
-            setMode(2);
-            mIncrementedWindowLine = false;
-            // OAM scan
-            spritesInScanline.clear();
-            for (int i = 0; i < oamSize; i += SPRITE_BYTES)
-            {
-                int y = oam[i] - 16; // Byte 0: y+16 (value=0 means y=-16)
-                if (mLCD->LY < y || mLCD->LY >= y + ((mLCD->LCDC & LCD::LCDC_FLAG_OBJ_SIZE) ? 16 : 8))
-                {
-                    continue;
-                }
-                spritesInScanline.push_back(i);
-                if (spritesInScanline.size() >= MAX_SPRITES_PER_LINE)
-                {
-                    break;
-                }
-            }
-        }
+        break;
 
-        if (mLCD->LYC == mLCD->LY)
+    case OAMScan:
+        if (mScanlineDots >= MODE_2_DOTS)
         {
-            mLCD->STAT |= LCD::STAT_LYC_LY_BITMASK;
+            setMode(Draw);
         }
-        else
+        break;
+
+    case Draw:
+        // TODO proper FIFO logic
+        if (mScanlineDots >= MODE_2_DOTS + MODE_3_DOTS)
         {
-            mLCD->STAT &= ~LCD::STAT_LYC_LY_BITMASK;
+            setMode(HBlank);
         }
-        updateStatInterruptLine();
-    }
-    else if (mLCD->LY < LCD::SCREEN_H)
-    {
-        if (mCurrentDot >= MODE_2_DOTS + MODE_3_DOTS)
+        else if (mScanlineDots >= MODE_2_DOTS + MODE_3_DUMMY_DOTS)
         {
-            setMode(0);
+            // Draw pixel
+            int pixelX = mScanlineDots - MODE_2_DOTS - MODE_3_DUMMY_DOTS;
+            int pixelY = mLCD->LY;
+            int pixelCoord = pixelY * LCD::SCREEN_W + pixelX;
+            mLCD->pixels[pixelCoord] = getScreenPixel(pixelX, pixelY);
         }
-        else if (mCurrentDot >= MODE_2_DOTS)
-        {
-            setMode(3);
-        }
+        break;
+
+    default:
+        break;
     }
 }
 
-void PPU::setMode(int mode)
+void PPU::setMode(PPU::Mode mode)
 {
     mMode = mode;
+    switch (mMode)
+    {
+    case OAMScan:
+        spritesInScanline.clear();
+        for (int i = 0; i < oamSize; i += SPRITE_BYTES)
+        {
+            int y = oam[i] - 16; // Byte 0: y+16 (value=0 means y=-16)
+            if (mLCD->LY < y || mLCD->LY >= y + ((mLCD->LCDC & LCD::LCDC_FLAG_OBJ_SIZE) ? 16 : 8))
+            {
+                continue;
+            }
+            spritesInScanline.push_back(i);
+            if (spritesInScanline.size() >= MAX_SPRITES_PER_LINE)
+            {
+                break;
+            }
+        }
+        break;
+
+    case Draw:
+        // TODO init FIFO
+        break;
+
+    default:
+        break;
+    }
     mLCD->STAT &= ~LCD::STAT_MODE_BITMASK;
     mLCD->STAT |= mode;
     updateStatInterruptLine();
@@ -183,6 +178,38 @@ void PPU::updateStatInterruptLine()
         mGameboy->requestInterrupt(CPU::InterruptSource::LCD);
     }
     mStatInterruptLine = line;
+}
+
+void PPU::newLine()
+{
+    mScanlineDots = 0;
+    mLCD->LY++;
+    mLCD->LY %= LCD::SCREEN_H + VBLANK_LINES;
+    if (mLCD->LY == LCD::SCREEN_H)
+    {
+        mLCD->windowLineCounter = 0;
+        setMode(VBlank);
+        mGameboy->requestInterrupt(CPU::InterruptSource::VBlank);
+        if (drawCallback != nullptr)
+        {
+            drawCallback(mDrawCallbackUserdata);
+        }
+    }
+    else if (mLCD->LY < LCD::SCREEN_H)
+    {
+        setMode(OAMScan);
+        mIncrementedWindowLine = false;
+    }
+
+    if (mLCD->LYC == mLCD->LY)
+    {
+        mLCD->STAT |= LCD::STAT_LYC_LY_BITMASK;
+    }
+    else
+    {
+        mLCD->STAT &= ~LCD::STAT_LYC_LY_BITMASK;
+    }
+    updateStatInterruptLine();
 }
 
 uint8_t PPU::getBGTileAtScreenPixel(int x, int y, bool isWindow)
