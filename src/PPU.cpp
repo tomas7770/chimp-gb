@@ -88,22 +88,79 @@ void PPU::doCycle()
 
     case Draw:
         // TODO proper FIFO logic
-        if (mScanlineDots >= MODE_2_DOTS + MODE_3_DOTS)
+        // Fetch
+        if ((mFetcherDots % 2) && !mPendingPush)
+        {
+            switch (mFetcherState)
+            {
+            case GetTile:
+                mFetcherY = (mLCD->LY + mLCD->SCY) % (TILE_LENGTH * TILE_MAP_LENGTH);
+                mCurrentTileOffset = getTileDataOffset(getCurrentBGTile(false), false);
+                mFetcherX++;
+
+                mFetcherState = GetTileDataLow;
+                break;
+
+            case GetTileDataLow:
+                mTileDataLow = vram[mCurrentTileOffset];
+
+                mFetcherState = GetTileDataHigh;
+                break;
+
+            case GetTileDataHigh:
+                mTileDataHigh = vram[mCurrentTileOffset + 1];
+                mPendingPush = true;
+
+                mFetcherState = GetTile;
+                break;
+
+            default:
+                break;
+            }
+        }
+        mFetcherDots++;
+        if (mPendingPush && mBgFifo.empty())
+        {
+            pushPixelsToFifo();
+            mPendingPush = false;
+            mFetcherDots = 1;
+        }
+
+        // Draw
+        if (!mBgFifo.empty())
+        {
+            const FifoPixel &pixel = mBgFifo.front();
+            mBgFifo.pop();
+
+            if (mCurrentX >= 0)
+            {
+                int pixelCoord = mLCD->LY * LCD::SCREEN_W + mCurrentX;
+                mLCD->pixels[pixelCoord] = getPaletteColor(mLCD->BGP, pixel.color);
+            }
+            mCurrentX++;
+        }
+        if (mCurrentX >= LCD::SCREEN_W)
         {
             setMode(HBlank);
-        }
-        else if (mScanlineDots >= MODE_2_DOTS + MODE_3_DUMMY_DOTS)
-        {
-            // Draw pixel
-            int pixelX = mScanlineDots - MODE_2_DOTS - MODE_3_DUMMY_DOTS;
-            int pixelY = mLCD->LY;
-            int pixelCoord = pixelY * LCD::SCREEN_W + pixelX;
-            mLCD->pixels[pixelCoord] = getScreenPixel(pixelX, pixelY);
         }
         break;
 
     default:
         break;
+    }
+}
+
+void PPU::pushPixelsToFifo()
+{
+    // The first byte specifies the LSB of the color ID of each pixel, and the second byte specifies the MSB.
+    // Bit 7 represents the leftmost pixel, and bit 0 the rightmost.
+    for (int tilePixelX = 0; tilePixelX < 8; tilePixelX++)
+    {
+        int lsb = (mTileDataLow >> (7 - tilePixelX)) & 1;
+        int msb = (mTileDataHigh >> (7 - tilePixelX)) & 1;
+        FifoPixel pixel;
+        pixel.color = (msb << 1) + lsb;
+        mBgFifo.push(pixel);
     }
 }
 
@@ -131,6 +188,12 @@ void PPU::setMode(PPU::Mode mode)
 
     case Draw:
         // TODO init FIFO
+        mFetcherDots = 0;
+        mBgFifo = std::queue<FifoPixel>();
+        mCurrentX = -TILE_LENGTH - (mLCD->SCX % 8);
+        mFetcherState = GetTile;
+        mFetcherX = -1;
+        mPendingPush = false;
         break;
 
     default:
@@ -212,7 +275,7 @@ void PPU::newLine()
     updateStatInterruptLine();
 }
 
-uint8_t PPU::getBGTileAtScreenPixel(int x, int y, bool isWindow)
+uint8_t PPU::getCurrentBGTile(bool isWindow) const
 {
     uint16_t tileMapAddr;
     if (mLCD->LCDC & (isWindow ? LCD::LCDC_FLAG_WINDOW_TILE_MAP : LCD::LCDC_FLAG_BG_TILE_MAP))
@@ -223,7 +286,24 @@ uint8_t PPU::getBGTileAtScreenPixel(int x, int y, bool isWindow)
     {
         tileMapAddr = TILE_MAP_0_ADDR;
     }
-    return vram[tileMapAddr + (x / TILE_LENGTH) + TILE_MAP_LENGTH * (y / TILE_LENGTH)];
+    int x = ((mLCD->SCX / TILE_LENGTH) + mFetcherX) % TILE_MAP_LENGTH;
+    return vram[tileMapAddr + x + TILE_MAP_LENGTH * (mFetcherY / TILE_LENGTH)];
+}
+
+int PPU::getTileDataOffset(uint8_t tileId, bool drawingObj) const
+{
+    int tileOffset;
+    if ((mLCD->LCDC & LCD::LCDC_FLAG_BG_WINDOW_TILE_DATA) || drawingObj)
+    {
+        tileOffset = tileId * TILE_BYTES;
+    }
+    else
+    {
+        tileOffset = TILE_BLOCK_2_OFFSET + static_cast<int8_t>(tileId) * TILE_BYTES;
+    }
+    // Each tile occupies 16 bytes, where each line is represented by 2 bytes.
+    int lineOffset = (mFetcherY % TILE_LENGTH) * 2;
+    return tileOffset + lineOffset;
 }
 
 int PPU::getBGTilePixel(uint8_t tileId, int tilePixelX, int tilePixelY, bool drawingObj, bool xFlip, bool yFlip)
@@ -255,23 +335,23 @@ int PPU::getBGTilePixel(uint8_t tileId, int tilePixelX, int tilePixelY, bool dra
     return (msb << 1) + lsb;
 }
 
-int PPU::getBGPixelOnScreen(int x, int y)
-{
-    x = (x + mLCD->SCX) % 256;
-    y = (y + mLCD->SCY) % 256;
-    uint8_t tileId = getBGTileAtScreenPixel(x, y, false);
-    int tilePixelX = x % TILE_LENGTH;
-    int tilePixelY = y % TILE_LENGTH;
-    return getBGTilePixel(tileId, tilePixelX, tilePixelY, false);
-}
+// int PPU::getBGPixelOnScreen(int x, int y)
+// {
+//     x = (x + mLCD->SCX) % 256;
+//     y = (y + mLCD->SCY) % 256;
+//     uint8_t tileId = getBGTileAtScreenPixel(x, y, false);
+//     int tilePixelX = x % TILE_LENGTH;
+//     int tilePixelY = y % TILE_LENGTH;
+//     return getBGTilePixel(tileId, tilePixelX, tilePixelY, false);
+// }
 
-int PPU::getWindowPixel(int x, int y)
-{
-    uint8_t tileId = getBGTileAtScreenPixel(x, y, true);
-    int tilePixelX = x % TILE_LENGTH;
-    int tilePixelY = y % TILE_LENGTH;
-    return getBGTilePixel(tileId, tilePixelX, tilePixelY, false);
-}
+// int PPU::getWindowPixel(int x, int y)
+// {
+//     uint8_t tileId = getBGTileAtScreenPixel(x, y, true);
+//     int tilePixelX = x % TILE_LENGTH;
+//     int tilePixelY = y % TILE_LENGTH;
+//     return getBGTilePixel(tileId, tilePixelX, tilePixelY, false);
+// }
 
 LCD::Color PPU::getPaletteColor(uint8_t palette, int colorId)
 {
@@ -289,88 +369,88 @@ LCD::Color PPU::getPaletteColor(uint8_t palette, int colorId)
     }
 }
 
-LCD::Color PPU::getScreenPixel(int pixelX, int pixelY)
-{
-    int colorId = 0;
-    uint8_t palette = 0;
-    int bgColorId = 0;
-    if (mLCD->LCDC & LCD::LCDC_FLAG_BG_WINDOW_ENABLE)
-    {
-        if ((mLCD->LCDC & LCD::LCDC_FLAG_WINDOW_ENABLE) && pixelX >= mLCD->WX - 7 && pixelY >= mLCD->WY)
-        {
-            if (!mIncrementedWindowLine)
-            {
-                mLCD->windowLineCounter++;
-                mIncrementedWindowLine = true;
-            }
-            bgColorId = getWindowPixel(pixelX - mLCD->WX + 7, mLCD->windowLineCounter - 1);
-        }
-        else
-        {
-            bgColorId = getBGPixelOnScreen(pixelX, pixelY);
-        }
-        colorId = bgColorId;
-        palette = mLCD->BGP;
-    }
-    if (mLCD->LCDC & LCD::LCDC_FLAG_OBJ_ENABLE)
-    {
-        // The smaller the X coordinate, the higher the object priority.
-        // 256 > any unsigned byte
-        int lowestX = 256;
-        for (int j = spritesInScanline.size() - 1; j >= 0; j--)
-        {
-            // The object located first in OAM has higher priority, so start by the last and let the earlier ones override
-            int i = spritesInScanline.at(j);
-            // Only x is checked because y was already checked during OAM scan
-            int x = oam[i + 1] - 8; // Byte 1: x+8 (value=0 means x=-8)
-            if (pixelX < x || pixelX >= x + 8)
-            {
-                continue;
-            }
+// LCD::Color PPU::getScreenPixel(int pixelX, int pixelY)
+// {
+//     int colorId = 0;
+//     uint8_t palette = 0;
+//     int bgColorId = 0;
+//     if (mLCD->LCDC & LCD::LCDC_FLAG_BG_WINDOW_ENABLE)
+//     {
+//         if ((mLCD->LCDC & LCD::LCDC_FLAG_WINDOW_ENABLE) && pixelX >= mLCD->WX - 7 && pixelY >= mLCD->WY)
+//         {
+//             if (!mIncrementedWindowLine)
+//             {
+//                 mLCD->windowLineCounter++;
+//                 mIncrementedWindowLine = true;
+//             }
+//             bgColorId = getWindowPixel(pixelX - mLCD->WX + 7, mLCD->windowLineCounter - 1);
+//         }
+//         else
+//         {
+//             bgColorId = getBGPixelOnScreen(pixelX, pixelY);
+//         }
+//         colorId = bgColorId;
+//         palette = mLCD->BGP;
+//     }
+//     if (mLCD->LCDC & LCD::LCDC_FLAG_OBJ_ENABLE)
+//     {
+//         // The smaller the X coordinate, the higher the object priority.
+//         // 256 > any unsigned byte
+//         int lowestX = 256;
+//         for (int j = spritesInScanline.size() - 1; j >= 0; j--)
+//         {
+//             // The object located first in OAM has higher priority, so start by the last and let the earlier ones override
+//             int i = spritesInScanline.at(j);
+//             // Only x is checked because y was already checked during OAM scan
+//             int x = oam[i + 1] - 8; // Byte 1: x+8 (value=0 means x=-8)
+//             if (pixelX < x || pixelX >= x + 8)
+//             {
+//                 continue;
+//             }
 
-            // Pixel is within this object
-            if (oam[i + 1] > lowestX)
-            {
-                continue;
-            }
-            int y = oam[i] - 16; // Byte 0: y+16 (value=0 means y=-16)
+//             // Pixel is within this object
+//             if (oam[i + 1] > lowestX)
+//             {
+//                 continue;
+//             }
+//             int y = oam[i] - 16; // Byte 0: y+16 (value=0 means y=-16)
 
-            uint8_t flags = oam[i + 3]; // Byte 3: attributes/flags
-            bool yFlip = (flags & OBJ_FLAG_Y_FLIP) ? true : false;
-            uint8_t tileId = oam[i + 2]; // Byte 2: tile index
-            if (mLCD->LCDC & LCD::LCDC_FLAG_OBJ_SIZE)
-            {
-                if (yFlip)
-                {
-                    tileId |= 1;
-                    tileId -= ((pixelY - y) >= 8 ? 1 : 0);
-                }
-                else
-                {
-                    tileId &= ~1;
-                    tileId += ((pixelY - y) >= 8 ? 1 : 0);
-                }
-            }
+//             uint8_t flags = oam[i + 3]; // Byte 3: attributes/flags
+//             bool yFlip = (flags & OBJ_FLAG_Y_FLIP) ? true : false;
+//             uint8_t tileId = oam[i + 2]; // Byte 2: tile index
+//             if (mLCD->LCDC & LCD::LCDC_FLAG_OBJ_SIZE)
+//             {
+//                 if (yFlip)
+//                 {
+//                     tileId |= 1;
+//                     tileId -= ((pixelY - y) >= 8 ? 1 : 0);
+//                 }
+//                 else
+//                 {
+//                     tileId &= ~1;
+//                     tileId += ((pixelY - y) >= 8 ? 1 : 0);
+//                 }
+//             }
 
-            int tilePixelX = (pixelX - x) % TILE_LENGTH;
-            int tilePixelY = (pixelY - y) % TILE_LENGTH;
-            int objColorId = getBGTilePixel(tileId, tilePixelX, tilePixelY, true,
-                                            (flags & OBJ_FLAG_X_FLIP) ? true : false, yFlip);
-            bool bgHasPriority = (flags & OBJ_FLAG_PRIORITY) && bgColorId > 0;
-            if (objColorId != 0 && !bgHasPriority)
-            {
-                colorId = objColorId;
-                if (flags & OBJ_FLAG_DMG_PAL)
-                {
-                    palette = mLCD->OBP1;
-                }
-                else
-                {
-                    palette = mLCD->OBP0;
-                }
-                lowestX = oam[i + 1];
-            }
-        }
-    }
-    return getPaletteColor(palette, colorId);
-}
+//             int tilePixelX = (pixelX - x) % TILE_LENGTH;
+//             int tilePixelY = (pixelY - y) % TILE_LENGTH;
+//             int objColorId = getBGTilePixel(tileId, tilePixelX, tilePixelY, true,
+//                                             (flags & OBJ_FLAG_X_FLIP) ? true : false, yFlip);
+//             bool bgHasPriority = (flags & OBJ_FLAG_PRIORITY) && bgColorId > 0;
+//             if (objColorId != 0 && !bgHasPriority)
+//             {
+//                 colorId = objColorId;
+//                 if (flags & OBJ_FLAG_DMG_PAL)
+//                 {
+//                     palette = mLCD->OBP1;
+//                 }
+//                 else
+//                 {
+//                     palette = mLCD->OBP0;
+//                 }
+//                 lowestX = oam[i + 1];
+//             }
+//         }
+//     }
+//     return getPaletteColor(palette, colorId);
+// }

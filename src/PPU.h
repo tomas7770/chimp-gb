@@ -2,6 +2,7 @@
 
 #include <cstdint>
 #include <vector>
+#include <queue>
 #include "LCD.h"
 
 class Gameboy;
@@ -44,6 +45,29 @@ private:
 
     std::vector<int> spritesInScanline; // list of sprites to draw, stored as an offset from OAM start
 
+    // FIFO
+    int mFetcherDots;
+    struct FifoPixel
+    {
+        int color;       // a value between 0 and 3
+        int palette;     // on CGB a value between 0 and 7 and on DMG this only applies to objects
+        bool bgPriority; // holds the value of the OBJ-to-BG Priority bit
+    };
+    std::queue<FifoPixel> mBgFifo;
+    int mCurrentX;
+    enum FetcherState
+    {
+        GetTile,
+        GetTileDataLow,
+        GetTileDataHigh,
+    };
+    FetcherState mFetcherState;
+    int mFetcherX, mFetcherY;
+    int mCurrentTileOffset;
+    uint8_t mTileDataLow, mTileDataHigh;
+    bool mPendingPush;
+    void pushPixelsToFifo();
+
     void (*drawCallback)(void *userdata) = nullptr;
     void *mDrawCallbackUserdata = nullptr;
 
@@ -52,19 +76,16 @@ private:
 
     void newLine();
 
-    uint8_t getBGTileAtScreenPixel(int x, int y, bool isWindow);
+    uint8_t getCurrentBGTile(bool isWindow) const;
+    int getTileDataOffset(uint8_t tileId, bool drawingObj) const;
     int getBGTilePixel(uint8_t tileId, int tilePixelX, int tilePixelY, bool drawingObj,
                        bool xFlip = false, bool yFlip = false);
-    int getBGPixelOnScreen(int x, int y);
-    int getWindowPixel(int x, int y);
+    // int getBGPixelOnScreen(int x, int y);
+    // int getWindowPixel(int x, int y);
     LCD::Color getPaletteColor(uint8_t palette, int colorId);
-    LCD::Color getScreenPixel(int x, int y);
+    // LCD::Color getScreenPixel(int x, int y);
 
     static constexpr int MODE_2_DOTS = 80;
-    static constexpr int MODE_3_DOTS = 172; // inaccurate, this is variable
-    static constexpr int MODE_3_DUMMY_DOTS = 12;
-    static constexpr int MODE_0_DOTS = 376 - MODE_3_DOTS; // inaccurate, this is variable
-    static constexpr int MODE_1_DOTS = 456;
     static constexpr int DOTS_PER_LINE = 456;
     static constexpr int VBLANK_LINES = 10;
 
