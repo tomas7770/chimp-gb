@@ -4,9 +4,26 @@
 #include "LCD.h"
 #include "CPU.h"
 
+PPU::PPU(Gameboy *gameboy, LCD *lcd)
+{
+    mGameboy = gameboy;
+    mLCD = lcd;
+    setMode(OAMScan);
+    resetRegisters();
+}
+
 PPU::Mode PPU::getMode() const
 {
     return mMode;
+}
+
+void PPU::resetRegisters()
+{
+    mScanlineDots = 0;
+    mWindowWYTriggered = false;
+    mStatInterruptLine = 0;
+    mLCD->LY = 0;
+    mLCD->windowLineCounter = -1;
 }
 
 void PPU::writeLCDC(uint8_t value)
@@ -31,12 +48,7 @@ void PPU::writeLCDC(uint8_t value)
         {
             drawCallback(mDrawCallbackUserdata);
         }
-        // Reset registers
-        mScanlineDots = 0;
-        mIncrementedWindowLine = false;
-        mStatInterruptLine = 0;
-        mLCD->LY = 0;
-        mLCD->windowLineCounter = 0;
+        resetRegisters();
     }
     mLCD->LCDC = value;
 }
@@ -95,7 +107,8 @@ void PPU::doCycle()
             {
             case GetTile:
                 mFetcherY = (mLCD->LY + mLCD->SCY) % (TILE_LENGTH * TILE_MAP_LENGTH);
-                mCurrentTileOffset = getTileDataOffset(getCurrentBGTile(false), false);
+                mCurrentTileOffset = getTileDataOffset(getCurrentBGTile(mDrawingWindow),
+                                                       mDrawingWindow ? mLCD->windowLineCounter : mFetcherY, false);
                 mFetcherX++;
 
                 mFetcherState = GetTileDataLow;
@@ -145,6 +158,22 @@ void PPU::doCycle()
                 }
             }
             mCurrentX++;
+
+            if (mCurrentX == mLCD->WX - 7)
+            {
+                mWindowWXTriggered = true;
+            }
+
+            if (!(mDrawingWindow) && mWindowWYTriggered && mWindowWXTriggered && (mLCD->LCDC & LCD::LCDC_FLAG_WINDOW_ENABLE))
+            {
+                mFetcherDots = 0;
+                mBgFifo = std::queue<FifoPixel>();
+                mFetcherState = GetTile;
+                mFetcherX = 0;
+                mPendingPush = false;
+                mDrawingWindow = true;
+                mLCD->windowLineCounter++;
+            }
         }
         if (mCurrentX >= LCD::SCREEN_W)
         {
@@ -191,16 +220,23 @@ void PPU::setMode(PPU::Mode mode)
                 break;
             }
         }
+
+        if (mLCD->LY == mLCD->WY)
+        {
+            mWindowWYTriggered = true;
+        }
         break;
 
     case Draw:
         // TODO init FIFO
+        mWindowWXTriggered = false;
         mFetcherDots = 0;
         mBgFifo = std::queue<FifoPixel>();
         mCurrentX = -TILE_LENGTH - (mLCD->SCX % 8);
         mFetcherState = GetTile;
         mFetcherX = -1;
         mPendingPush = false;
+        mDrawingWindow = false;
         break;
 
     default:
@@ -257,7 +293,8 @@ void PPU::newLine()
     mLCD->LY %= LCD::SCREEN_H + VBLANK_LINES;
     if (mLCD->LY == LCD::SCREEN_H)
     {
-        mLCD->windowLineCounter = 0;
+        mWindowWYTriggered = false;
+        mLCD->windowLineCounter = -1;
         setMode(VBlank);
         mGameboy->requestInterrupt(CPU::InterruptSource::VBlank);
         if (drawCallback != nullptr)
@@ -268,7 +305,6 @@ void PPU::newLine()
     else if (mLCD->LY < LCD::SCREEN_H)
     {
         setMode(OAMScan);
-        mIncrementedWindowLine = false;
     }
 
     if (mLCD->LYC == mLCD->LY)
@@ -293,11 +329,12 @@ uint8_t PPU::getCurrentBGTile(bool isWindow) const
     {
         tileMapAddr = TILE_MAP_0_ADDR;
     }
-    int x = ((mLCD->SCX / TILE_LENGTH) + mFetcherX) % TILE_MAP_LENGTH;
-    return vram[tileMapAddr + x + TILE_MAP_LENGTH * (mFetcherY / TILE_LENGTH)];
+    int x = isWindow ? (mFetcherX % TILE_MAP_LENGTH) : (((mLCD->SCX / TILE_LENGTH) + mFetcherX) % TILE_MAP_LENGTH);
+    int y = isWindow ? mLCD->windowLineCounter : mFetcherY;
+    return vram[tileMapAddr + x + TILE_MAP_LENGTH * (y / TILE_LENGTH)];
 }
 
-int PPU::getTileDataOffset(uint8_t tileId, bool drawingObj) const
+int PPU::getTileDataOffset(uint8_t tileId, int y, bool drawingObj) const
 {
     int tileOffset;
     if ((mLCD->LCDC & LCD::LCDC_FLAG_BG_WINDOW_TILE_DATA) || drawingObj)
@@ -309,7 +346,7 @@ int PPU::getTileDataOffset(uint8_t tileId, bool drawingObj) const
         tileOffset = TILE_BLOCK_2_OFFSET + static_cast<int8_t>(tileId) * TILE_BYTES;
     }
     // Each tile occupies 16 bytes, where each line is represented by 2 bytes.
-    int lineOffset = (mFetcherY % TILE_LENGTH) * 2;
+    int lineOffset = (y % TILE_LENGTH) * 2;
     return tileOffset + lineOffset;
 }
 

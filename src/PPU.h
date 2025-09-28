@@ -10,7 +10,7 @@ class Gameboy;
 class PPU
 {
 public:
-    PPU(Gameboy *gameboy, LCD *lcd) : mGameboy(gameboy), mLCD(lcd) { setMode(OAMScan); }
+    PPU(Gameboy *gameboy, LCD *lcd);
 
     static constexpr int vramSize = 8192;
     uint8_t vram[vramSize];
@@ -39,9 +39,9 @@ private:
 
     bool mEnabled = true;
     Mode mMode;
-    int mScanlineDots = 0;
-    bool mIncrementedWindowLine = false;
-    int mStatInterruptLine = 0;
+    int mScanlineDots;
+    bool mWindowWYTriggered, mWindowWXTriggered;
+    int mStatInterruptLine;
 
     std::vector<int> spritesInScanline; // list of sprites to draw, stored as an offset from OAM start
 
@@ -66,10 +66,13 @@ private:
     int mCurrentTileOffset;
     uint8_t mTileDataLow, mTileDataHigh;
     bool mPendingPush;
+    bool mDrawingWindow;
     void pushPixelsToFifo();
 
     void (*drawCallback)(void *userdata) = nullptr;
     void *mDrawCallbackUserdata = nullptr;
+
+    void resetRegisters();
 
     void setMode(Mode mode);
     void updateStatInterruptLine();
@@ -77,7 +80,7 @@ private:
     void newLine();
 
     uint8_t getCurrentBGTile(bool isWindow) const;
-    int getTileDataOffset(uint8_t tileId, bool drawingObj) const;
+    int getTileDataOffset(uint8_t tileId, int y, bool drawingObj) const;
     int getBGTilePixel(uint8_t tileId, int tilePixelX, int tilePixelY, bool drawingObj,
                        bool xFlip = false, bool yFlip = false);
     // int getBGPixelOnScreen(int x, int y);
