@@ -135,7 +135,14 @@ void PPU::doCycle()
             if (mCurrentX >= 0)
             {
                 int pixelCoord = mLCD->LY * LCD::SCREEN_W + mCurrentX;
-                mLCD->pixels[pixelCoord] = getPaletteColor(mLCD->BGP, pixel.color);
+                if (mLCD->LCDC & LCD::LCDC_FLAG_BG_WINDOW_ENABLE)
+                {
+                    mLCD->pixels[pixelCoord] = getPaletteColor(mLCD->BGP, pixel.color);
+                }
+                else
+                {
+                    mLCD->pixels[pixelCoord] = LCD::White;
+                }
             }
             mCurrentX++;
         }
