@@ -42,7 +42,7 @@ private:
     void createDataDirectories();
     void loadConfig();
     void saveConfig();
-    void setFullscreen();
+    void setVideoParameters();
     void saveGame();
     void loadGame();
     void terminate(int error_code);

@@ -103,7 +103,7 @@ ChimpGBApp::ChimpGBApp(const Cartridge &cart, std::string &romFilename, bool deb
         terminate(-1);
     }
 
-    setFullscreen();
+    setVideoParameters();
 }
 
 void ChimpGBApp::createDataDirectories()
@@ -151,7 +151,7 @@ void ChimpGBApp::saveConfig()
     mConfig.save(configFilepath);
 }
 
-void ChimpGBApp::setFullscreen()
+void ChimpGBApp::setVideoParameters()
 {
     if (mConfig.fullscreen)
     {
@@ -175,6 +175,8 @@ void ChimpGBApp::setFullscreen()
     {
         SDL_SetWindowFullscreen(mWindowSDL, 0);
     }
+
+    SDL_RenderSetIntegerScale(mRendererSDL, mConfig.integerScaling ? SDL_TRUE : SDL_FALSE);
 }
 
 void drawDisplayCallback(void *userdata)
@@ -271,7 +273,7 @@ void ChimpGBApp::mainLoop()
                 else if (scancode == mConfig.keyToggleFullscreen)
                 {
                     mConfig.fullscreen = !mConfig.fullscreen;
-                    setFullscreen();
+                    setVideoParameters();
                 }
             }
             else if (mEventSDL.type == SDL_KEYUP)
