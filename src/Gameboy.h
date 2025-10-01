@@ -25,10 +25,11 @@ public:
 
     static constexpr int wramSize = 32768;
     static constexpr int hramSize = 0xFFFE - 0xFF80 + 1;
-    static constexpr int bootRomSize = 256;
+    static constexpr int dmgBootRomSize = 0x100;
+    static constexpr int cgbBootRomSize = 0x900;
     uint8_t wram[wramSize];
     uint8_t hram[hramSize];
-    uint8_t bootRom[bootRomSize];
+    uint8_t bootRom[cgbBootRomSize];
 
     unsigned int tCycleCounter = 0;
 
@@ -81,6 +82,8 @@ private:
     static constexpr uint16_t WRAM_BANK_SIZE = (1 << 12);
 
     static constexpr uint16_t BOOT_ROM_END_ADDR = 0x00FF;
+    static constexpr uint16_t BOOT_ROM_CGB_START_ADDR = 0x0200;
+    static constexpr uint16_t BOOT_ROM_CGB_END_ADDR = 0x08FF;
     static constexpr uint16_t VRAM_ADDR = 0x8000;
     static constexpr uint16_t SRAM_ADDR = 0xA000;
     static constexpr uint16_t WRAM0_ADDR = 0xC000;

@@ -8,7 +8,7 @@ uint8_t Gameboy::readByte(uint16_t address)
 {
     if (address < VRAM_ADDR)
     {
-        if (!(mBootRomFinished) && address <= BOOT_ROM_END_ADDR)
+        if (!(mBootRomFinished) && (address <= BOOT_ROM_END_ADDR || (mSystemType == CGB && address >= BOOT_ROM_CGB_START_ADDR && address <= BOOT_ROM_CGB_END_ADDR)))
         {
             return bootRom[address];
         }
@@ -678,7 +678,19 @@ void Gameboy::setDrawCallback(void (*drawCallback)(void *), void *userdata)
 
 void Gameboy::setBootRom(std::istream &dataStream)
 {
-    dataStream.read(reinterpret_cast<char *>(bootRom), bootRomSize);
+    switch (mSystemType)
+    {
+    case DMG:
+        dataStream.read(reinterpret_cast<char *>(bootRom), dmgBootRomSize);
+        break;
+
+    case CGB:
+        dataStream.read(reinterpret_cast<char *>(bootRom), cgbBootRomSize);
+        break;
+
+    default:
+        break;
+    }
     mBootRomFinished = false;
     mCPU.loadBootRom();
 }
