@@ -193,24 +193,43 @@ void ChimpGBApp::drawDisplay()
     int xScale = WINDOW_WIDTH / LCD::SCREEN_W;
     int yScale = WINDOW_HEIGHT / LCD::SCREEN_H;
     auto pixels = mGameboy->getPixels();
-    for (int i = 0; i < LCD::SCREEN_W * LCD::SCREEN_H; i++)
+    switch (mGameboy->getSystemType())
     {
-        switch (pixels[i])
+    case Gameboy::SystemType::DMG:
+        for (int i = 0; i < LCD::SCREEN_W * LCD::SCREEN_H; i++)
         {
-        default:
-        case LCD::Color::White:
-            mTexturePixels[i] = 0xFFFFFFFF;
-            break;
-        case LCD::Color::LightGray:
-            mTexturePixels[i] = 0x7F7F7FFF;
-            break;
-        case LCD::Color::DarkGray:
-            mTexturePixels[i] = 0x3F3F3FFF;
-            break;
-        case LCD::Color::Black:
-            mTexturePixels[i] = 0x000000FF;
-            break;
+            switch (pixels[i].dmg)
+            {
+            default:
+            case LCD::DMGColor::White:
+                mTexturePixels[i] = 0xFFFFFFFF;
+                break;
+            case LCD::DMGColor::LightGray:
+                mTexturePixels[i] = 0x7F7F7FFF;
+                break;
+            case LCD::DMGColor::DarkGray:
+                mTexturePixels[i] = 0x3F3F3FFF;
+                break;
+            case LCD::DMGColor::Black:
+                mTexturePixels[i] = 0x000000FF;
+                break;
+            }
         }
+        break;
+
+    case Gameboy::SystemType::CGB:
+        for (int i = 0; i < LCD::SCREEN_W * LCD::SCREEN_H; i++)
+        {
+            LCD::CGBColor color = pixels[i].cgb;
+            int red = (255 * color.r) / 31;
+            int green = (255 * color.g) / 31;
+            int blue = (255 * color.b) / 31;
+            mTexturePixels[i] = (red << 24) | (green << 16) | (blue << 8) | 0xFF;
+        }
+        break;
+
+    default:
+        break;
     }
 
     // Update renderer

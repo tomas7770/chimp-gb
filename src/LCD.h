@@ -8,7 +8,7 @@ struct LCD
     static constexpr int SCREEN_H = 144;
 
     // The values of this enum match exactly the DMG color indices. Do not change the order.
-    enum Color
+    enum DMGColor
     {
         White,
         LightGray,
@@ -16,7 +16,18 @@ struct LCD
         Black
     };
 
-    Color pixels[SCREEN_W * SCREEN_H] = {Color::White};
+    struct CGBColor
+    {
+        int r, g, b; // RGB555
+    };
+
+    union Color
+    {
+        DMGColor dmg;
+        CGBColor cgb;
+    };
+
+    Color pixels[SCREEN_W * SCREEN_H];
 
     uint8_t LCDC = 0x91;
     uint8_t STAT = 0x85;
@@ -30,6 +41,11 @@ struct LCD
     uint8_t WY = 0;
     uint8_t WX = 0;
     uint8_t windowLineCounter = 0;
+
+    uint8_t BCPS;
+    uint8_t OCPS;
+    uint8_t colorBGPaletteMemory[64];
+    uint8_t colorOBJPaletteMemory[64];
 
     static constexpr uint8_t LCDC_FLAG_LCD_PPU_ENABLE = (1 << 7);
     static constexpr uint8_t LCDC_FLAG_WINDOW_TILE_MAP = (1 << 6);
@@ -46,4 +62,6 @@ struct LCD
     static constexpr uint8_t STAT_MODE_0_INT_BITMASK = (1 << 3);
     static constexpr uint8_t STAT_LYC_LY_BITMASK = (1 << 2);
     static constexpr uint8_t STAT_MODE_BITMASK = (1 << 1) | (1 << 0);
+
+    static constexpr uint8_t CPS_FLAG_AUTOINC = (1 << 7);
 };

@@ -137,6 +137,10 @@ private:
     static constexpr uint16_t HDMA3_ADDR = 0xFF53;
     static constexpr uint16_t HDMA4_ADDR = 0xFF54;
     static constexpr uint16_t HDMA5_ADDR = 0xFF55;
+    static constexpr uint16_t BCPS_ADDR = 0xFF68;
+    static constexpr uint16_t BCPD_ADDR = 0xFF69;
+    static constexpr uint16_t OCPS_ADDR = 0xFF6A;
+    static constexpr uint16_t OCPD_ADDR = 0xFF6B;
     static constexpr uint16_t SVBK_ADDR = 0xFF70;
     static constexpr uint16_t HRAM_ADDR = 0xFF80;
     static constexpr uint16_t IE_ADDR = 0xFFFF;

@@ -59,9 +59,6 @@ private:
     uint8_t getBGTileAtScreenPixel(int x, int y, bool isWindow, bool doGetAttributes = false);
     int getBGTilePixel(uint8_t tileId, int tilePixelX, int tilePixelY, bool drawingObj,
                        bool xFlip = false, bool yFlip = false, int bank = 0);
-    int getBGPixelOnScreen(int x, int y);
-    int getWindowPixel(int x, int y);
-    LCD::Color getPaletteColor(uint8_t palette, int colorId);
     LCD::Color getScreenPixel(int x, int y);
 
     static constexpr int MODE_2_DOTS = 80;
@@ -93,4 +90,6 @@ private:
     static constexpr uint8_t BG_ATTRIB_FLAG_Y_FLIP = (1 << 6);
     static constexpr uint8_t BG_ATTRIB_FLAG_X_FLIP = (1 << 5);
     static constexpr uint8_t BG_ATTRIB_FLAG_BANK = (1 << 3);
+
+    static constexpr uint8_t CGB_PAL_BITMASK = 0b111;
 };

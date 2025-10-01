@@ -17,6 +17,8 @@ ChimpGB is an open source, cross platform Game Boy (DMG) emulator written in C++
 
 - Most GB-compatible games should run
 
+- Partial GBC support
+
 Detailed status:
 
 - **CPU:** fully implemented, except for **STOP** opcode

@@ -2,6 +2,7 @@
 
 #include <iostream>
 #include <format>
+#include <cstring>
 
 uint8_t Gameboy::readByte(uint16_t address)
 {
@@ -255,6 +256,22 @@ uint8_t Gameboy::readByte(uint16_t address)
     else if (address == HDMA5_ADDR && inCGBMode())
     {
         return mCPU.getDMALengthLeft();
+    }
+    else if (address == BCPS_ADDR && inCGBMode())
+    {
+        return mLCD.BCPS;
+    }
+    else if (address == BCPD_ADDR && inCGBMode())
+    {
+        return mLCD.colorBGPaletteMemory[mLCD.BCPS & 63];
+    }
+    else if (address == OCPS_ADDR && inCGBMode())
+    {
+        return mLCD.OCPS;
+    }
+    else if (address == OCPD_ADDR && inCGBMode())
+    {
+        return mLCD.colorOBJPaletteMemory[mLCD.OCPS & 63];
     }
     else if (address == SVBK_ADDR)
     {
@@ -531,6 +548,34 @@ void Gameboy::writeByte(uint16_t address, uint8_t value)
             break;
         }
     }
+    else if (address == BCPS_ADDR && inCGBMode())
+    {
+        mLCD.BCPS = value;
+    }
+    else if (address == BCPD_ADDR && inCGBMode())
+    {
+        int address = mLCD.BCPS & 63;
+        mLCD.colorBGPaletteMemory[address] = value;
+        if (mLCD.BCPS & LCD::CPS_FLAG_AUTOINC)
+        {
+            address = (address + 1) & 63;
+            writeByte(BCPS_ADDR, (mLCD.BCPS & 0b11000000) | address);
+        }
+    }
+    else if (address == OCPS_ADDR && inCGBMode())
+    {
+        mLCD.OCPS = value;
+    }
+    else if (address == OCPD_ADDR && inCGBMode())
+    {
+        int address = mLCD.OCPS & 63;
+        mLCD.colorOBJPaletteMemory[address] = value;
+        if (mLCD.OCPS & LCD::CPS_FLAG_AUTOINC)
+        {
+            address = (address + 1) & 63;
+            writeByte(OCPS_ADDR, (mLCD.OCPS & 0b11000000) | address);
+        }
+    }
     else if (address == SVBK_ADDR && inCGBMode())
     {
         mWRAMBank = value & 0b111;
@@ -642,6 +687,7 @@ void Gameboy::simulateBootRom()
         {
             mKEY0 = 0x04;
         }
+        std::memset(mLCD.colorBGPaletteMemory, 0, 64);
     }
     mCPU.simulateBootRom();
 }
