@@ -26,6 +26,8 @@ public:
     void startHBlankDMA(int hdmaLength);
     uint8_t getDMALengthLeft();
 
+    bool isDoubleSpeed() const;
+
     void loadBootRom();
     void simulateBootRom();
 
@@ -37,6 +39,8 @@ public:
 
     uint16_t hdmaSrc;
     uint16_t hdmaDest = 0x8000;
+
+    bool armedSpeedSwitch = false;
 
 private:
     uint8_t readByteAtPC() const;
@@ -264,6 +268,7 @@ private:
     void opcode_retcond_M5();
     void opcode_halt_M1();
     void opcode_prefix_cb_M1();
+    void opcode_stop();
 
     void interrupt_M1();
     void interrupt_M2();
@@ -328,6 +333,8 @@ private:
     bool mHBlankDMACopying = false;
     int mDMABytesCopied;
     int mHBlankBytesCopied;
+
+    bool mDoubleSpeed = false;
 
     static constexpr uint8_t FLAG_ZERO = (1 << 7);
     static constexpr uint8_t FLAG_SUB = (1 << 6);

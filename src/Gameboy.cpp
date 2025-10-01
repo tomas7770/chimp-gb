@@ -249,6 +249,10 @@ uint8_t Gameboy::readByte(uint16_t address)
     {
         return mKEY0;
     }
+    else if (address == KEY1_ADDR && inCGBMode())
+    {
+        return (mCPU.isDoubleSpeed() ? (1 << 7) : 0) | 0b01111110 | (mCPU.armedSpeedSwitch ? 1 : 0);
+    }
     else if (address == VBK_ADDR)
     {
         return mPPU.VRAMBank & 0xFE;
@@ -500,6 +504,10 @@ void Gameboy::writeByte(uint16_t address, uint8_t value)
             mKEY0 = value & (1 << 2);
         }
     }
+    else if (address == KEY1_ADDR && inCGBMode())
+    {
+        mCPU.armedSpeedSwitch = value & 1;
+    }
     else if (address == VBK_ADDR && inCGBMode())
     {
         mPPU.VRAMBank = value & 1;
@@ -630,7 +638,8 @@ float Gameboy::getRightAudioSample() const
 
 void Gameboy::doTCycle()
 {
-    if (!(tCycleCounter % CPU_CYCLE_DIV))
+    int cpuCycleDiv = CPU_CYCLE_DIV / (mCPU.isDoubleSpeed() ? 2 : 1);
+    if (!(tCycleCounter % cpuCycleDiv))
     {
         mCPU.doMCycle();
     }

@@ -71,6 +71,11 @@ void CPU::copyDMABytes(int count)
     }
 }
 
+bool CPU::isDoubleSpeed() const
+{
+    return mDoubleSpeed;
+}
+
 void CPU::loadBootRom()
 {
     mPC = 0;
@@ -160,7 +165,7 @@ void CPU::doMCycle()
     }
     if (mGeneralDMACopying || (mHBlankDMACopying && mGameboy->inHBlank() && mHBlankBytesCopied < 0x10))
     {
-        copyDMABytes(2);
+        copyDMABytes(mDoubleSpeed ? 1 : 2);
         return;
     }
 
@@ -2409,6 +2414,19 @@ void CPU::opcode_prefix_cb_M1()
     mMCycleFunc = &CPU::decodeExecuteOpcodeCB;
 }
 
+void CPU::opcode_stop()
+{
+    if (mGameboy->inCGBMode())
+    {
+        if (armedSpeedSwitch)
+        {
+            mDoubleSpeed = !mDoubleSpeed;
+            armedSpeedSwitch = false;
+        }
+    }
+    prefetchOpcode();
+}
+
 void CPU::interrupt_M1()
 {
     mPC--;
@@ -2698,8 +2716,9 @@ void CPU::decodeExecuteOpcode()
     else if (opcode == 0b00010000)
     {
         // stop
-        // TODO
-        prefetchOpcode();
+        // DMG TODO
+        // CGB inaccurate: CPU stopping for 2050 M-cycles not emulated
+        opcode_stop();
     }
     else if (opcode == 0b01110110)
     {

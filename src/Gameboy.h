@@ -130,6 +130,7 @@ private:
     static constexpr uint16_t WY_ADDR = 0xFF4A;
     static constexpr uint16_t WX_ADDR = 0xFF4B;
     static constexpr uint16_t KEY0_ADDR = 0xFF4C;
+    static constexpr uint16_t KEY1_ADDR = 0xFF4D;
     static constexpr uint16_t VBK_ADDR = 0xFF4F;
     static constexpr uint16_t BANK_ADDR = 0xFF50;
     static constexpr uint16_t HDMA1_ADDR = 0xFF51;
