@@ -49,6 +49,8 @@ void Config::load(std::stringstream &configString)
 
     loadStringKey(ini, dmgBootRomPath, "emulation", "dmgBootRomPath");
     loadStringKey(ini, cgbBootRomPath, "emulation", "cgbBootRomPath");
+    loadIntKey(ini, dmgGameEmulatedConsole, "emulation", "dmgGameEmulatedConsole");
+    loadIntKey(ini, cgbGameEmulatedConsole, "emulation", "cgbGameEmulatedConsole");
 }
 
 void Config::save(std::string &configFilepath)
@@ -73,6 +75,8 @@ void Config::save(std::string &configFilepath)
 
     ini["emulation"]["dmgBootRomPath"] = dmgBootRomPath;
     ini["emulation"]["cgbBootRomPath"] = cgbBootRomPath;
+    ini["emulation"]["dmgGameEmulatedConsole"] = std::to_string(dmgGameEmulatedConsole);
+    ini["emulation"]["cgbGameEmulatedConsole"] = std::to_string(cgbGameEmulatedConsole);
 
     file.write(ini, true);
 }

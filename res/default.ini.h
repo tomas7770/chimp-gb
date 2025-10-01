@@ -24,5 +24,13 @@ const char *defaultIni =
     "fullscreen = 0\n"
     "\n"
     "[emulation]\n"
+    "; Game Boy (monochrome) boot ROM path. This should be a 256 byte file.\n"
     "dmgBootRomPath =\n"
-    "cgbBootRomPath =\n";
+    "; Game Boy Color boot ROM path. This should be a 2304 byte file.\n"
+    "cgbBootRomPath =\n"
+    "; Which console to emulate when running a GB-only game.\n"
+    "; Possible values:\n"
+    "; 0 = DMG (Game Boy), 1 = CGB (Game Boy Color)\n"
+    "dmgGameEmulatedConsole = 0\n"
+    "; Which console to emulate when running a GBC-enhanced or GBC-only game.\n"
+    "cgbGameEmulatedConsole = 1\n";

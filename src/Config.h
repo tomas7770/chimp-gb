@@ -18,6 +18,8 @@ public:
     // emulation
     std::string dmgBootRomPath;
     std::string cgbBootRomPath;
+    int dmgGameEmulatedConsole;
+    int cgbGameEmulatedConsole;
 
     void load(std::stringstream &configString);
     void save(std::string &configFilepath);

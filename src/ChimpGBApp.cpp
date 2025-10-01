@@ -59,11 +59,11 @@ ChimpGBApp::ChimpGBApp(const Cartridge &cart, std::string &romFilename, bool deb
 
     mRomFilename = std::move(romFilename);
 
-    Gameboy::SystemType systemType = Gameboy::SystemType::DMG;
+    Gameboy::SystemType systemType = static_cast<Gameboy::SystemType>(mConfig.dmgGameEmulatedConsole);
     if (cart.getHeader().cgbFlag & (1 << 7))
     {
         // CGB game
-        systemType = Gameboy::SystemType::CGB;
+        systemType = static_cast<Gameboy::SystemType>(mConfig.cgbGameEmulatedConsole);
     }
 
     try
