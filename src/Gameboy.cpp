@@ -261,19 +261,19 @@ uint8_t Gameboy::readByte(uint16_t address)
     {
         return mCPU.getDMALengthLeft();
     }
-    else if (address == BCPS_ADDR && inCGBMode())
+    else if (address == BCPS_ADDR)
     {
         return mLCD.BCPS;
     }
-    else if (address == BCPD_ADDR && inCGBMode())
+    else if (address == BCPD_ADDR)
     {
         return mLCD.colorBGPaletteMemory[mLCD.BCPS & 63];
     }
-    else if (address == OCPS_ADDR && inCGBMode())
+    else if (address == OCPS_ADDR)
     {
         return mLCD.OCPS;
     }
-    else if (address == OCPD_ADDR && inCGBMode())
+    else if (address == OCPD_ADDR)
     {
         return mLCD.colorOBJPaletteMemory[mLCD.OCPS & 63];
     }
@@ -556,11 +556,11 @@ void Gameboy::writeByte(uint16_t address, uint8_t value)
             break;
         }
     }
-    else if (address == BCPS_ADDR && inCGBMode())
+    else if (address == BCPS_ADDR)
     {
         mLCD.BCPS = value;
     }
-    else if (address == BCPD_ADDR && inCGBMode())
+    else if (address == BCPD_ADDR)
     {
         int address = mLCD.BCPS & 63;
         mLCD.colorBGPaletteMemory[address] = value;
@@ -570,11 +570,11 @@ void Gameboy::writeByte(uint16_t address, uint8_t value)
             writeByte(BCPS_ADDR, (mLCD.BCPS & 0b11000000) | address);
         }
     }
-    else if (address == OCPS_ADDR && inCGBMode())
+    else if (address == OCPS_ADDR)
     {
         mLCD.OCPS = value;
     }
-    else if (address == OCPD_ADDR && inCGBMode())
+    else if (address == OCPD_ADDR)
     {
         int address = mLCD.OCPS & 63;
         mLCD.colorOBJPaletteMemory[address] = value;

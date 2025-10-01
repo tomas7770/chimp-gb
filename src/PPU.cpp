@@ -304,12 +304,30 @@ LCD::CGBColor getCGBPaletteColor(uint8_t *palette, int colorId)
     return {.r = r, .g = g, .b = b};
 }
 
+LCD::CGBColor getDMGCompatPaletteColor(uint8_t *cgbPalette, uint8_t dmgPaletteByte, int colorId)
+{
+    switch (colorId)
+    {
+    default:
+    case 0:
+        return getCGBPaletteColor(cgbPalette, dmgPaletteByte & 0b11);
+    case 1:
+        return getCGBPaletteColor(cgbPalette, (dmgPaletteByte >> 2) & 0b11);
+    case 2:
+        return getCGBPaletteColor(cgbPalette, (dmgPaletteByte >> 4) & 0b11);
+    case 3:
+        return getCGBPaletteColor(cgbPalette, (dmgPaletteByte >> 6) & 0b11);
+    }
+}
+
 LCD::Color PPU::getScreenPixel(int pixelX, int pixelY)
 {
     Gameboy::SystemType systemType = mGameboy->getSystemType();
+    bool cgbMode = mGameboy->inCGBMode();
 
     int colorId = 0;
     uint8_t *palette = nullptr;
+    uint8_t dmgPaletteByte;
     int bgColorId = 0;
     if (mLCD->LCDC & LCD::LCDC_FLAG_BG_WINDOW_ENABLE)
     {
@@ -338,7 +356,7 @@ LCD::Color PPU::getScreenPixel(int pixelX, int pixelY)
         int tilePixelX = x % TILE_LENGTH;
         int tilePixelY = y % TILE_LENGTH;
         int paletteIndex;
-        if (mGameboy->inCGBMode())
+        if (cgbMode)
         {
             uint8_t attributes = getBGTileAtScreenPixel(x, y, isWindow, true);
             bool xFlip = attributes & BG_ATTRIB_FLAG_X_FLIP;
@@ -361,7 +379,15 @@ LCD::Color PPU::getScreenPixel(int pixelX, int pixelY)
             break;
 
         case Gameboy::SystemType::CGB:
-            palette = getCGBPalette(paletteIndex, mLCD->colorBGPaletteMemory);
+            if (cgbMode)
+            {
+                palette = getCGBPalette(paletteIndex, mLCD->colorBGPaletteMemory);
+            }
+            else
+            {
+                palette = getCGBPalette(0, mLCD->colorBGPaletteMemory);
+                dmgPaletteByte = mLCD->BGP;
+            }
             break;
 
         default:
@@ -410,7 +436,7 @@ LCD::Color PPU::getScreenPixel(int pixelX, int pixelY)
 
             int tilePixelX = (pixelX - x) % TILE_LENGTH;
             int tilePixelY = (pixelY - y) % TILE_LENGTH;
-            int bank = mGameboy->inCGBMode() ? ((flags & OBJ_FLAG_BANK) >> 3) : 0;
+            int bank = cgbMode ? ((flags & OBJ_FLAG_BANK) >> 3) : 0;
             int objColorId = getBGTilePixel(tileId, tilePixelX, tilePixelY, true,
                                             (flags & OBJ_FLAG_X_FLIP) ? true : false, yFlip, bank);
             bool bgHasPriority = (flags & OBJ_FLAG_PRIORITY) && bgColorId > 0;
@@ -420,18 +446,19 @@ LCD::Color PPU::getScreenPixel(int pixelX, int pixelY)
                 switch (systemType)
                 {
                 case Gameboy::SystemType::DMG:
-                    if (flags & OBJ_FLAG_DMG_PAL)
-                    {
-                        palette = &(mLCD->OBP1);
-                    }
-                    else
-                    {
-                        palette = &(mLCD->OBP0);
-                    }
+                    palette = (flags & OBJ_FLAG_DMG_PAL) ? &(mLCD->OBP1) : &(mLCD->OBP0);
                     break;
 
                 case Gameboy::SystemType::CGB:
-                    palette = getCGBPalette(flags & CGB_PAL_BITMASK, mLCD->colorOBJPaletteMemory);
+                    if (cgbMode)
+                    {
+                        palette = getCGBPalette(flags & CGB_PAL_BITMASK, mLCD->colorOBJPaletteMemory);
+                    }
+                    else
+                    {
+                        palette = getCGBPalette((flags & OBJ_FLAG_DMG_PAL) ? 1 : 0, mLCD->colorOBJPaletteMemory);
+                        dmgPaletteByte = (flags & OBJ_FLAG_DMG_PAL) ? mLCD->OBP1 : mLCD->OBP0;
+                    }
                     break;
 
                 default:
@@ -452,7 +479,14 @@ LCD::Color PPU::getScreenPixel(int pixelX, int pixelY)
         return {.dmg = getDMGPaletteColor(*palette, colorId)};
 
     case Gameboy::SystemType::CGB:
-        return {.cgb = getCGBPaletteColor(palette, colorId)};
+        if (cgbMode)
+        {
+            return {.cgb = getCGBPaletteColor(palette, colorId)};
+        }
+        else
+        {
+            return {.cgb = getDMGCompatPaletteColor(palette, dmgPaletteByte, colorId)};
+        }
 
     default:
         return {};
