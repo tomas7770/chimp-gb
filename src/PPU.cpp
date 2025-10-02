@@ -52,6 +52,7 @@ void PPU::writeLCDC(uint8_t value)
         // Reset registers
         mScanlineDots = 0;
         mIncrementedWindowLine = false;
+        mWYTriggered = false;
         mStatInterruptLine = 0;
         mLCD->LY = 0;
         mLCD->windowLineCounter = 0;
@@ -201,6 +202,7 @@ void PPU::newLine()
     if (mLCD->LY == LCD::SCREEN_H)
     {
         mLCD->windowLineCounter = 0;
+        mWYTriggered = false;
         setMode(VBlank);
         mGameboy->requestInterrupt(CPU::InterruptSource::VBlank);
         if (drawCallback != nullptr)
@@ -212,6 +214,10 @@ void PPU::newLine()
     {
         setMode(OAMScan);
         mIncrementedWindowLine = false;
+        if (!mWYTriggered && mLCD->WY == mLCD->LY)
+        {
+            mWYTriggered = true;
+        }
     }
 
     if (mLCD->LYC == mLCD->LY)
@@ -333,7 +339,7 @@ LCD::Color PPU::getScreenPixel(int pixelX, int pixelY)
     {
         int x, y;
         bool isWindow;
-        if ((mLCD->LCDC & LCD::LCDC_FLAG_WINDOW_ENABLE) && pixelX >= mLCD->WX - 7 && pixelY >= mLCD->WY)
+        if ((mLCD->LCDC & LCD::LCDC_FLAG_WINDOW_ENABLE) && pixelX >= mLCD->WX - 7 && mWYTriggered)
         {
             if (!mIncrementedWindowLine)
             {

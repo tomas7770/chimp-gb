@@ -44,6 +44,7 @@ private:
     Mode mMode;
     int mScanlineDots = 0;
     bool mIncrementedWindowLine = false;
+    bool mWYTriggered = false;
     int mStatInterruptLine = 0;
 
     std::vector<int> spritesInScanline; // list of sprites to draw, stored as an offset from OAM start
