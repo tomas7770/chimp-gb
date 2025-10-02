@@ -41,6 +41,7 @@ private:
     LCD *mLCD;
 
     bool mEnabled = true;
+    bool mFirstFrameAfterEnable = false;
     Mode mMode;
     int mScanlineDots = 0;
     bool mIncrementedWindowLine = false;

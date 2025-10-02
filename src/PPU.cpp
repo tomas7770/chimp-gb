@@ -16,6 +16,7 @@ void PPU::writeLCDC(uint8_t value)
     {
         // Enable LCD/PPU
         mEnabled = true;
+        mFirstFrameAfterEnable = true;
         setMode(OAMScan);
     }
     else if ((mLCD->LCDC & LCD::LCDC_FLAG_LCD_PPU_ENABLE) && !(value & LCD::LCDC_FLAG_LCD_PPU_ENABLE))
@@ -205,7 +206,11 @@ void PPU::newLine()
         mWYTriggered = false;
         setMode(VBlank);
         mGameboy->requestInterrupt(CPU::InterruptSource::VBlank);
-        if (drawCallback != nullptr)
+        if (mFirstFrameAfterEnable)
+        {
+            mFirstFrameAfterEnable = false;
+        }
+        else if (drawCallback != nullptr)
         {
             drawCallback(mDrawCallbackUserdata);
         }
