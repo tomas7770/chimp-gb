@@ -304,6 +304,11 @@ void ChimpGBApp::mainLoop()
                 SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, WINDOW_TITLE, err.what(), mWindowSDL);
                 terminate(-1);
             }
+            catch (std::logic_error err)
+            {
+                SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, WINDOW_TITLE, err.what(), mWindowSDL);
+                terminate(-1);
+            }
 
             if (!(mGameboy->tCycleCounter % Gameboy::APU_CYCLE_DIV))
             {
