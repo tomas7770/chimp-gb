@@ -15,6 +15,11 @@ int main(int argc, char *args[])
 
     std::string filepath(args[1]);
     std::ifstream dataStream(filepath, std::ios::binary | std::ios::ate);
+    if (!dataStream.good())
+    {
+        std::cout << "Error loading requested ROM. Perhaps this file doesn't exist?" << std::endl;
+        return 0;
+    }
     auto size = dataStream.tellg();
     dataStream.seekg(0);
 
