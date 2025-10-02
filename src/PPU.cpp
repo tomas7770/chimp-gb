@@ -475,16 +475,20 @@ LCD::Color PPU::getScreenPixel(int pixelX, int pixelY)
         }
     }
 
-    if (palette == nullptr)
-    {
-        return {};
-    }
     switch (systemType)
     {
     case Gameboy::SystemType::DMG:
+        if (palette == nullptr)
+        {
+            return {.dmg = LCD::DMGColor::White};
+        }
         return {.dmg = getDMGPaletteColor(*palette, colorId)};
 
     case Gameboy::SystemType::CGB:
+        if (palette == nullptr)
+        {
+            return {.cgb = {.r = 31, .g = 31, .b = 31}};
+        }
         if (cgbMode)
         {
             return {.cgb = getCGBPaletteColor(palette, colorId)};
