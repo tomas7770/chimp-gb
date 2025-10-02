@@ -88,6 +88,7 @@ private:
     static constexpr uint8_t OBJ_FLAG_DMG_PAL = (1 << 4);
     static constexpr uint8_t OBJ_FLAG_BANK = (1 << 3);
 
+    static constexpr uint8_t BG_ATTRIB_FLAG_PRIORITY = (1 << 7);
     static constexpr uint8_t BG_ATTRIB_FLAG_Y_FLIP = (1 << 6);
     static constexpr uint8_t BG_ATTRIB_FLAG_X_FLIP = (1 << 5);
     static constexpr uint8_t BG_ATTRIB_FLAG_BANK = (1 << 3);

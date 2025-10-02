@@ -330,12 +330,14 @@ LCD::Color PPU::getScreenPixel(int pixelX, int pixelY)
 {
     Gameboy::SystemType systemType = mGameboy->getSystemType();
     bool cgbMode = mGameboy->inCGBMode();
+    bool bgEnable = mLCD->LCDC & LCD::LCDC_FLAG_BG_WINDOW_ENABLE;
 
     int colorId = 0;
     uint8_t *palette = nullptr;
     uint8_t dmgPaletteByte;
     int bgColorId = 0;
-    if (mLCD->LCDC & LCD::LCDC_FLAG_BG_WINDOW_ENABLE)
+    bool bgForcePriority = false;
+    if (cgbMode || bgEnable)
     {
         int x, y;
         bool isWindow;
@@ -370,6 +372,7 @@ LCD::Color PPU::getScreenPixel(int pixelX, int pixelY)
             int bank = (attributes & BG_ATTRIB_FLAG_BANK) >> 3;
             paletteIndex = attributes & CGB_PAL_BITMASK;
             bgColorId = getBGTilePixel(tileId, tilePixelX, tilePixelY, false, xFlip, yFlip, bank);
+            bgForcePriority = (attributes & BG_ATTRIB_FLAG_PRIORITY) ? true : false;
         }
         else
         {
@@ -417,7 +420,7 @@ LCD::Color PPU::getScreenPixel(int pixelX, int pixelY)
             }
 
             // Pixel is within this object
-            if (oam[i + 1] > lowestX)
+            if (!cgbMode && (oam[i + 1] > lowestX))
             {
                 continue;
             }
@@ -445,7 +448,7 @@ LCD::Color PPU::getScreenPixel(int pixelX, int pixelY)
             int bank = cgbMode ? ((flags & OBJ_FLAG_BANK) >> 3) : 0;
             int objColorId = getBGTilePixel(tileId, tilePixelX, tilePixelY, true,
                                             (flags & OBJ_FLAG_X_FLIP) ? true : false, yFlip, bank);
-            bool bgHasPriority = (flags & OBJ_FLAG_PRIORITY) && bgColorId > 0;
+            bool bgHasPriority = ((flags & OBJ_FLAG_PRIORITY) || bgForcePriority) && bgColorId > 0 && bgEnable;
             if (objColorId != 0 && !bgHasPriority)
             {
                 colorId = objColorId;
