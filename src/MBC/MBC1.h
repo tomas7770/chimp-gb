@@ -5,7 +5,6 @@
 class MBC1 : public MBC
 {
     // TODO handle 1MB+ ROMs differently
-    // TODO ignore upper bits in bank register depending on ROM size
 public:
     MBC1(bool hasBattery) : MBC(hasBattery) {}
 

@@ -9,7 +9,7 @@ uint8_t MBC1::readByte(std::vector<uint8_t> &romData, uint16_t address)
         {
             bigAddress += ROM_BANK_SIZE * (mROMBank - 1);
         }
-        return romData.at(bigAddress);
+        return romData.at(bigAddress % romData.size());
     }
     else if (bigAddress >= MBC::SRAM_ADDR)
     {

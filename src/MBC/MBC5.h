@@ -4,7 +4,6 @@
 
 class MBC5 : public MBC
 {
-    // TODO ignore upper bits in bank register depending on ROM size
 public:
     MBC5(bool hasBattery) : MBC(hasBattery) {}
 

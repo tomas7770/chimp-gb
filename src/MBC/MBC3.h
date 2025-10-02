@@ -7,7 +7,6 @@
 // is inaccurate to real hardware.
 class MBC3 : public MBC
 {
-    // TODO ignore upper bits in bank register depending on ROM size
 public:
     MBC3(bool hasBattery, bool hasClock = false) : MBC(hasBattery), mHasClock(hasClock) {}
 
