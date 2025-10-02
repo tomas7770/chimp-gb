@@ -1,7 +1,7 @@
 # ChimpGB - Game Boy Emulator
 ## Note: This project is a WIP.
 
-ChimpGB is an open source, cross platform Game Boy (DMG) emulator written in C++.
+ChimpGB is a cross platform Game Boy (DMG) and Game Boy Color (CGB) emulator written in C++.
 
 <picture>
     <img src="images/screenshot.png" alt="ChimpGB running Tetris">
@@ -13,27 +13,21 @@ ChimpGB is an open source, cross platform Game Boy (DMG) emulator written in C++
 
 - Passes 100% of [Blargg's](https://github.com/retrio/gb-test-roms/tree/master) cpu\_instrs, instr\_timing, and mem\_timing tests
 
-- Passes [dmg-acid2](https://github.com/mattcurrie/dmg-acid2) PPU test
+- Passes [dmg-acid2](https://github.com/mattcurrie/dmg-acid2) and [cgb-acid2](https://github.com/mattcurrie/cgb-acid2) PPU tests
 
-- Most GB-compatible games should run
-
-- Partial GBC support
+- Most games should run properly
 
 Detailed status:
 
-- **CPU:** fully implemented, except for **STOP** opcode
+- All of Game Boy's base hardware is implemented (except Link Cable and Infrared)
 
-- **PPU/LCD:** mostly implemented
+- Implemented MBCs:
 
-- **APU:** mostly implemented
+    - MBC1 (except variants with ROM >= 1 MiB)
 
-- **Implemented MBCs:**
+    - MBC3
 
-    - MBC1 with ROM <= 512 KiB, RAM and battery
-
-    - MBC3 with RAM, battery, and RTC
-
-    - MBC5 with RAM and battery
+    - MBC5 (except variants with rumble)
 
 ## Compiling
 
@@ -123,6 +117,8 @@ This is a non-exhaustive list of references used in the development of this emul
 - [Gameboy Doctor](https://github.com/robert/gameboy-doctor)
 
 - [dmg-acid2](https://github.com/mattcurrie/dmg-acid2)
+
+- [cgb-acid2](https://github.com/mattcurrie/cgb-acid2)
 
 - [MBC3 RTC test ROM](https://github.com/aaaaaa123456789/rtc3test)
 
