@@ -56,6 +56,7 @@ private:
     void setMode(Mode mode);
     void updateStatInterruptLine();
 
+    void updateLYCInterrupt();
     void newLine();
 
     uint8_t getBGTileAtScreenPixel(int x, int y, bool isWindow, bool doGetAttributes = false);

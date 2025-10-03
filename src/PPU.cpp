@@ -97,6 +97,12 @@ void PPU::doCycle()
         {
             newLine();
         }
+        else if (mLCD->LY == (LCD::SCREEN_H + VBLANK_LINES - 1) && mScanlineDots >= 4)
+        {
+            // LY is updated early (original hardware quirk)
+            mLCD->LY = 0;
+            updateLYCInterrupt();
+        }
         break;
 
     case OAMScan:
@@ -195,11 +201,27 @@ void PPU::updateStatInterruptLine()
     mStatInterruptLine = line;
 }
 
+void PPU::updateLYCInterrupt()
+{
+    if (mLCD->LYC == mLCD->LY)
+    {
+        mLCD->STAT |= LCD::STAT_LYC_LY_BITMASK;
+    }
+    else
+    {
+        mLCD->STAT &= ~LCD::STAT_LYC_LY_BITMASK;
+    }
+    updateStatInterruptLine();
+}
+
 void PPU::newLine()
 {
     mScanlineDots = 0;
-    mLCD->LY++;
-    mLCD->LY %= LCD::SCREEN_H + VBLANK_LINES;
+    if (!(mLCD->LY == 0 && mMode == VBlank)) // don't increment if it's the early LY = 0 from scanline 153
+    {
+        mLCD->LY++;
+        mLCD->LY %= LCD::SCREEN_H + VBLANK_LINES;
+    }
     if (mLCD->LY == LCD::SCREEN_H)
     {
         mLCD->windowLineCounter = 0;
@@ -225,15 +247,7 @@ void PPU::newLine()
         }
     }
 
-    if (mLCD->LYC == mLCD->LY)
-    {
-        mLCD->STAT |= LCD::STAT_LYC_LY_BITMASK;
-    }
-    else
-    {
-        mLCD->STAT &= ~LCD::STAT_LYC_LY_BITMASK;
-    }
-    updateStatInterruptLine();
+    updateLYCInterrupt();
 }
 
 uint8_t PPU::getBGTileAtScreenPixel(int x, int y, bool isWindow, bool doGetAttributes)
