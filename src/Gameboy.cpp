@@ -708,7 +708,18 @@ void Gameboy::simulateBootRom()
         {
             mKEY0 = 0x04;
         }
-        std::memset(mLCD.colorBGPaletteMemory, 0, 64);
+
+        if (inCGBMode())
+        {
+            std::memset(mLCD.colorBGPaletteMemory, 0, 64);
+        }
+        else
+        {
+            // Fallback monochrome palette for DMG mode
+            std::memcpy(mLCD.colorBGPaletteMemory, DMG_MODE_FALLBACK_PALETTE, 8);
+            std::memcpy(mLCD.colorOBJPaletteMemory, DMG_MODE_FALLBACK_PALETTE, 8);
+            std::memcpy(mLCD.colorOBJPaletteMemory + 8, DMG_MODE_FALLBACK_PALETTE, 8);
+        }
     }
     mCPU.simulateBootRom();
 }

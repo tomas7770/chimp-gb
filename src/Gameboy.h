@@ -81,6 +81,8 @@ private:
 
     static constexpr uint16_t WRAM_BANK_SIZE = (1 << 12);
 
+    static constexpr uint8_t DMG_MODE_FALLBACK_PALETTE[8] = {0xFF, 0xFF, 0xEF, 0xBD, 0xE7, 0x9C, 0x00, 0x80};
+
     static constexpr uint16_t BOOT_ROM_END_ADDR = 0x00FF;
     static constexpr uint16_t BOOT_ROM_CGB_START_ADDR = 0x0200;
     static constexpr uint16_t BOOT_ROM_CGB_END_ADDR = 0x08FF;
