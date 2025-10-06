@@ -293,6 +293,7 @@ void ChimpGBApp::mainLoop()
             }
         }
         std::vector<float> audioSamples;
+        bool generateAudio = !mFastForward || (SDL_GetQueuedAudioSize(mAudioDevSDL) <= AUDIO_BUFFER_SIZE * sizeof(float) * 2);
         for (int i = 0; i < Gameboy::CYCLES_PER_FRAME; i++)
         {
             try
@@ -308,6 +309,11 @@ void ChimpGBApp::mainLoop()
             {
                 SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, WINDOW_TITLE, err.what(), mWindowSDL);
                 terminate(-1);
+            }
+
+            if (!generateAudio)
+            {
+                continue;
             }
 
             if (!(mGameboy->tCycleCounter % Gameboy::APU_CYCLE_DIV))
@@ -352,12 +358,8 @@ void ChimpGBApp::mainLoop()
                 audioSamples.push_back(rightSample * 0.5F);
             }
         }
-        if (mFastForward)
-        {
-            SDL_ClearQueuedAudio(mAudioDevSDL);
-        }
         SDL_QueueAudio(mAudioDevSDL, audioSamples.data(), audioSamples.size() * sizeof(float));
-        while (SDL_GetQueuedAudioSize(mAudioDevSDL) > AUDIO_BUFFER_SIZE * sizeof(float) * 2)
+        while (!mFastForward && (SDL_GetQueuedAudioSize(mAudioDevSDL) > AUDIO_BUFFER_SIZE * sizeof(float) * 2))
         {
             uint64_t deltaTime = SDL_GetTicks64() - frameTimestamp;
             sleepTimeAccum -= deltaTime;
