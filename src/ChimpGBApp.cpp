@@ -5,7 +5,7 @@
 #include <fstream>
 #include <filesystem>
 
-void drawDisplayCallback(void *userdata);
+void gameboyDrawCallback(void *userdata);
 
 ChimpGBApp::ChimpGBApp(const Cartridge &cart, std::string &romFilename, bool debug)
 {
@@ -69,7 +69,7 @@ ChimpGBApp::ChimpGBApp(const Cartridge &cart, std::string &romFilename, bool deb
     try
     {
         mGameboy = new Gameboy(cart, debug, systemType);
-        mGameboy->setDrawCallback(drawDisplayCallback, this);
+        mGameboy->setDrawCallback(gameboyDrawCallback, this);
 
         std::string bootRomPath;
         switch (systemType)
@@ -179,21 +179,14 @@ void ChimpGBApp::setVideoParameters()
     SDL_RenderSetIntegerScale(mRendererSDL, mConfig.integerScaling ? SDL_TRUE : SDL_FALSE);
 }
 
-void drawDisplayCallback(void *userdata)
+void gameboyDrawCallback(void *userdata)
 {
     ChimpGBApp *app = (ChimpGBApp *)userdata;
-    app->drawDisplay();
+    app->gameboyDraw();
 }
 
-void ChimpGBApp::drawDisplay()
+void ChimpGBApp::gameboyDraw()
 {
-    // Clear screen
-    SDL_SetRenderDrawColor(mRendererSDL, 0, 0, 0, 0xFF);
-    SDL_RenderClear(mRendererSDL);
-
-    // Draw display
-    int xScale = WINDOW_WIDTH / LCD::SCREEN_W;
-    int yScale = WINDOW_HEIGHT / LCD::SCREEN_H;
     auto pixels = mGameboy->getPixels();
     switch (mGameboy->getSystemType())
     {
@@ -234,8 +227,16 @@ void ChimpGBApp::drawDisplay()
         break;
     }
 
-    // Update renderer
     SDL_UpdateTexture(mTextureSDL, NULL, mTexturePixels, LCD::SCREEN_W * 4);
+}
+
+void ChimpGBApp::drawDisplay()
+{
+    // Clear screen
+    SDL_SetRenderDrawColor(mRendererSDL, 0, 0, 0, 0xFF);
+    SDL_RenderClear(mRendererSDL);
+
+    // Update renderer
     SDL_RenderCopy(mRendererSDL, mTextureSDL, NULL, NULL);
     SDL_RenderPresent(mRendererSDL);
 }
@@ -359,6 +360,7 @@ void ChimpGBApp::mainLoop()
             }
         }
         SDL_QueueAudio(mAudioDevSDL, audioSamples.data(), audioSamples.size() * sizeof(float));
+        drawDisplay();
         while (!mFastForward && (SDL_GetQueuedAudioSize(mAudioDevSDL) > AUDIO_BUFFER_SIZE * sizeof(float) * 2))
         {
             uint64_t deltaTime = SDL_GetTicks64() - frameTimestamp;
