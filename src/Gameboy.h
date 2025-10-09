@@ -76,7 +76,7 @@ private:
     bool mBootRomFinished = true;
 
     uint16_t mSysCounter = 0xABCC;
-    uint8_t mKEY0;
+    uint8_t mKEY0 = 0;
     int mWRAMBank = 1;
 
     static constexpr uint16_t WRAM_BANK_SIZE = (1 << 12);
