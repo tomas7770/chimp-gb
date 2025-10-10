@@ -1,21 +1,23 @@
 # ChimpGB - Game Boy Emulator
-## Note: This project is a WIP.
 
 ChimpGB is a cross platform Game Boy (DMG) and Game Boy Color (CGB) emulator written in C++.
 
 <picture>
-    <img src="images/screenshot.png" alt="ChimpGB running Tetris">
+    <img src="images/screenshot0.png" alt="ChimpGB running Pokemon Crystal">
+</picture>
+<picture>
+    <img src="images/screenshot1.png" alt="ChimpGB running Tetris">
 </picture>
 
 ## Development status
+
+- Most games should run properly
 
 - Passes 100% of the [Gameboy CPU (Sharp LR35902) Tests](https://github.com/SingleStepTests/GameboyCPUTests)
 
 - Passes 100% of [Blargg's](https://github.com/retrio/gb-test-roms/tree/master) cpu\_instrs, instr\_timing, and mem\_timing tests
 
 - Passes [dmg-acid2](https://github.com/mattcurrie/dmg-acid2) and [cgb-acid2](https://github.com/mattcurrie/cgb-acid2) PPU tests
-
-- Most games should run properly
 
 Detailed status:
 
@@ -50,13 +52,17 @@ cmake --build build
 
 ## Usage
 
-Run ChimpGB from the command line:
+Open ChimpGB and use the built-in GUI to load a ROM file.
+
+ChimpGB can also be run from the command line:
 
 ```
-ChimpGB <rom file> [-debug]
+ChimpGB [<rom file>] [-debug]
 ```
 
-`<rom file>` is the path to a valid Game Boy ROM. `-debug` is an optional parameter that prints executed CPU opcodes to stdout.
+`<rom file>` is the path to a valid Game Boy ROM. If not provided, no ROM will be loaded at startup.
+
+`-debug` is an optional parameter that prints executed CPU opcodes to stdout.
 
 ## Default controls
 
@@ -69,6 +75,8 @@ ChimpGB <rom file> [-debug]
 - **Start:** Enter
 
 - **Select:** Right shift
+
+- **Show menu bar:** Escape
 
 - **Fast Forward:** Tab
 
