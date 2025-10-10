@@ -21,9 +21,19 @@ set(SOURCE_FILES
     Config.cpp
 )
 
-add_executable(ChimpGB ${SOURCE_FILES})
+set (IMGUI_SOURCE_FILES
+    imgui/imgui_demo.cpp
+    imgui/imgui_draw.cpp
+    imgui/imgui_tables.cpp
+    imgui/imgui_widgets.cpp
+    imgui/imgui.cpp
+    imgui/backends/imgui_impl_sdl2.cpp
+    imgui/backends/imgui_impl_sdlrenderer2.cpp
+)
 
-include_directories(${SDL2_INCLUDE_DIR})
+add_executable(ChimpGB ${SOURCE_FILES} ${IMGUI_SOURCE_FILES})
+
+include_directories(${SDL2_INCLUDE_DIR} imgui)
 if (MINGW)
     target_link_libraries(ChimpGB mingw32)
 endif()

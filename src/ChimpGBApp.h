@@ -17,6 +17,7 @@ private:
     constexpr const static char *WINDOW_TITLE = "ChimpGB - Game Boy Emulator";
     constexpr static int WINDOW_WIDTH = 640;
     constexpr static int WINDOW_HEIGHT = 576;
+    constexpr static float SCREEN_RATIO = float(LCD::SCREEN_W) / float(LCD::SCREEN_H);
 
     constexpr static int AUDIO_SAMPLE_RATE = 44100;
     constexpr static uint16_t AUDIO_INTERNAL_BUFFER_SIZE = 256;
@@ -39,6 +40,7 @@ private:
     Gameboy *mGameboy = nullptr;
 
     Config mConfig;
+    std::string mImguiIniFilename; // need to keep a char buffer persistently
 
     void createDataDirectories();
     void loadConfig();

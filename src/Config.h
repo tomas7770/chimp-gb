@@ -15,6 +15,7 @@ public:
     // video
     int fullscreen;
     int integerScaling;
+    float uiScale;
 
     // emulation
     std::string dmgBootRomPath;

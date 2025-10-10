@@ -23,6 +23,7 @@ const char *defaultIni =
     "[video]\n"
     "fullscreen = 0\n"
     "integerScaling = 0\n"
+    "uiScale = 1.0\n"
     "\n"
     "[emulation]\n"
     "; Game Boy (monochrome) boot ROM path. This should be a 256 byte file.\n"

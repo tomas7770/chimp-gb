@@ -18,6 +18,23 @@ void loadIntKey(mINI::INIStructure &ini, int &dest, const char *section, const c
     }
 }
 
+void loadFloatKey(mINI::INIStructure &ini, float &dest, const char *section, const char *key)
+{
+    if (!ini.has(section) || !ini[section].has(key))
+    {
+        return;
+    }
+    std::string &value = ini[section][key];
+    try
+    {
+        dest = std::stof(value);
+    }
+    catch (std::exception err)
+    {
+        // Ignore and keep existing value
+    }
+}
+
 void loadStringKey(mINI::INIStructure &ini, std::string &dest, const char *section, const char *key)
 {
     if (!ini.has(section) || !ini[section].has(key))
@@ -47,6 +64,7 @@ void Config::load(std::stringstream &configString)
 
     loadIntKey(ini, fullscreen, "video", "fullscreen");
     loadIntKey(ini, integerScaling, "video", "integerScaling");
+    loadFloatKey(ini, uiScale, "video", "uiScale");
 
     loadStringKey(ini, dmgBootRomPath, "emulation", "dmgBootRomPath");
     loadStringKey(ini, cgbBootRomPath, "emulation", "cgbBootRomPath");
@@ -74,6 +92,7 @@ void Config::save(std::string &configFilepath)
 
     ini["video"]["fullscreen"] = std::to_string(fullscreen);
     ini["video"]["integerScaling"] = std::to_string(integerScaling);
+    ini["video"]["uiScale"] = std::to_string(uiScale);
 
     ini["emulation"]["dmgBootRomPath"] = dmgBootRomPath;
     ini["emulation"]["cgbBootRomPath"] = cgbBootRomPath;
