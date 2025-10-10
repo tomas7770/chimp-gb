@@ -34,6 +34,7 @@ private:
     uint32_t mTexturePixels[LCD::SCREEN_W * LCD::SCREEN_H];
     std::string mRomFilename;
 
+    bool mDebug;
     bool mFastForward = false;
 
     Gameboy *mGameboy = nullptr;
@@ -47,6 +48,8 @@ private:
     void loadConfig();
     void saveConfig();
     void setVideoParameters();
+    void powerOff();
+    void loadCart(const Cartridge &cart, std::string &romFilename);
     void saveGame();
     void loadGame();
     void terminate(int error_code);

@@ -57,52 +57,9 @@ ChimpGBApp::ChimpGBApp(const Cartridge &cart, std::string &romFilename, bool deb
     loadConfig();
 
     mGUI = GUI(&mConfig, mWindowSDL, mRendererSDL, mTextureSDL);
+    mDebug = debug;
 
-    mRomFilename = std::move(romFilename);
-
-    Gameboy::SystemType systemType = static_cast<Gameboy::SystemType>(mConfig.dmgGameEmulatedConsole);
-    if (cart.getHeader().cgbFlag & (1 << 7))
-    {
-        // CGB game
-        systemType = static_cast<Gameboy::SystemType>(mConfig.cgbGameEmulatedConsole);
-    }
-
-    try
-    {
-        mGameboy = new Gameboy(cart, debug, systemType);
-        mGameboy->setDrawCallback(gameboyDrawCallback, this);
-
-        std::string bootRomPath;
-        switch (systemType)
-        {
-        case Gameboy::SystemType::DMG:
-            bootRomPath = mConfig.dmgBootRomPath;
-            break;
-
-        case Gameboy::SystemType::CGB:
-            bootRomPath = mConfig.cgbBootRomPath;
-            break;
-
-        default:
-            break;
-        }
-        std::ifstream bootRomDataStream(bootRomPath, std::ios::binary);
-        if (bootRomDataStream.good())
-        {
-            mGameboy->setBootRom(bootRomDataStream);
-        }
-        else
-        {
-            mGameboy->simulateBootRom();
-        }
-
-        loadGame();
-    }
-    catch (std::exception err)
-    {
-        SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, WINDOW_TITLE, err.what(), mWindowSDL);
-        terminate(-1);
-    }
+    loadCart(cart, romFilename);
 
     setVideoParameters();
 }
@@ -374,6 +331,73 @@ void ChimpGBApp::mainLoop()
     terminate(0);
 }
 
+void ChimpGBApp::powerOff()
+{
+    if (mGameboy != nullptr)
+    {
+        try
+        {
+            saveGame();
+        }
+        catch (std::exception err)
+        {
+            SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, WINDOW_TITLE, err.what(), mWindowSDL);
+        }
+        delete mGameboy;
+    }
+}
+
+void ChimpGBApp::loadCart(const Cartridge &cart, std::string &romFilename)
+{
+    powerOff();
+
+    mRomFilename = std::move(romFilename);
+
+    Gameboy::SystemType systemType = static_cast<Gameboy::SystemType>(mConfig.dmgGameEmulatedConsole);
+    if (cart.getHeader().cgbFlag & (1 << 7))
+    {
+        // CGB game
+        systemType = static_cast<Gameboy::SystemType>(mConfig.cgbGameEmulatedConsole);
+    }
+
+    try
+    {
+        mGameboy = new Gameboy(cart, mDebug, systemType);
+        mGameboy->setDrawCallback(gameboyDrawCallback, this);
+
+        std::string bootRomPath;
+        switch (systemType)
+        {
+        case Gameboy::SystemType::DMG:
+            bootRomPath = mConfig.dmgBootRomPath;
+            break;
+
+        case Gameboy::SystemType::CGB:
+            bootRomPath = mConfig.cgbBootRomPath;
+            break;
+
+        default:
+            break;
+        }
+        std::ifstream bootRomDataStream(bootRomPath, std::ios::binary);
+        if (bootRomDataStream.good())
+        {
+            mGameboy->setBootRom(bootRomDataStream);
+        }
+        else
+        {
+            mGameboy->simulateBootRom();
+        }
+
+        loadGame();
+    }
+    catch (std::exception err)
+    {
+        SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, WINDOW_TITLE, err.what(), mWindowSDL);
+        terminate(-1);
+    }
+}
+
 void ChimpGBApp::saveGame()
 {
     const Cartridge &cart = mGameboy->getCart();
@@ -448,19 +472,12 @@ void ChimpGBApp::loadGame()
 
 void ChimpGBApp::terminate(int error_code)
 {
-    if (mGameboy != nullptr)
+    if (error_code == 0)
     {
-        if (error_code == 0)
-        {
-            try
-            {
-                saveGame();
-            }
-            catch (std::exception err)
-            {
-                SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, WINDOW_TITLE, err.what(), mWindowSDL);
-            }
-        }
+        powerOff();
+    }
+    else
+    {
         delete mGameboy;
     }
 
