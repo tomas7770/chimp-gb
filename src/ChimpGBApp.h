@@ -11,6 +11,8 @@ class ChimpGBApp
 public:
     ChimpGBApp(const Cartridge &cart, std::string &romFilename, bool debug);
 
+    bool isPoweredOn();
+    void powerOff();
     void reset();
 
     void mainLoop();
@@ -51,7 +53,6 @@ private:
     void loadConfig();
     void saveConfig();
     void setVideoParameters();
-    void powerOff();
     void loadCart(const Cartridge &cart, std::string &romFilename);
     void saveGame();
     void loadGame();

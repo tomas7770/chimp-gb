@@ -219,7 +219,7 @@ void ChimpGBApp::mainLoop()
                 {
                     mGUI.showMenuBar = !mGUI.showMenuBar;
                 }
-                else if (processGameInput)
+                else if (processGameInput && mGameboy != nullptr)
                 {
                     for (int i = 0; i < 8; i++)
                     {
@@ -235,7 +235,7 @@ void ChimpGBApp::mainLoop()
                     }
                 }
             }
-            else if (mEventSDL.type == SDL_KEYUP && processGameInput)
+            else if (mEventSDL.type == SDL_KEYUP && processGameInput && mGameboy != nullptr)
             {
                 for (int i = 0; i < 8; i++)
                 {
@@ -251,6 +251,13 @@ void ChimpGBApp::mainLoop()
                 }
             }
         }
+
+        if (mGameboy == nullptr)
+        {
+            drawDisplay();
+            continue;
+        }
+
         std::vector<float> audioSamples;
         bool generateAudio = !mFastForward || (SDL_GetQueuedAudioSize(mAudioDevSDL) <= AUDIO_BUFFER_SIZE * sizeof(float) * 2);
         for (int i = 0; i < Gameboy::CYCLES_PER_FRAME; i++)
@@ -338,6 +345,11 @@ void ChimpGBApp::mainLoop()
     terminate(0);
 }
 
+bool ChimpGBApp::isPoweredOn()
+{
+    return mGameboy != nullptr;
+}
+
 void ChimpGBApp::powerOff()
 {
     if (mGameboy != nullptr)
@@ -351,12 +363,16 @@ void ChimpGBApp::powerOff()
             SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, WINDOW_TITLE, err.what(), mWindowSDL);
         }
         delete mGameboy;
+        mGameboy = nullptr;
+        SDL_RenderSetVSync(mRendererSDL, 1);
     }
 }
 
 void ChimpGBApp::loadCart(const Cartridge &cart, std::string &romFilename)
 {
     powerOff();
+
+    SDL_RenderSetVSync(mRendererSDL, 0);
 
     mRomFilename = romFilename;
 
@@ -407,11 +423,19 @@ void ChimpGBApp::loadCart(const Cartridge &cart, std::string &romFilename)
 
 void ChimpGBApp::reset()
 {
-    loadCart(Cartridge(mGameboy->getCart()), mRomFilename);
+    if (mGameboy != nullptr)
+    {
+        loadCart(Cartridge(mGameboy->getCart()), mRomFilename);
+    }
 }
 
 void ChimpGBApp::saveGame()
 {
+    if (mGameboy == nullptr)
+    {
+        return;
+    }
+
     const Cartridge &cart = mGameboy->getCart();
     if (cart.hasBattery())
     {
@@ -450,6 +474,11 @@ void ChimpGBApp::saveGame()
 
 void ChimpGBApp::loadGame()
 {
+    if (mGameboy == nullptr)
+    {
+        return;
+    }
+
     Cartridge &cart = mGameboy->getCart();
     if (cart.hasBattery())
     {
@@ -488,7 +517,7 @@ void ChimpGBApp::terminate(int error_code)
     {
         powerOff();
     }
-    else
+    else if (mGameboy != nullptr)
     {
         delete mGameboy;
     }

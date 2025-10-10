@@ -43,37 +43,40 @@ void GUI::draw()
     ImGui::NewFrame();
 
     {
-        ImGuiIO &io = ImGui::GetIO();
-        float windowRatio = io.DisplaySize.x / io.DisplaySize.y;
-        ImVec2 viewportSize;
-        if (mConfig->integerScaling)
+        if (mApp->isPoweredOn())
         {
-            int scaleFactor = windowRatio >= 1.0F ? int(io.DisplaySize.y / LCD::SCREEN_H) : int(io.DisplaySize.x / LCD::SCREEN_W);
-            viewportSize = ImVec2(float(scaleFactor * LCD::SCREEN_W), float(scaleFactor * LCD::SCREEN_H));
-        }
-        else
-        {
-            if (windowRatio >= 1.0F)
+            ImGuiIO &io = ImGui::GetIO();
+            float windowRatio = io.DisplaySize.x / io.DisplaySize.y;
+            ImVec2 viewportSize;
+            if (mConfig->integerScaling)
             {
-                viewportSize = ImVec2(io.DisplaySize.x * SCREEN_RATIO / windowRatio, io.DisplaySize.y);
+                int scaleFactor = windowRatio >= 1.0F ? int(io.DisplaySize.y / LCD::SCREEN_H) : int(io.DisplaySize.x / LCD::SCREEN_W);
+                viewportSize = ImVec2(float(scaleFactor * LCD::SCREEN_W), float(scaleFactor * LCD::SCREEN_H));
             }
             else
             {
-                viewportSize = ImVec2(io.DisplaySize.x, io.DisplaySize.y * windowRatio / SCREEN_RATIO);
+                if (windowRatio >= 1.0F)
+                {
+                    viewportSize = ImVec2(io.DisplaySize.x * SCREEN_RATIO / windowRatio, io.DisplaySize.y);
+                }
+                else
+                {
+                    viewportSize = ImVec2(io.DisplaySize.x, io.DisplaySize.y * windowRatio / SCREEN_RATIO);
+                }
             }
+            ImGui::SetNextWindowPos(ImVec2(io.DisplaySize.x / 2.0F - viewportSize.x / 2.0F,
+                                           io.DisplaySize.y / 2.0F - viewportSize.y / 2.0F));
+            ImGui::SetNextWindowSize(viewportSize);
+            ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0.0F, 0.0F));
+            ImGui::Begin("Game", nullptr,
+                         ImGuiWindowFlags_NoBackground | ImGuiWindowFlags_NoTitleBar |
+                             ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove |
+                             ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoBringToFrontOnFocus |
+                             ImGuiWindowFlags_NoInputs);
+            ImGui::Image((ImTextureID)(intptr_t)mTextureSDL, viewportSize);
+            ImGui::PopStyleVar();
+            ImGui::End();
         }
-        ImGui::SetNextWindowPos(ImVec2(io.DisplaySize.x / 2.0F - viewportSize.x / 2.0F,
-                                       io.DisplaySize.y / 2.0F - viewportSize.y / 2.0F));
-        ImGui::SetNextWindowSize(viewportSize);
-        ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0.0F, 0.0F));
-        ImGui::Begin("Game", nullptr,
-                     ImGuiWindowFlags_NoBackground | ImGuiWindowFlags_NoTitleBar |
-                         ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove |
-                         ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoBringToFrontOnFocus |
-                         ImGuiWindowFlags_NoInputs);
-        ImGui::Image((ImTextureID)(intptr_t)mTextureSDL, viewportSize);
-        ImGui::PopStyleVar();
-        ImGui::End();
     }
 
     {
@@ -86,6 +89,10 @@ void GUI::draw()
                     if (ImGui::MenuItem("Reset"))
                     {
                         mApp->reset();
+                    }
+                    if (ImGui::MenuItem("Power Off"))
+                    {
+                        mApp->powerOff();
                     }
                     ImGui::EndMenu();
                 }
