@@ -5,10 +5,6 @@
 #include <fstream>
 #include <filesystem>
 
-#include "imgui.h"
-#include "backends/imgui_impl_sdl2.h"
-#include "backends/imgui_impl_sdlrenderer2.h"
-
 void gameboyDrawCallback(void *userdata);
 
 ChimpGBApp::ChimpGBApp(const Cartridge &cart, std::string &romFilename, bool debug)
@@ -60,20 +56,7 @@ ChimpGBApp::ChimpGBApp(const Cartridge &cart, std::string &romFilename, bool deb
     createDataDirectories();
     loadConfig();
 
-    // Initialize ImGui
-    IMGUI_CHECKVERSION();
-    ImGui::CreateContext();
-    ImGuiIO &io = ImGui::GetIO();
-    io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;
-    mImguiIniFilename = getConfigsPath() + "imgui.ini";
-    io.IniFilename = mImguiIniFilename.c_str();
-    ImGui::StyleColorsDark();
-    // Setup scaling
-    ImGuiStyle &style = ImGui::GetStyle();
-    style.ScaleAllSizes(mConfig.uiScale);
-    style.FontScaleDpi = mConfig.uiScale;
-    ImGui_ImplSDL2_InitForSDLRenderer(mWindowSDL, mRendererSDL);
-    ImGui_ImplSDLRenderer2_Init(mRendererSDL);
+    mGUI = GUI(&mConfig, mWindowSDL, mRendererSDL, mTextureSDL);
 
     mRomFilename = std::move(romFilename);
 
@@ -248,51 +231,7 @@ void ChimpGBApp::gameboyDraw()
 
 void ChimpGBApp::drawDisplay()
 {
-    ImGui_ImplSDLRenderer2_NewFrame();
-    ImGui_ImplSDL2_NewFrame();
-    ImGui::NewFrame();
-
-    {
-        ImGuiIO &io = ImGui::GetIO();
-        float windowRatio = io.DisplaySize.x / io.DisplaySize.y;
-        ImVec2 viewportSize;
-        if (mConfig.integerScaling)
-        {
-            int scaleFactor = windowRatio >= 1.0F ? int(io.DisplaySize.y / LCD::SCREEN_H) : int(io.DisplaySize.x / LCD::SCREEN_W);
-            viewportSize = ImVec2(float(scaleFactor * LCD::SCREEN_W), float(scaleFactor * LCD::SCREEN_H));
-        }
-        else
-        {
-            if (windowRatio >= 1.0F)
-            {
-                viewportSize = ImVec2(io.DisplaySize.x * SCREEN_RATIO / windowRatio, io.DisplaySize.y);
-            }
-            else
-            {
-                viewportSize = ImVec2(io.DisplaySize.x, io.DisplaySize.y * windowRatio / SCREEN_RATIO);
-            }
-        }
-        ImGui::SetNextWindowPos(ImVec2(io.DisplaySize.x / 2.0F - viewportSize.x / 2.0F,
-                                       io.DisplaySize.y / 2.0F - viewportSize.y / 2.0F));
-        ImGui::SetNextWindowSize(viewportSize);
-        ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0.0F, 0.0F));
-        ImGui::Begin("Game", nullptr,
-                     ImGuiWindowFlags_NoBackground | ImGuiWindowFlags_NoTitleBar |
-                         ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove |
-                         ImGuiWindowFlags_NoCollapse);
-        ImGui::Image((ImTextureID)(intptr_t)mTextureSDL, viewportSize);
-        ImGui::PopStyleVar();
-        ImGui::End();
-    }
-
-    ImGui::Render();
-
-    // Clear screen
-    SDL_SetRenderDrawColor(mRendererSDL, 0, 0, 0, 0xFF);
-    SDL_RenderClear(mRendererSDL);
-    // Update renderer
-    ImGui_ImplSDLRenderer2_RenderDrawData(ImGui::GetDrawData(), mRendererSDL);
-    SDL_RenderPresent(mRendererSDL);
+    mGUI.draw();
 }
 
 void ChimpGBApp::mainLoop()
@@ -306,7 +245,7 @@ void ChimpGBApp::mainLoop()
     {
         while (SDL_PollEvent(&mEventSDL) != 0)
         {
-            ImGui_ImplSDL2_ProcessEvent(&mEventSDL);
+            mGUI.processEvent(&mEventSDL);
             if (mEventSDL.type == SDL_QUIT)
             {
                 running = false;
@@ -525,9 +464,7 @@ void ChimpGBApp::terminate(int error_code)
         delete mGameboy;
     }
 
-    ImGui_ImplSDLRenderer2_Shutdown();
-    ImGui_ImplSDL2_Shutdown();
-    ImGui::DestroyContext();
+    mGUI.destroy();
 
     if (mWindowSDL)
         SDL_DestroyWindow(mWindowSDL);

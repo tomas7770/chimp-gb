@@ -19,6 +19,7 @@ set(SOURCE_FILES
     MBC/MBC3.cpp
     MBC/MBC5.cpp
     Config.cpp
+    GUI.cpp
 )
 
 set (IMGUI_SOURCE_FILES

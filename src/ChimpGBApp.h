@@ -4,6 +4,7 @@
 #include <SDL_scancode.h>
 #include "Gameboy.h"
 #include "Config.h"
+#include "GUI.h"
 
 class ChimpGBApp
 {
@@ -11,13 +12,11 @@ public:
     ChimpGBApp(const Cartridge &cart, std::string &romFilename, bool debug);
     void mainLoop();
     void gameboyDraw();
-    void drawDisplay();
 
 private:
     constexpr const static char *WINDOW_TITLE = "ChimpGB - Game Boy Emulator";
     constexpr static int WINDOW_WIDTH = 640;
     constexpr static int WINDOW_HEIGHT = 576;
-    constexpr static float SCREEN_RATIO = float(LCD::SCREEN_W) / float(LCD::SCREEN_H);
 
     constexpr static int AUDIO_SAMPLE_RATE = 44100;
     constexpr static uint16_t AUDIO_INTERNAL_BUFFER_SIZE = 256;
@@ -40,8 +39,10 @@ private:
     Gameboy *mGameboy = nullptr;
 
     Config mConfig;
-    std::string mImguiIniFilename; // need to keep a char buffer persistently
 
+    GUI mGUI;
+
+    void drawDisplay();
     void createDataDirectories();
     void loadConfig();
     void saveConfig();
