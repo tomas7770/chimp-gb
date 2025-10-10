@@ -88,10 +88,10 @@ void GUI::draw()
             {
                 if (ImGui::BeginMenu("File"))
                 {
-                    if (ImGui::MenuItem("Open ROM"))
+                    if (ImGui::MenuItem("Load ROM"))
                     {
                         char const *filterPatterns[2] = {"*.gb", "*.gbc"};
-                        char *openFilename = tinyfd_openFileDialog("Open ROM", nullptr, 2, filterPatterns, "Game Boy ROM files", 0);
+                        char *openFilename = tinyfd_openFileDialog("Load ROM", nullptr, 2, filterPatterns, "Game Boy ROM files", 0);
                         if (openFilename)
                         {
                             std::string openFilenameString(openFilename);
