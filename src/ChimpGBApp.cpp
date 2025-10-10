@@ -56,7 +56,7 @@ ChimpGBApp::ChimpGBApp(const Cartridge &cart, std::string &romFilename, bool deb
     createDataDirectories();
     loadConfig();
 
-    mGUI = GUI(&mConfig, mWindowSDL, mRendererSDL, mTextureSDL);
+    mGUI = GUI(this, &mConfig, mWindowSDL, mRendererSDL, mTextureSDL);
     mDebug = debug;
 
     loadCart(cart, romFilename);
@@ -202,7 +202,7 @@ void ChimpGBApp::mainLoop()
     {
         while (SDL_PollEvent(&mEventSDL) != 0)
         {
-            mGUI.processEvent(&mEventSDL);
+            bool processGameInput = mGUI.processEvent(&mEventSDL);
             if (mEventSDL.type == SDL_QUIT)
             {
                 running = false;
@@ -210,25 +210,32 @@ void ChimpGBApp::mainLoop()
             else if (mEventSDL.type == SDL_KEYDOWN)
             {
                 auto scancode = mEventSDL.key.keysym.scancode;
-                for (int i = 0; i < 8; i++)
-                {
-                    if (scancode == mConfig.keysGame[i])
-                    {
-                        mGameboy->onKeyPress(i);
-                        break;
-                    }
-                }
-                if (scancode == mConfig.keyFastForward)
-                {
-                    mFastForward = true;
-                }
-                else if (scancode == mConfig.keyToggleFullscreen)
+                if (scancode == mConfig.keyToggleFullscreen)
                 {
                     mConfig.fullscreen = !mConfig.fullscreen;
                     setVideoParameters();
                 }
+                else if (scancode == mConfig.keyShowMenuBar)
+                {
+                    mGUI.showMenuBar = !mGUI.showMenuBar;
+                }
+                else if (processGameInput)
+                {
+                    for (int i = 0; i < 8; i++)
+                    {
+                        if (scancode == mConfig.keysGame[i])
+                        {
+                            mGameboy->onKeyPress(i);
+                            break;
+                        }
+                    }
+                    if (scancode == mConfig.keyFastForward)
+                    {
+                        mFastForward = true;
+                    }
+                }
             }
-            else if (mEventSDL.type == SDL_KEYUP)
+            else if (mEventSDL.type == SDL_KEYUP && processGameInput)
             {
                 for (int i = 0; i < 8; i++)
                 {
@@ -351,7 +358,7 @@ void ChimpGBApp::loadCart(const Cartridge &cart, std::string &romFilename)
 {
     powerOff();
 
-    mRomFilename = std::move(romFilename);
+    mRomFilename = romFilename;
 
     Gameboy::SystemType systemType = static_cast<Gameboy::SystemType>(mConfig.dmgGameEmulatedConsole);
     if (cart.getHeader().cgbFlag & (1 << 7))
@@ -396,6 +403,11 @@ void ChimpGBApp::loadCart(const Cartridge &cart, std::string &romFilename)
         SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, WINDOW_TITLE, err.what(), mWindowSDL);
         terminate(-1);
     }
+}
+
+void ChimpGBApp::reset()
+{
+    loadCart(Cartridge(mGameboy->getCart()), mRomFilename);
 }
 
 void ChimpGBApp::saveGame()

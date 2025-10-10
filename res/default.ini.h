@@ -17,6 +17,7 @@ const char *defaultIni =
     "\n"
     "; Keyboard keys assigned to various emulator functions.\n"
     "[keysEmulator]\n"
+    "showMenuBar = 41\n"
     "fastForward = 43\n"
     "toggleFullscreen = 68\n"
     "\n"

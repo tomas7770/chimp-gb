@@ -5,15 +5,8 @@
 #include "MBC/MBC3.h"
 #include "MBC/MBC5.h"
 
-Cartridge::Cartridge(std::istream &dataStream, std::streamsize size)
+void Cartridge::init()
 {
-    if (size < 0x014F)
-    {
-        throw std::runtime_error("Provided ROM is not valid: Smaller than header size");
-    }
-    mData.resize(size);
-    dataStream.read(reinterpret_cast<char *>(mData.data()), size);
-
     mHeader = RomHeader(mData);
 
     switch (mHeader.cartType)
@@ -48,6 +41,24 @@ Cartridge::Cartridge(std::istream &dataStream, std::streamsize size)
         mMBC = std::make_shared<MBC5>(true);
         break;
     }
+}
+
+Cartridge::Cartridge(std::istream &dataStream, std::streamsize size)
+{
+    if (size < 0x014F)
+    {
+        throw std::runtime_error("Provided ROM is not valid: Smaller than header size");
+    }
+    mData.resize(size);
+    dataStream.read(reinterpret_cast<char *>(mData.data()), size);
+
+    init();
+}
+
+Cartridge::Cartridge(const Cartridge &cart)
+{
+    mData = cart.mData;
+    init();
 }
 
 const RomHeader &Cartridge::getHeader() const

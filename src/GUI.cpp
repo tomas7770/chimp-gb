@@ -5,9 +5,11 @@
 #include "backends/imgui_impl_sdlrenderer2.h"
 
 #include "Platform.h"
+#include "ChimpGBApp.h"
 
-GUI::GUI(Config *config, SDL_Window *windowSDL, SDL_Renderer *rendererSDL, SDL_Texture *textureSDL)
+GUI::GUI(ChimpGBApp *app, Config *config, SDL_Window *windowSDL, SDL_Renderer *rendererSDL, SDL_Texture *textureSDL)
 {
+    mApp = app;
     mConfig = config;
     mRendererSDL = rendererSDL;
     mTextureSDL = textureSDL;
@@ -27,9 +29,11 @@ GUI::GUI(Config *config, SDL_Window *windowSDL, SDL_Renderer *rendererSDL, SDL_T
     ImGui_ImplSDLRenderer2_Init(mRendererSDL);
 }
 
-void GUI::processEvent(SDL_Event *eventSDL)
+bool GUI::processEvent(SDL_Event *eventSDL)
 {
     ImGui_ImplSDL2_ProcessEvent(eventSDL);
+    ImGuiIO &io = ImGui::GetIO();
+    return !io.WantCaptureKeyboard;
 }
 
 void GUI::draw()
@@ -65,10 +69,29 @@ void GUI::draw()
         ImGui::Begin("Game", nullptr,
                      ImGuiWindowFlags_NoBackground | ImGuiWindowFlags_NoTitleBar |
                          ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove |
-                         ImGuiWindowFlags_NoCollapse);
+                         ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoBringToFrontOnFocus |
+                         ImGuiWindowFlags_NoInputs);
         ImGui::Image((ImTextureID)(intptr_t)mTextureSDL, viewportSize);
         ImGui::PopStyleVar();
         ImGui::End();
+    }
+
+    {
+        if (showMenuBar)
+        {
+            if (ImGui::BeginMainMenuBar())
+            {
+                if (ImGui::BeginMenu("Emulation"))
+                {
+                    if (ImGui::MenuItem("Reset"))
+                    {
+                        mApp->reset();
+                    }
+                    ImGui::EndMenu();
+                }
+                ImGui::EndMainMenuBar();
+            }
+        }
     }
 
     ImGui::Render();

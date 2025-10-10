@@ -9,6 +9,7 @@ public:
     int keysGame[8];
 
     // keysEmulator
+    int keyShowMenuBar;
     int keyFastForward;
     int keyToggleFullscreen;
 

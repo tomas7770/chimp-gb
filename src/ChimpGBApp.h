@@ -10,6 +10,9 @@ class ChimpGBApp
 {
 public:
     ChimpGBApp(const Cartridge &cart, std::string &romFilename, bool debug);
+
+    void reset();
+
     void mainLoop();
     void gameboyDraw();
 

@@ -59,6 +59,7 @@ void Config::load(std::stringstream &configString)
     loadIntKey(ini, keysGame[6], "keysGame", "select");
     loadIntKey(ini, keysGame[7], "keysGame", "start");
 
+    loadIntKey(ini, keyShowMenuBar, "keysEmulator", "showMenuBar");
     loadIntKey(ini, keyFastForward, "keysEmulator", "fastForward");
     loadIntKey(ini, keyToggleFullscreen, "keysEmulator", "toggleFullscreen");
 
@@ -87,6 +88,7 @@ void Config::save(std::string &configFilepath)
     ini["keysGame"]["select"] = std::to_string(keysGame[6]);
     ini["keysGame"]["start"] = std::to_string(keysGame[7]);
 
+    ini["keysEmulator"]["showMenuBar"] = std::to_string(keyShowMenuBar);
     ini["keysEmulator"]["fastForward"] = std::to_string(keyFastForward);
     ini["keysEmulator"]["toggleFullscreen"] = std::to_string(keyToggleFullscreen);
 

@@ -12,6 +12,7 @@ class Cartridge
 {
 public:
     Cartridge(std::istream &dataStream, std::streamsize size);
+    Cartridge(const Cartridge &cart);
     const RomHeader &getHeader() const;
 
     uint8_t readByte(uint16_t address);
@@ -26,6 +27,8 @@ public:
     void loadRTC(MBC::RTC &rtcData);
 
 private:
+    void init();
+
     std::vector<uint8_t> mData;
     RomHeader mHeader;
     std::shared_ptr<MBC> mMBC;
