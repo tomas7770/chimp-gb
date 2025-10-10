@@ -194,18 +194,18 @@ void ChimpGBApp::drawDisplay()
 void ChimpGBApp::mainLoop()
 {
     uint64_t frameTimestamp = SDL_GetTicks64();
-    bool running = true;
+    mRunning = true;
     double audioTimeAccum = 0.0;
     double sleepTimeAccum = 0.0;
     std::vector<float> leftAudioSamples, rightAudioSamples;
-    while (running)
+    while (mRunning)
     {
         while (SDL_PollEvent(&mEventSDL) != 0)
         {
             bool processGameInput = mGUI.processEvent(&mEventSDL);
             if (mEventSDL.type == SDL_QUIT)
             {
-                running = false;
+                doExit();
             }
             else if (mEventSDL.type == SDL_KEYDOWN)
             {
@@ -509,6 +509,11 @@ void ChimpGBApp::loadGame()
             cart.loadRTC(rtcData);
         }
     }
+}
+
+void ChimpGBApp::doExit()
+{
+    mRunning = false;
 }
 
 void ChimpGBApp::terminate(int error_code)

@@ -14,6 +14,7 @@ public:
     bool isPoweredOn();
     void powerOff();
     void reset();
+    void doExit();
 
     void mainLoop();
     void gameboyDraw();
@@ -39,6 +40,7 @@ private:
     uint32_t mTexturePixels[LCD::SCREEN_W * LCD::SCREEN_H];
     std::string mRomFilename;
 
+    bool mRunning;
     bool mDebug;
     bool mFastForward = false;
 

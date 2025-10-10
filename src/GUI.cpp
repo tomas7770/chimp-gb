@@ -84,6 +84,18 @@ void GUI::draw()
         {
             if (ImGui::BeginMainMenuBar())
             {
+                if (ImGui::BeginMenu("File"))
+                {
+                    if (ImGui::MenuItem("Open ROM"))
+                    {
+                    }
+                    ImGui::Separator();
+                    if (ImGui::MenuItem("Exit"))
+                    {
+                        mApp->doExit();
+                    }
+                    ImGui::EndMenu();
+                }
                 if (ImGui::BeginMenu("Emulation"))
                 {
                     if (ImGui::MenuItem("Reset"))
