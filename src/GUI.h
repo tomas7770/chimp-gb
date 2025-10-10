@@ -16,7 +16,7 @@ public:
     void draw();
     void destroy();
 
-    bool showMenuBar = false;
+    bool showMenuBar = true;
 
 private:
     constexpr static float SCREEN_RATIO = float(LCD::SCREEN_W) / float(LCD::SCREEN_H);

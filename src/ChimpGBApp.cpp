@@ -7,7 +7,7 @@
 
 void gameboyDrawCallback(void *userdata);
 
-ChimpGBApp::ChimpGBApp(const Cartridge &cart, std::string &romFilename, bool debug)
+ChimpGBApp::ChimpGBApp(std::string &filepath, bool debug)
 {
     // Initialize SDL
     if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO) < 0)
@@ -31,6 +31,7 @@ ChimpGBApp::ChimpGBApp(const Cartridge &cart, std::string &romFilename, bool deb
         std::cout << "Renderer could not be created! SDL_Error: " << SDL_GetError() << std::endl;
         terminate(-1);
     }
+    SDL_RenderSetVSync(mRendererSDL, 1);
 
     mTextureSDL = SDL_CreateTexture(mRendererSDL, SDL_PIXELFORMAT_RGBA8888, SDL_TEXTUREACCESS_STREAMING, LCD::SCREEN_W, LCD::SCREEN_H);
     if (mTextureSDL == NULL)
@@ -59,9 +60,41 @@ ChimpGBApp::ChimpGBApp(const Cartridge &cart, std::string &romFilename, bool deb
     mGUI = GUI(this, &mConfig, mWindowSDL, mRendererSDL, mTextureSDL);
     mDebug = debug;
 
-    loadCart(cart, romFilename);
+    if (filepath != "")
+    {
+        loadRomFile(filepath);
+    }
 
     setVideoParameters();
+}
+
+void ChimpGBApp::loadRomFile(std::string &filepath)
+{
+    std::ifstream dataStream(filepath, std::ios::binary | std::ios::ate);
+    if (!dataStream.good())
+    {
+        SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, WINDOW_TITLE,
+                                 "Error loading requested ROM. Perhaps this file doesn't exist?", mWindowSDL);
+        return;
+    }
+    auto size = dataStream.tellg();
+    dataStream.seekg(0);
+
+    try
+    {
+        Cartridge cart = Cartridge(dataStream, size);
+        std::string romFilename = std::filesystem::path(filepath).filename().stem().string();
+        loadCart(cart, romFilename);
+        mGUI.showMenuBar = false;
+    }
+    catch (std::runtime_error err)
+    {
+        SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, WINDOW_TITLE, err.what(), mWindowSDL);
+    }
+    catch (std::logic_error err)
+    {
+        SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, WINDOW_TITLE, err.what(), mWindowSDL);
+    }
 }
 
 void ChimpGBApp::createDataDirectories()

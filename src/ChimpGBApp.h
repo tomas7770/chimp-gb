@@ -9,8 +9,9 @@
 class ChimpGBApp
 {
 public:
-    ChimpGBApp(const Cartridge &cart, std::string &romFilename, bool debug);
+    ChimpGBApp(std::string &filepath, bool debug);
 
+    void loadRomFile(std::string &filepath);
     bool isPoweredOn();
     void powerOff();
     void reset();

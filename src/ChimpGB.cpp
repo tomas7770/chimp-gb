@@ -7,32 +7,21 @@
 
 int main(int argc, char *args[])
 {
-    if (argc < 2)
-    {
-        std::cout << "Usage: ChimpGB <rom file> [-debug]" << std::endl;
-        return 0;
-    }
-
-    std::string filepath(args[1]);
-    std::ifstream dataStream(filepath, std::ios::binary | std::ios::ate);
-    if (!dataStream.good())
-    {
-        std::cout << "Error loading requested ROM. Perhaps this file doesn't exist?" << std::endl;
-        return 0;
-    }
-    auto size = dataStream.tellg();
-    dataStream.seekg(0);
-
+    std::string filepath = "";
     bool debug = false;
-    if (argc >= 3 && std::string(args[2]) == "-debug")
+    for (int i = 1; i < argc; i++)
     {
-        debug = true;
+        if (std::string(args[i]) == "-debug")
+        {
+            debug = true;
+        }
+        else
+        {
+            filepath = args[i];
+        }
     }
 
-    std::string romFilename = std::filesystem::path(filepath).filename().stem().string();
-
-    ChimpGBApp *app = new ChimpGBApp(Cartridge(dataStream, size),
-                                     romFilename, debug);
+    ChimpGBApp *app = new ChimpGBApp(filepath, debug);
     app->mainLoop();
 
     return 0;

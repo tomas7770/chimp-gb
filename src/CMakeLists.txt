@@ -32,7 +32,11 @@ set (IMGUI_SOURCE_FILES
     imgui/backends/imgui_impl_sdlrenderer2.cpp
 )
 
-add_executable(ChimpGB ${SOURCE_FILES} ${IMGUI_SOURCE_FILES})
+set (MISC_SOURCE_FILES
+    tinyfiledialogs/tinyfiledialogs.cpp
+)
+
+add_executable(ChimpGB ${SOURCE_FILES} ${IMGUI_SOURCE_FILES} ${MISC_SOURCE_FILES})
 
 include_directories(${SDL2_INCLUDE_DIR} imgui)
 if (MINGW)

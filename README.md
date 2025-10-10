@@ -130,3 +130,4 @@ It contains the following third-party libraries:
 
 - [A fork of mINI](https://github.com/IruzzArcana/mINI) with support for stringstream.
 - [Dear ImGui](https://github.com/ocornut/imgui)
+- [tinyfiledialogs](https://sourceforge.net/projects/tinyfiledialogs/)

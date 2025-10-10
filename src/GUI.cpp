@@ -4,6 +4,8 @@
 #include "backends/imgui_impl_sdl2.h"
 #include "backends/imgui_impl_sdlrenderer2.h"
 
+#include "tinyfiledialogs/tinyfiledialogs.h"
+
 #include "Platform.h"
 #include "ChimpGBApp.h"
 
@@ -88,6 +90,13 @@ void GUI::draw()
                 {
                     if (ImGui::MenuItem("Open ROM"))
                     {
+                        char const *filterPatterns[2] = {"*.gb", "*.gbc"};
+                        char *openFilename = tinyfd_openFileDialog("Open ROM", nullptr, 2, filterPatterns, "Game Boy ROM files", 0);
+                        if (openFilename)
+                        {
+                            std::string openFilenameString(openFilename);
+                            mApp->loadRomFile(openFilenameString);
+                        }
                     }
                     ImGui::Separator();
                     if (ImGui::MenuItem("Exit"))
