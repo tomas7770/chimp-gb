@@ -693,6 +693,7 @@ void Gameboy::setBootRom(std::istream &dataStream)
     }
     mBootRomFinished = false;
     mCPU.loadBootRom();
+    mPPU.writeLCDC(0x00);
 }
 
 void Gameboy::simulateBootRom()
