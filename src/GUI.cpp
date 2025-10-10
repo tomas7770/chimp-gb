@@ -120,6 +120,10 @@ void GUI::draw()
                 ImGui::EndMainMenuBar();
             }
         }
+        else
+        {
+            ImGui::SetMouseCursor(ImGuiMouseCursor_None);
+        }
     }
 
     ImGui::Render();
