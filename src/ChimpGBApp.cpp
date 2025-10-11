@@ -252,7 +252,7 @@ void ChimpGBApp::mainLoop()
                 {
                     mGUI.showMenuBar = !mGUI.showMenuBar;
                 }
-                else if (processGameInput && mGameboy != nullptr)
+                else if (processGameInput && mGameboy != nullptr && !mPaused)
                 {
                     for (int i = 0; i < 8; i++)
                     {
@@ -268,7 +268,7 @@ void ChimpGBApp::mainLoop()
                     }
                 }
             }
-            else if (mEventSDL.type == SDL_KEYUP && processGameInput && mGameboy != nullptr)
+            else if (mEventSDL.type == SDL_KEYUP && processGameInput && mGameboy != nullptr && !mPaused)
             {
                 for (int i = 0; i < 8; i++)
                 {
@@ -285,7 +285,7 @@ void ChimpGBApp::mainLoop()
             }
         }
 
-        if (mGameboy == nullptr)
+        if (mGameboy == nullptr || mPaused)
         {
             drawDisplay();
             continue;
@@ -397,6 +397,7 @@ void ChimpGBApp::powerOff()
         }
         delete mGameboy;
         mGameboy = nullptr;
+        mPaused = false;
         SDL_RenderSetVSync(mRendererSDL, 1);
     }
 }
@@ -459,6 +460,20 @@ void ChimpGBApp::reset()
     if (mGameboy != nullptr)
     {
         loadCart(Cartridge(mGameboy->getCart()), mRomFilename);
+    }
+}
+
+bool ChimpGBApp::isPaused()
+{
+    return mPaused;
+}
+
+void ChimpGBApp::pause()
+{
+    if (isPoweredOn())
+    {
+        mPaused = !mPaused;
+        SDL_RenderSetVSync(mRendererSDL, mPaused ? 1 : 0);
     }
 }
 

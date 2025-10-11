@@ -115,6 +115,10 @@ void GUI::draw()
                     {
                         mApp->powerOff();
                     }
+                    if (ImGui::MenuItem("Pause", nullptr, mApp->isPaused()))
+                    {
+                        mApp->pause();
+                    }
                     ImGui::EndMenu();
                 }
                 ImGui::EndMainMenuBar();

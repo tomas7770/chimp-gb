@@ -15,6 +15,8 @@ public:
     bool isPoweredOn();
     void powerOff();
     void reset();
+    bool isPaused();
+    void pause();
     void doExit();
 
     void mainLoop();
@@ -43,6 +45,7 @@ private:
 
     bool mRunning;
     bool mDebug;
+    bool mPaused = false;
     bool mFastForward = false;
 
     Gameboy *mGameboy = nullptr;
