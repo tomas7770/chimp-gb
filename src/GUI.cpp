@@ -119,6 +119,35 @@ void GUI::draw()
                     {
                         mApp->pause();
                     }
+                    ImGui::Separator();
+                    if (ImGui::BeginMenu("Model"))
+                    {
+                        if (ImGui::BeginMenu("GB game"))
+                        {
+                            if (ImGui::MenuItem("DMG (Game Boy)", nullptr, mConfig->dmgGameEmulatedConsole == Gameboy::SystemType::DMG))
+                            {
+                                mConfig->dmgGameEmulatedConsole = Gameboy::SystemType::DMG;
+                            }
+                            if (ImGui::MenuItem("CGB (Game Boy Color)", nullptr, mConfig->dmgGameEmulatedConsole == Gameboy::SystemType::CGB))
+                            {
+                                mConfig->dmgGameEmulatedConsole = Gameboy::SystemType::CGB;
+                            }
+                            ImGui::EndMenu();
+                        }
+                        if (ImGui::BeginMenu("GBC game"))
+                        {
+                            if (ImGui::MenuItem("DMG (Game Boy)", nullptr, mConfig->cgbGameEmulatedConsole == Gameboy::SystemType::DMG))
+                            {
+                                mConfig->cgbGameEmulatedConsole = Gameboy::SystemType::DMG;
+                            }
+                            if (ImGui::MenuItem("CGB (Game Boy Color)", nullptr, mConfig->cgbGameEmulatedConsole == Gameboy::SystemType::CGB))
+                            {
+                                mConfig->cgbGameEmulatedConsole = Gameboy::SystemType::CGB;
+                            }
+                            ImGui::EndMenu();
+                        }
+                        ImGui::EndMenu();
+                    }
                     ImGui::EndMenu();
                 }
                 if (ImGui::BeginMenu("Video"))
