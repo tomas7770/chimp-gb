@@ -71,11 +71,6 @@ void CPU::copyDMABytes(int count)
     }
 }
 
-bool CPU::isDoubleSpeed() const
-{
-    return mDoubleSpeed;
-}
-
 void CPU::loadBootRom()
 {
     mPC = 0;
@@ -150,15 +145,8 @@ void CPU::simulateBootRom()
     }
 }
 
-void CPU::doMCycle()
+void CPU::doCGB_DMA()
 {
-    mGameboy->tickSystemCounter();
-
-    if (mHalted)
-    {
-        return;
-    }
-
     if (mHBlankDMACopying && !mGameboy->inHBlank())
     {
         mHBlankBytesCopied = 0;
@@ -168,26 +156,15 @@ void CPU::doMCycle()
         copyDMABytes(mDoubleSpeed ? 1 : 2);
         return;
     }
+}
 
-    (*this.*mMCycleFunc)();
-
-    if (mDMACopying)
+void CPU::doOAM_DMA()
+{
+    mGameboy->writeByte(0xFE00 + mDMACycles, mGameboy->readByte(mDMASourceStart + mDMACycles));
+    mDMACycles++;
+    if (mDMACycles >= DMA_M_CYCLES)
     {
-        mGameboy->writeByte(0xFE00 + mDMACycles, mGameboy->readByte(mDMASourceStart + mDMACycles));
-        mDMACycles++;
-        if (mDMACycles >= DMA_M_CYCLES)
-        {
-            mDMACopying = false;
-        }
-    }
-
-    if (mRequestIME > 0)
-    {
-        mRequestIME--;
-        if (mRequestIME == 0)
-        {
-            mIME = true;
-        }
+        mDMACopying = false;
     }
 }
 

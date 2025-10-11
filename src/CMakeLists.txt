@@ -11,7 +11,6 @@ set(SOURCE_FILES
     RomHeader.cpp
     CPU.cpp
     CPUDebug.cpp
-    Timer.cpp
     PPU.cpp
     APU.cpp
     MBC/NoMBC.cpp

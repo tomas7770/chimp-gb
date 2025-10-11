@@ -35,14 +35,35 @@ public:
 
     void requestInterrupt(CPU::InterruptSource source);
 
-    void tickSystemCounter();
+    void tickSystemCounter()
+    {
+        mSysCounter++;
+        if (mTimer.tick(mSysCounter, mSysCounter - 1))
+        {
+            mCPU.requestInterrupt(CPU::InterruptSource::Timer);
+        }
+    }
 
     const LCD::Color *getPixels() const;
     void computeAudioSamples();
     float getLeftAudioSample() const;
     float getRightAudioSample() const;
 
-    void doTCycle();
+    void doTCycle()
+    {
+        int cpuCycleDiv = CPU_CYCLE_DIV / (mCPU.isDoubleSpeed() ? 2 : 1);
+        if (!(tCycleCounter % cpuCycleDiv))
+        {
+            tickSystemCounter();
+            mCPU.doMCycle();
+        }
+        mPPU.doCycle();
+        if (!(tCycleCounter % APU_CYCLE_DIV))
+        {
+            mAPU.doCycle();
+        }
+        tCycleCounter++;
+    }
     void onKeyPress(int key);
     void onKeyRelease(int key);
 
@@ -52,11 +73,11 @@ public:
     void setBootRom(std::istream &dataStream);
     void simulateBootRom();
 
-    SystemType getSystemType();
-    bool inDMGMode();
-    bool inCGBMode();
+    SystemType getSystemType() { return mSystemType; }
+    bool inDMGMode() { return mKEY0 & 0x04; }
+    bool inCGBMode() { return mSystemType == CGB && !inDMGMode(); }
 
-    bool inHBlank();
+    bool inHBlank() { return mPPU.getMode() == 0; }
 
     static constexpr int CYCLES_PER_FRAME = 70224;
     static constexpr int CLOCK_RATE = 4194304;

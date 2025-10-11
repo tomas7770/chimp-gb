@@ -5,11 +5,6 @@
 #include "CPU.h"
 #include <cstring>
 
-PPU::Mode PPU::getMode() const
-{
-    return mMode;
-}
-
 void PPU::writeLCDC(uint8_t value)
 {
     if (!(mLCD->LCDC & LCD::LCDC_FLAG_LCD_PPU_ENABLE) && (value & LCD::LCDC_FLAG_LCD_PPU_ENABLE))
@@ -78,58 +73,6 @@ void PPU::setDrawCallback(void (*drawCallback)(void *), void *userdata)
 {
     this->drawCallback = drawCallback;
     mDrawCallbackUserdata = userdata;
-}
-
-void PPU::doCycle()
-{
-    if (!mEnabled)
-    {
-        return;
-    }
-
-    mScanlineDots++;
-
-    switch (mMode)
-    {
-    case HBlank:
-    case VBlank:
-        if (mScanlineDots >= DOTS_PER_LINE)
-        {
-            newLine();
-        }
-        else if (mLCD->LY == (LCD::SCREEN_H + VBLANK_LINES - 1) && mScanlineDots >= 4)
-        {
-            // LY is updated early (original hardware quirk)
-            mLCD->LY = 0;
-            updateLYCInterrupt();
-        }
-        break;
-
-    case OAMScan:
-        if (mScanlineDots >= MODE_2_DOTS)
-        {
-            setMode(Draw);
-        }
-        break;
-
-    case Draw:
-        if (mScanlineDots >= MODE_2_DOTS + MODE_3_DOTS)
-        {
-            setMode(HBlank);
-        }
-        else if (mScanlineDots >= MODE_2_DOTS + MODE_3_DUMMY_DOTS)
-        {
-            // Draw pixel
-            int pixelX = mScanlineDots - MODE_2_DOTS - MODE_3_DUMMY_DOTS;
-            int pixelY = mLCD->LY;
-            int pixelCoord = pixelY * LCD::SCREEN_W + pixelX;
-            mLCD->pixels[pixelCoord] = getScreenPixel(pixelX, pixelY);
-        }
-        break;
-
-    default:
-        break;
-    }
 }
 
 void PPU::setMode(PPU::Mode mode)

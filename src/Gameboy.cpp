@@ -607,15 +607,6 @@ void Gameboy::requestInterrupt(CPU::InterruptSource source)
     mCPU.requestInterrupt(source);
 }
 
-void Gameboy::tickSystemCounter()
-{
-    mSysCounter++;
-    if (mTimer.tick(mSysCounter, mSysCounter - 1))
-    {
-        mCPU.requestInterrupt(CPU::InterruptSource::Timer);
-    }
-}
-
 const LCD::Color *Gameboy::getPixels() const
 {
     return mLCD.pixels;
@@ -636,25 +627,10 @@ float Gameboy::getRightAudioSample() const
     return mAPU.rightAudioSample;
 }
 
-void Gameboy::doTCycle()
-{
-    int cpuCycleDiv = CPU_CYCLE_DIV / (mCPU.isDoubleSpeed() ? 2 : 1);
-    if (!(tCycleCounter % cpuCycleDiv))
-    {
-        mCPU.doMCycle();
-    }
-    mPPU.doCycle();
-    if (!(tCycleCounter % APU_CYCLE_DIV))
-    {
-        mAPU.doCycle();
-    }
-    tCycleCounter++;
-}
-
 void Gameboy::onKeyPress(int key)
 {
-    if ((key < Joypad::BUTTONS_INDEX && mJoypad.selectDPad && !mJoypad.keys[key] && !mJoypad.keys[key + Joypad::BUTTONS_INDEX])
-        || (key >= Joypad::BUTTONS_INDEX && mJoypad.selectButtons && !mJoypad.keys[key] && !mJoypad.keys[key - Joypad::BUTTONS_INDEX]))
+    if ((key < Joypad::BUTTONS_INDEX && mJoypad.selectDPad && !mJoypad.keys[key] && !mJoypad.keys[key + Joypad::BUTTONS_INDEX]) ||
+        (key >= Joypad::BUTTONS_INDEX && mJoypad.selectButtons && !mJoypad.keys[key] && !mJoypad.keys[key - Joypad::BUTTONS_INDEX]))
     {
         requestInterrupt(CPU::InterruptSource::Joypad);
     }
@@ -723,24 +699,4 @@ void Gameboy::simulateBootRom()
         }
     }
     mCPU.simulateBootRom();
-}
-
-Gameboy::SystemType Gameboy::getSystemType()
-{
-    return mSystemType;
-}
-
-bool Gameboy::inDMGMode()
-{
-    return mKEY0 & 0x04;
-}
-
-bool Gameboy::inCGBMode()
-{
-    return mSystemType == CGB && !inDMGMode();
-}
-
-bool Gameboy::inHBlank()
-{
-    return mPPU.getMode() == 0;
 }

@@ -10,7 +10,34 @@ class CPU
 public:
     CPU(Gameboy *gameboy, bool debug) : mGameboy(gameboy), mDebugPrint(debug) {}
 
-    void doMCycle();
+    void doMCycle()
+    {
+        if (mHalted)
+        {
+            return;
+        }
+
+        if (mGeneralDMACopying || mHBlankDMACopying)
+        {
+            doCGB_DMA();
+        }
+
+        (*this.*mMCycleFunc)();
+
+        if (mDMACopying)
+        {
+            doOAM_DMA();
+        }
+
+        if (mRequestIME > 0)
+        {
+            mRequestIME--;
+            if (mRequestIME == 0)
+            {
+                mIME = true;
+            }
+        }
+    }
 
     enum InterruptSource
     {
@@ -26,7 +53,7 @@ public:
     void startHBlankDMA(int hdmaLength);
     uint8_t getDMALengthLeft();
 
-    bool isDoubleSpeed() const;
+    bool isDoubleSpeed() const { return mDoubleSpeed; }
 
     void loadBootRom();
     void simulateBootRom();
@@ -281,6 +308,8 @@ private:
     void prefetchOpcode();
 
     void copyDMABytes(int count);
+    void doCGB_DMA();
+    void doOAM_DMA();
 
     Gameboy *mGameboy;
 

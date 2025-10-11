@@ -26,13 +26,63 @@ public:
         Draw,
     };
 
-    Mode getMode() const;
+    Mode getMode() const { return mMode; }
     void writeLCDC(uint8_t value);
     void writeSTAT(uint8_t value);
     void writeLYC(uint8_t value);
     void setDrawCallback(void (*drawCallback)(void *), void *userdata);
 
-    void doCycle();
+    void doCycle()
+    {
+        if (!mEnabled)
+        {
+            return;
+        }
+
+        mScanlineDots++;
+
+        switch (mMode)
+        {
+        case HBlank:
+        case VBlank:
+            if (mScanlineDots >= DOTS_PER_LINE)
+            {
+                newLine();
+            }
+            else if (mLCD->LY == (LCD::SCREEN_H + VBLANK_LINES - 1) && mScanlineDots >= 4)
+            {
+                // LY is updated early (original hardware quirk)
+                mLCD->LY = 0;
+                updateLYCInterrupt();
+            }
+            break;
+
+        case OAMScan:
+            if (mScanlineDots >= MODE_2_DOTS)
+            {
+                setMode(Draw);
+            }
+            break;
+
+        case Draw:
+            if (mScanlineDots >= MODE_2_DOTS + MODE_3_DOTS)
+            {
+                setMode(HBlank);
+            }
+            else if (mScanlineDots >= MODE_2_DOTS + MODE_3_DUMMY_DOTS)
+            {
+                // Draw pixel
+                int pixelX = mScanlineDots - MODE_2_DOTS - MODE_3_DUMMY_DOTS;
+                int pixelY = mLCD->LY;
+                int pixelCoord = pixelY * LCD::SCREEN_W + pixelX;
+                mLCD->pixels[pixelCoord] = getScreenPixel(pixelX, pixelY);
+            }
+            break;
+
+        default:
+            break;
+        }
+    }
 
     static constexpr uint16_t VRAM_BANK_SIZE = (1 << 13);
 
