@@ -19,7 +19,10 @@ public:
 
         if (mGeneralDMACopying || mHBlankDMACopying)
         {
-            doCGB_DMA();
+            if (doCGB_DMA())
+            {
+                return;
+            }
         }
 
         (*this.*mMCycleFunc)();
@@ -308,7 +311,7 @@ private:
     void prefetchOpcode();
 
     void copyDMABytes(int count);
-    void doCGB_DMA();
+    bool doCGB_DMA();
     void doOAM_DMA();
 
     Gameboy *mGameboy;

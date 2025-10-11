@@ -145,7 +145,7 @@ void CPU::simulateBootRom()
     }
 }
 
-void CPU::doCGB_DMA()
+bool CPU::doCGB_DMA()
 {
     if (mHBlankDMACopying && !mGameboy->inHBlank())
     {
@@ -154,8 +154,9 @@ void CPU::doCGB_DMA()
     if (mGeneralDMACopying || (mHBlankDMACopying && mGameboy->inHBlank() && mHBlankBytesCopied < 0x10))
     {
         copyDMABytes(mDoubleSpeed ? 1 : 2);
-        return;
+        return true;
     }
+    return false;
 }
 
 void CPU::doOAM_DMA()
