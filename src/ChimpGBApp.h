@@ -12,6 +12,7 @@ public:
     ChimpGBApp(std::string &filepath, bool debug);
 
     void loadRomFile(std::string &filepath);
+    void setVideoParameters();
     bool isPoweredOn();
     void powerOff();
     void reset();
@@ -58,7 +59,6 @@ private:
     void createDataDirectories();
     void loadConfig();
     void saveConfig();
-    void setVideoParameters();
     void loadCart(const Cartridge &cart, std::string &romFilename);
     void saveGame();
     void loadGame();

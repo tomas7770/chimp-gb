@@ -121,6 +121,19 @@ void GUI::draw()
                     }
                     ImGui::EndMenu();
                 }
+                if (ImGui::BeginMenu("Video"))
+                {
+                    if (ImGui::MenuItem("Fullscreen", nullptr, mConfig->fullscreen))
+                    {
+                        mConfig->fullscreen = !mConfig->fullscreen;
+                        mApp->setVideoParameters();
+                    }
+                    if (ImGui::MenuItem("Integer scaling", nullptr, mConfig->integerScaling))
+                    {
+                        mConfig->integerScaling = !mConfig->integerScaling;
+                    }
+                    ImGui::EndMenu();
+                }
                 ImGui::EndMainMenuBar();
             }
         }
