@@ -134,6 +134,22 @@ void GUI::draw()
                     }
                     ImGui::EndMenu();
                 }
+                if (ImGui::BeginMenu("Audio"))
+                {
+                    if (ImGui::BeginMenu("Quality"))
+                    {
+                        if (ImGui::MenuItem("Low", nullptr, mConfig->audioQuality == Config::AudioQuality::Low))
+                        {
+                            mConfig->audioQuality = Config::AudioQuality::Low;
+                        }
+                        if (ImGui::MenuItem("High", nullptr, mConfig->audioQuality == Config::AudioQuality::High))
+                        {
+                            mConfig->audioQuality = Config::AudioQuality::High;
+                        }
+                        ImGui::EndMenu();
+                    }
+                    ImGui::EndMenu();
+                }
                 ImGui::EndMainMenuBar();
             }
         }

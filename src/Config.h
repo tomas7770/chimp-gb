@@ -5,6 +5,12 @@
 class Config
 {
 public:
+    enum AudioQuality
+    {
+        Low,
+        High,
+    };
+
     // keysGame
     int keysGame[8];
 
@@ -17,6 +23,9 @@ public:
     int fullscreen;
     int integerScaling;
     float uiScale;
+
+    // audio
+    int audioQuality;
 
     // emulation
     std::string dmgBootRomPath;

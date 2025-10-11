@@ -315,7 +315,8 @@ void ChimpGBApp::mainLoop()
                 continue;
             }
 
-            if (!(mGameboy->tCycleCounter % Gameboy::APU_CYCLE_DIV))
+            if (mConfig.audioQuality == Config::AudioQuality::High &&
+                !(mGameboy->tCycleCounter % Gameboy::APU_CYCLE_DIV))
             {
                 mGameboy->computeAudioSamples();
                 leftAudioSamples.push_back(mGameboy->getLeftAudioSample());
@@ -328,18 +329,30 @@ void ChimpGBApp::mainLoop()
                 audioTimeAccum -= CYCLES_PER_SAMPLE;
 
                 float leftSample = 0.0F, rightSample = 0.0F;
-                for (float sample : leftAudioSamples)
+                switch (mConfig.audioQuality)
                 {
-                    leftSample += sample;
+                case Config::AudioQuality::Low:
+                    mGameboy->computeAudioSamples();
+                    leftSample = mGameboy->getLeftAudioSample();
+                    rightSample = mGameboy->getRightAudioSample();
+                    break;
+
+                default:
+                case Config::AudioQuality::High:
+                    for (float sample : leftAudioSamples)
+                    {
+                        leftSample += sample;
+                    }
+                    for (float sample : rightAudioSamples)
+                    {
+                        rightSample += sample;
+                    }
+                    leftSample /= leftAudioSamples.size();
+                    rightSample /= rightAudioSamples.size();
+                    leftAudioSamples.clear();
+                    rightAudioSamples.clear();
+                    break;
                 }
-                for (float sample : rightAudioSamples)
-                {
-                    rightSample += sample;
-                }
-                leftSample /= leftAudioSamples.size();
-                rightSample /= rightAudioSamples.size();
-                leftAudioSamples.clear();
-                rightAudioSamples.clear();
 
                 // Clip to ensure bugs don't cause loud audio
                 if (leftSample < -1.0F)

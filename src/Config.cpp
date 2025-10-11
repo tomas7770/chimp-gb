@@ -67,6 +67,8 @@ void Config::load(std::stringstream &configString)
     loadIntKey(ini, integerScaling, "video", "integerScaling");
     loadFloatKey(ini, uiScale, "video", "uiScale");
 
+    loadIntKey(ini, audioQuality, "audio", "quality");
+
     loadStringKey(ini, dmgBootRomPath, "emulation", "dmgBootRomPath");
     loadStringKey(ini, cgbBootRomPath, "emulation", "cgbBootRomPath");
     loadIntKey(ini, dmgGameEmulatedConsole, "emulation", "dmgGameEmulatedConsole");
@@ -95,6 +97,8 @@ void Config::save(std::string &configFilepath)
     ini["video"]["fullscreen"] = std::to_string(fullscreen);
     ini["video"]["integerScaling"] = std::to_string(integerScaling);
     ini["video"]["uiScale"] = std::to_string(uiScale);
+
+    ini["audio"]["quality"] = std::to_string(audioQuality);
 
     ini["emulation"]["dmgBootRomPath"] = dmgBootRomPath;
     ini["emulation"]["cgbBootRomPath"] = cgbBootRomPath;
