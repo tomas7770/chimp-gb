@@ -323,7 +323,7 @@ void ChimpGBApp::mainLoop()
         {
             try
             {
-                mGameboy->doTCycle();
+                mGameboy->doCycle();
             }
             catch (std::runtime_error err)
             {
@@ -341,8 +341,7 @@ void ChimpGBApp::mainLoop()
                 continue;
             }
 
-            if (mConfig.audioQuality == Config::AudioQuality::High &&
-                !(mGameboy->tCycleCounter % Gameboy::APU_CYCLE_DIV))
+            if (mConfig.audioQuality == Config::AudioQuality::High)
             {
                 mGameboy->computeAudioSamples();
                 leftAudioSamples.push_back(mGameboy->getLeftAudioSample());

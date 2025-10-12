@@ -34,12 +34,15 @@ public:
 
     void doCycle()
     {
+        // 2 MHz cycle (2 T-cycles)
+        // See the comment on APU.h, the logic is the same.
+
         if (!mEnabled)
         {
             return;
         }
 
-        mScanlineDots++;
+        mScanlineDots += 2;
 
         switch (mMode)
         {
@@ -71,11 +74,8 @@ public:
             }
             else if (mScanlineDots >= MODE_2_DOTS + MODE_3_DUMMY_DOTS)
             {
-                // Draw pixel
-                int pixelX = mScanlineDots - MODE_2_DOTS - MODE_3_DUMMY_DOTS;
-                int pixelY = mLCD->LY;
-                int pixelCoord = pixelY * LCD::SCREEN_W + pixelX;
-                mLCD->pixels[pixelCoord] = getScreenPixel(pixelX, pixelY);
+                // Draw pixels
+                updateScreenPixels(mScanlineDots - MODE_2_DOTS - MODE_3_DUMMY_DOTS, mLCD->LY);
             }
             break;
 
@@ -112,7 +112,7 @@ private:
     uint8_t getBGTileAtScreenPixel(int x, int y, bool isWindow, bool doGetAttributes = false);
     int getBGTilePixel(uint8_t tileId, int tilePixelX, int tilePixelY, bool drawingObj,
                        bool xFlip = false, bool yFlip = false, int bank = 0);
-    LCD::Color getScreenPixel(int x, int y);
+    void updateScreenPixels(int x, int y);
 
     static constexpr int MODE_2_DOTS = 80;
     static constexpr int MODE_3_DOTS = 172; // inaccurate, this is variable

@@ -31,7 +31,7 @@ public:
     uint8_t hram[hramSize];
     uint8_t bootRom[cgbBootRomSize];
 
-    unsigned int tCycleCounter = 0;
+    unsigned int cycleCounter = 0;
 
     void requestInterrupt(CPU::InterruptSource source);
 
@@ -49,20 +49,16 @@ public:
     float getLeftAudioSample() const;
     float getRightAudioSample() const;
 
-    void doTCycle()
+    void doCycle()
     {
-        int cpuCycleDiv = CPU_CYCLE_DIV / (mCPU.isDoubleSpeed() ? 2 : 1);
-        if (!(tCycleCounter % cpuCycleDiv))
+        if (!(cycleCounter % 2) || mCPU.isDoubleSpeed())
         {
             tickSystemCounter();
             mCPU.doMCycle();
         }
         mPPU.doCycle();
-        if (!(tCycleCounter % APU_CYCLE_DIV))
-        {
-            mAPU.doCycle();
-        }
-        tCycleCounter++;
+        mAPU.doCycle();
+        cycleCounter++;
     }
     void onKeyPress(int key);
     void onKeyRelease(int key);
@@ -79,11 +75,8 @@ public:
 
     bool inHBlank() { return mPPU.getMode() == 0; }
 
-    static constexpr int CYCLES_PER_FRAME = 70224;
-    static constexpr int CLOCK_RATE = 4194304;
-
-    static constexpr int CPU_CYCLE_DIV = 4;
-    static constexpr int APU_CYCLE_DIV = 2;
+    static constexpr int CYCLES_PER_FRAME = 70224 / 2;
+    static constexpr int CLOCK_RATE = 4194304 / 2;
 
 private:
     SystemType mSystemType;

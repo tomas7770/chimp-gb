@@ -288,182 +288,193 @@ LCD::CGBColor getDMGCompatPaletteColor(uint8_t *cgbPalette, uint8_t dmgPaletteBy
     }
 }
 
-LCD::Color PPU::getScreenPixel(int pixelX, int pixelY)
+void PPU::updateScreenPixels(int pixelXInit, int pixelY)
 {
+    int pixelCoord = pixelY * LCD::SCREEN_W + pixelXInit;
+
     Gameboy::SystemType systemType = mGameboy->getSystemType();
     bool cgbMode = mGameboy->inCGBMode();
     bool bgEnable = mLCD->LCDC & LCD::LCDC_FLAG_BG_WINDOW_ENABLE;
 
-    int colorId = 0;
-    uint8_t *palette = nullptr;
-    uint8_t dmgPaletteByte;
-    int bgColorId = 0;
-    bool bgForcePriority = false;
-    if (cgbMode || bgEnable)
+    for (int pixelX = pixelXInit; pixelX <= pixelXInit + 1; pixelX++)
     {
-        int x, y;
-        bool isWindow;
-        if ((mLCD->LCDC & LCD::LCDC_FLAG_WINDOW_ENABLE) && pixelX >= mLCD->WX - 7 && mWYTriggered)
+        int colorId = 0;
+        uint8_t *palette = nullptr;
+        uint8_t dmgPaletteByte;
+        int bgColorId = 0;
+        bool bgForcePriority = false;
+        if (cgbMode || bgEnable)
         {
-            if (!mIncrementedWindowLine)
+            int x, y;
+            bool isWindow;
+            if ((mLCD->LCDC & LCD::LCDC_FLAG_WINDOW_ENABLE) && pixelX >= mLCD->WX - 7 && mWYTriggered)
             {
-                mLCD->windowLineCounter++;
-                mIncrementedWindowLine = true;
-            }
-            x = pixelX - mLCD->WX + 7;
-            y = mLCD->windowLineCounter - 1;
-            isWindow = true;
-        }
-        else
-        {
-            x = (pixelX + mLCD->SCX) % 256;
-            y = (pixelY + mLCD->SCY) % 256;
-            isWindow = false;
-        }
-
-        // Get color and attributes
-        uint8_t tileId = getBGTileAtScreenPixel(x, y, isWindow);
-        int tilePixelX = x % TILE_LENGTH;
-        int tilePixelY = y % TILE_LENGTH;
-        int paletteIndex;
-        if (cgbMode)
-        {
-            uint8_t attributes = getBGTileAtScreenPixel(x, y, isWindow, true);
-            bool xFlip = attributes & BG_ATTRIB_FLAG_X_FLIP;
-            bool yFlip = attributes & BG_ATTRIB_FLAG_Y_FLIP;
-            int bank = (attributes & BG_ATTRIB_FLAG_BANK) >> 3;
-            paletteIndex = attributes & CGB_PAL_BITMASK;
-            bgColorId = getBGTilePixel(tileId, tilePixelX, tilePixelY, false, xFlip, yFlip, bank);
-            bgForcePriority = (attributes & BG_ATTRIB_FLAG_PRIORITY) ? true : false;
-        }
-        else
-        {
-            bgColorId = getBGTilePixel(tileId, tilePixelX, tilePixelY, false);
-        }
-        colorId = bgColorId;
-
-        // Get palette
-        switch (systemType)
-        {
-        case Gameboy::SystemType::DMG:
-            palette = &(mLCD->BGP);
-            break;
-
-        case Gameboy::SystemType::CGB:
-            if (cgbMode)
-            {
-                palette = getCGBPalette(paletteIndex, mLCD->colorBGPaletteMemory);
+                if (!mIncrementedWindowLine)
+                {
+                    mLCD->windowLineCounter++;
+                    mIncrementedWindowLine = true;
+                }
+                x = pixelX - mLCD->WX + 7;
+                y = mLCD->windowLineCounter - 1;
+                isWindow = true;
             }
             else
             {
-                palette = getCGBPalette(0, mLCD->colorBGPaletteMemory);
-                dmgPaletteByte = mLCD->BGP;
+                x = (pixelX + mLCD->SCX) % 256;
+                y = (pixelY + mLCD->SCY) % 256;
+                isWindow = false;
+            }
+
+            // Get color and attributes
+            uint8_t tileId = getBGTileAtScreenPixel(x, y, isWindow);
+            int tilePixelX = x % TILE_LENGTH;
+            int tilePixelY = y % TILE_LENGTH;
+            int paletteIndex;
+            if (cgbMode)
+            {
+                uint8_t attributes = getBGTileAtScreenPixel(x, y, isWindow, true);
+                bool xFlip = attributes & BG_ATTRIB_FLAG_X_FLIP;
+                bool yFlip = attributes & BG_ATTRIB_FLAG_Y_FLIP;
+                int bank = (attributes & BG_ATTRIB_FLAG_BANK) >> 3;
+                paletteIndex = attributes & CGB_PAL_BITMASK;
+                bgColorId = getBGTilePixel(tileId, tilePixelX, tilePixelY, false, xFlip, yFlip, bank);
+                bgForcePriority = (attributes & BG_ATTRIB_FLAG_PRIORITY) ? true : false;
+            }
+            else
+            {
+                bgColorId = getBGTilePixel(tileId, tilePixelX, tilePixelY, false);
+            }
+            colorId = bgColorId;
+
+            // Get palette
+            switch (systemType)
+            {
+            case Gameboy::SystemType::DMG:
+                palette = &(mLCD->BGP);
+                break;
+
+            case Gameboy::SystemType::CGB:
+                if (cgbMode)
+                {
+                    palette = getCGBPalette(paletteIndex, mLCD->colorBGPaletteMemory);
+                }
+                else
+                {
+                    palette = getCGBPalette(0, mLCD->colorBGPaletteMemory);
+                    dmgPaletteByte = mLCD->BGP;
+                }
+                break;
+
+            default:
+                break;
+            }
+        }
+        if (mLCD->LCDC & LCD::LCDC_FLAG_OBJ_ENABLE)
+        {
+            // The smaller the X coordinate, the higher the object priority.
+            // 256 > any unsigned byte
+            int lowestX = 256;
+            for (int j = spritesInScanline.size() - 1; j >= 0; j--)
+            {
+                // The object located first in OAM has higher priority, so start by the last and let the earlier ones override
+                int i = spritesInScanline.at(j);
+                // Only x is checked because y was already checked during OAM scan
+                int x = oam[i + 1] - 8; // Byte 1: x+8 (value=0 means x=-8)
+                if (pixelX < x || pixelX >= x + 8)
+                {
+                    continue;
+                }
+
+                // Pixel is within this object
+                if (!cgbMode && (oam[i + 1] > lowestX))
+                {
+                    continue;
+                }
+                int y = oam[i] - 16; // Byte 0: y+16 (value=0 means y=-16)
+
+                uint8_t flags = oam[i + 3]; // Byte 3: attributes/flags
+                bool yFlip = (flags & OBJ_FLAG_Y_FLIP) ? true : false;
+                uint8_t tileId = oam[i + 2]; // Byte 2: tile index
+                if (mLCD->LCDC & LCD::LCDC_FLAG_OBJ_SIZE)
+                {
+                    if (yFlip)
+                    {
+                        tileId |= 1;
+                        tileId -= ((pixelY - y) >= 8 ? 1 : 0);
+                    }
+                    else
+                    {
+                        tileId &= ~1;
+                        tileId += ((pixelY - y) >= 8 ? 1 : 0);
+                    }
+                }
+
+                int tilePixelX = (pixelX - x) % TILE_LENGTH;
+                int tilePixelY = (pixelY - y) % TILE_LENGTH;
+                int bank = cgbMode ? ((flags & OBJ_FLAG_BANK) >> 3) : 0;
+                int objColorId = getBGTilePixel(tileId, tilePixelX, tilePixelY, true,
+                                                (flags & OBJ_FLAG_X_FLIP) ? true : false, yFlip, bank);
+                bool bgHasPriority = ((flags & OBJ_FLAG_PRIORITY) || bgForcePriority) && bgColorId > 0 && bgEnable;
+                if (objColorId != 0 && !bgHasPriority)
+                {
+                    colorId = objColorId;
+                    switch (systemType)
+                    {
+                    case Gameboy::SystemType::DMG:
+                        palette = (flags & OBJ_FLAG_DMG_PAL) ? &(mLCD->OBP1) : &(mLCD->OBP0);
+                        break;
+
+                    case Gameboy::SystemType::CGB:
+                        if (cgbMode)
+                        {
+                            palette = getCGBPalette(flags & CGB_PAL_BITMASK, mLCD->colorOBJPaletteMemory);
+                        }
+                        else
+                        {
+                            palette = getCGBPalette((flags & OBJ_FLAG_DMG_PAL) ? 1 : 0, mLCD->colorOBJPaletteMemory);
+                            dmgPaletteByte = (flags & OBJ_FLAG_DMG_PAL) ? mLCD->OBP1 : mLCD->OBP0;
+                        }
+                        break;
+
+                    default:
+                        break;
+                    }
+                    lowestX = oam[i + 1];
+                }
+            }
+        }
+
+        switch (systemType)
+        {
+        case Gameboy::SystemType::DMG:
+            if (palette == nullptr)
+            {
+                mLCD->pixels[pixelCoord] = {.dmg = LCD::DMGColor::White};
+            }
+            else
+            {
+                mLCD->pixels[pixelCoord] = {.dmg = getDMGPaletteColor(*palette, colorId)};
+            }
+            break;
+
+        case Gameboy::SystemType::CGB:
+            if (palette == nullptr)
+            {
+                mLCD->pixels[pixelCoord] = {.cgb = {.r = 31, .g = 31, .b = 31}};
+            }
+            else if (cgbMode)
+            {
+                mLCD->pixels[pixelCoord] = {.cgb = getCGBPaletteColor(palette, colorId)};
+            }
+            else
+            {
+                mLCD->pixels[pixelCoord] = {.cgb = getDMGCompatPaletteColor(palette, dmgPaletteByte, colorId)};
             }
             break;
 
         default:
             break;
         }
-    }
-    if (mLCD->LCDC & LCD::LCDC_FLAG_OBJ_ENABLE)
-    {
-        // The smaller the X coordinate, the higher the object priority.
-        // 256 > any unsigned byte
-        int lowestX = 256;
-        for (int j = spritesInScanline.size() - 1; j >= 0; j--)
-        {
-            // The object located first in OAM has higher priority, so start by the last and let the earlier ones override
-            int i = spritesInScanline.at(j);
-            // Only x is checked because y was already checked during OAM scan
-            int x = oam[i + 1] - 8; // Byte 1: x+8 (value=0 means x=-8)
-            if (pixelX < x || pixelX >= x + 8)
-            {
-                continue;
-            }
-
-            // Pixel is within this object
-            if (!cgbMode && (oam[i + 1] > lowestX))
-            {
-                continue;
-            }
-            int y = oam[i] - 16; // Byte 0: y+16 (value=0 means y=-16)
-
-            uint8_t flags = oam[i + 3]; // Byte 3: attributes/flags
-            bool yFlip = (flags & OBJ_FLAG_Y_FLIP) ? true : false;
-            uint8_t tileId = oam[i + 2]; // Byte 2: tile index
-            if (mLCD->LCDC & LCD::LCDC_FLAG_OBJ_SIZE)
-            {
-                if (yFlip)
-                {
-                    tileId |= 1;
-                    tileId -= ((pixelY - y) >= 8 ? 1 : 0);
-                }
-                else
-                {
-                    tileId &= ~1;
-                    tileId += ((pixelY - y) >= 8 ? 1 : 0);
-                }
-            }
-
-            int tilePixelX = (pixelX - x) % TILE_LENGTH;
-            int tilePixelY = (pixelY - y) % TILE_LENGTH;
-            int bank = cgbMode ? ((flags & OBJ_FLAG_BANK) >> 3) : 0;
-            int objColorId = getBGTilePixel(tileId, tilePixelX, tilePixelY, true,
-                                            (flags & OBJ_FLAG_X_FLIP) ? true : false, yFlip, bank);
-            bool bgHasPriority = ((flags & OBJ_FLAG_PRIORITY) || bgForcePriority) && bgColorId > 0 && bgEnable;
-            if (objColorId != 0 && !bgHasPriority)
-            {
-                colorId = objColorId;
-                switch (systemType)
-                {
-                case Gameboy::SystemType::DMG:
-                    palette = (flags & OBJ_FLAG_DMG_PAL) ? &(mLCD->OBP1) : &(mLCD->OBP0);
-                    break;
-
-                case Gameboy::SystemType::CGB:
-                    if (cgbMode)
-                    {
-                        palette = getCGBPalette(flags & CGB_PAL_BITMASK, mLCD->colorOBJPaletteMemory);
-                    }
-                    else
-                    {
-                        palette = getCGBPalette((flags & OBJ_FLAG_DMG_PAL) ? 1 : 0, mLCD->colorOBJPaletteMemory);
-                        dmgPaletteByte = (flags & OBJ_FLAG_DMG_PAL) ? mLCD->OBP1 : mLCD->OBP0;
-                    }
-                    break;
-
-                default:
-                    break;
-                }
-                lowestX = oam[i + 1];
-            }
-        }
-    }
-
-    switch (systemType)
-    {
-    case Gameboy::SystemType::DMG:
-        if (palette == nullptr)
-        {
-            return {.dmg = LCD::DMGColor::White};
-        }
-        return {.dmg = getDMGPaletteColor(*palette, colorId)};
-
-    case Gameboy::SystemType::CGB:
-        if (palette == nullptr)
-        {
-            return {.cgb = {.r = 31, .g = 31, .b = 31}};
-        }
-        if (cgbMode)
-        {
-            return {.cgb = getCGBPaletteColor(palette, colorId)};
-        }
-        else
-        {
-            return {.cgb = getDMGCompatPaletteColor(palette, dmgPaletteByte, colorId)};
-        }
-
-    default:
-        return {};
+        pixelCoord++;
     }
 }
