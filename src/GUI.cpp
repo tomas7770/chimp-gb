@@ -52,12 +52,12 @@ void GUI::draw()
             ImVec2 viewportSize;
             if (mConfig->integerScaling)
             {
-                int scaleFactor = windowRatio >= 1.0F ? int(io.DisplaySize.y / LCD::SCREEN_H) : int(io.DisplaySize.x / LCD::SCREEN_W);
+                int scaleFactor = windowRatio >= SCREEN_RATIO ? int(io.DisplaySize.y / LCD::SCREEN_H) : int(io.DisplaySize.x / LCD::SCREEN_W);
                 viewportSize = ImVec2(float(scaleFactor * LCD::SCREEN_W), float(scaleFactor * LCD::SCREEN_H));
             }
             else
             {
-                if (windowRatio >= 1.0F)
+                if (windowRatio >= SCREEN_RATIO)
                 {
                     viewportSize = ImVec2(io.DisplaySize.x * SCREEN_RATIO / windowRatio, io.DisplaySize.y);
                 }
