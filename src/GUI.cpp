@@ -132,6 +132,11 @@ void GUI::draw()
                         {
                             loadRomFile(selectedRom);
                         }
+                        ImGui::Separator();
+                        if (ImGui::MenuItem("Clear"))
+                        {
+                            recentFiles.recentFiles.clear();
+                        }
                         ImGui::EndMenu();
                     }
                     ImGui::Separator();
