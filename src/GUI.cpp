@@ -124,7 +124,7 @@ void GUI::draw()
                         for (int i = recentFiles.recentFiles.size(); i < RecentFiles::MAX_RECENT_FILES; i++)
                         {
                             std::string itemString = "------##" + std::to_string(i);
-                            if (ImGui::MenuItem(itemString.c_str()))
+                            if (ImGui::MenuItem(itemString.c_str(), nullptr, false, false))
                             {
                             }
                         }
