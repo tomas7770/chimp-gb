@@ -4,12 +4,15 @@
 #include <SDL_scancode.h>
 #include "Gameboy.h"
 #include "Config.h"
+#include "RecentFiles.h"
 #include "GUI.h"
 
 class ChimpGBApp
 {
 public:
     ChimpGBApp(std::string &filepath, bool debug);
+
+    RecentFiles recentFiles;
 
     void loadRomFile(std::string &filepath);
     void setVideoParameters();
@@ -36,6 +39,8 @@ private:
 
     constexpr const static char *SAVE_EXTENSION = ".sav";
 
+    constexpr const static char *RECENT_FILES_NAME = "recent_files";
+
     SDL_Window *mWindowSDL = NULL;
     SDL_Renderer *mRendererSDL = NULL;
     SDL_Texture *mTextureSDL = NULL;
@@ -58,7 +63,9 @@ private:
     void drawDisplay();
     void createDataDirectories();
     void loadConfig();
+    void loadStateData();
     void saveConfig();
+    void saveStateData();
     void loadCart(const Cartridge &cart, std::string &romFilename);
     void saveGame();
     void loadGame();

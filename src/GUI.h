@@ -27,4 +27,6 @@ private:
     SDL_Texture *mTextureSDL;
 
     std::string mImguiIniFilename; // need to keep a char buffer persistently
+
+    void loadRomFile(std::string &openFilenameString);
 };

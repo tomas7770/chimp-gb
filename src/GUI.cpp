@@ -9,6 +9,8 @@
 #include "Platform.h"
 #include "ChimpGBApp.h"
 
+#include <filesystem>
+
 GUI::GUI(ChimpGBApp *app, Config *config, SDL_Window *windowSDL, SDL_Renderer *rendererSDL, SDL_Texture *textureSDL)
 {
     mApp = app;
@@ -44,10 +46,11 @@ void GUI::draw()
     ImGui_ImplSDL2_NewFrame();
     ImGui::NewFrame();
 
+    ImGuiIO &io = ImGui::GetIO();
+
     {
         if (mApp->isPoweredOn())
         {
-            ImGuiIO &io = ImGui::GetIO();
             float windowRatio = io.DisplaySize.x / io.DisplaySize.y;
             ImVec2 viewportSize;
             if (mConfig->integerScaling)
@@ -91,12 +94,45 @@ void GUI::draw()
                     if (ImGui::MenuItem("Load ROM"))
                     {
                         char const *filterPatterns[2] = {"*.gb", "*.gbc"};
-                        char *openFilename = tinyfd_openFileDialog("Load ROM", nullptr, 2, filterPatterns, "Game Boy ROM files", 0);
+                        char *openFilename = tinyfd_openFileDialog("Load ROM", mApp->recentFiles.lastOpenLocation.c_str(),
+                                                                   2, filterPatterns, "Game Boy ROM files", 0);
                         if (openFilename)
                         {
                             std::string openFilenameString(openFilename);
-                            mApp->loadRomFile(openFilenameString);
+                            loadRomFile(openFilenameString);
                         }
+                    }
+                    // Constrain recent files menu size so it doesn't cover other menus,
+                    // since file names can get quite long.
+                    ImGui::SetNextWindowSizeConstraints(
+                        {0.0F, -1},
+                        {io.DisplaySize.x - ImGui::GetContentRegionAvail().x - 25.0F * mConfig->uiScale, -1});
+                    if (ImGui::BeginMenu("Load recent"))
+                    {
+                        RecentFiles &recentFiles = mApp->recentFiles;
+                        std::string selectedRom = "";
+                        for (int i = 0; i < recentFiles.recentFiles.size(); i++)
+                        {
+                            std::string filename = std::filesystem::path(recentFiles.recentFiles.at(i)).filename();
+                            std::string itemString = filename + "##" + std::to_string(i);
+                            if (ImGui::MenuItem(itemString.c_str()))
+                            {
+                                selectedRom = recentFiles.recentFiles.at(i);
+                            }
+                            ImGui::SetItemTooltip("%s", recentFiles.recentFiles.at(i).c_str());
+                        }
+                        for (int i = recentFiles.recentFiles.size(); i < RecentFiles::MAX_RECENT_FILES; i++)
+                        {
+                            std::string itemString = "------##" + std::to_string(i);
+                            if (ImGui::MenuItem(itemString.c_str()))
+                            {
+                            }
+                        }
+                        if (selectedRom != "")
+                        {
+                            loadRomFile(selectedRom);
+                        }
+                        ImGui::EndMenu();
                     }
                     ImGui::Separator();
                     if (ImGui::MenuItem("Exit"))
@@ -196,6 +232,14 @@ void GUI::draw()
     // Update renderer
     ImGui_ImplSDLRenderer2_RenderDrawData(ImGui::GetDrawData(), mRendererSDL);
     SDL_RenderPresent(mRendererSDL);
+}
+
+void GUI::loadRomFile(std::string &openFilenameString)
+{
+    mApp->loadRomFile(openFilenameString);
+    mApp->recentFiles.lastOpenLocation =
+        std::filesystem::path(openFilenameString).remove_filename();
+    mApp->recentFiles.push(openFilenameString);
 }
 
 void GUI::destroy()

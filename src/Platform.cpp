@@ -130,3 +130,58 @@ std::string getConfigsPath()
     return configsPath;
 #endif
 }
+
+// App-specific subfolder under 'AppData/Local' on Windows, XDG_STATE_HOME (~/.local/state) on Linux
+std::string getStatePath()
+{
+#ifdef _WIN32
+    PWSTR localAppDataWideChars = NULL;
+
+    SHGetKnownFolderPath(FOLDERID_LocalAppData, KF_FLAG_CREATE, NULL, &localAppDataWideChars);
+    if (localAppDataWideChars == NULL)
+    {
+        return "";
+    }
+
+    int localAppDataLen = WideCharToMultiByte(CP_UTF8, 0, localAppDataWideChars, -1, NULL, 0, NULL, NULL);
+    if (localAppDataLen == 0)
+    {
+        CoTaskMemFree(localAppDataWideChars);
+        return "";
+    }
+
+    char *localAppDataChars = new char[localAppDataLen];
+    int conversionResult = WideCharToMultiByte(CP_UTF8, 0, localAppDataWideChars, -1, localAppDataChars, localAppDataLen, NULL, NULL);
+    CoTaskMemFree(localAppDataWideChars);
+    if (conversionResult == 0)
+    {
+        delete localAppDataChars;
+        return "";
+    }
+
+    std::string statePath = std::string(localAppDataChars) + "\\" + FOLDER_NAME + "\\state\\";
+    delete localAppDataChars;
+    return statePath;
+#else
+    std::string stateHome;
+
+    if (const char *stateHomeChars = std::getenv("XDG_STATE_HOME"))
+    {
+        stateHome = std::string(stateHomeChars);
+    }
+    else
+    {
+        if (const char *userHomeChars = std::getenv("HOME"))
+        {
+            stateHome = std::string(userHomeChars) + "/.local/state";
+        }
+        else
+        {
+            return "";
+        }
+    }
+
+    std::string statePath = stateHome + "/" + FOLDER_NAME + "/";
+    return statePath;
+#endif
+}

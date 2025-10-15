@@ -56,6 +56,7 @@ ChimpGBApp::ChimpGBApp(std::string &filepath, bool debug)
 
     createDataDirectories();
     loadConfig();
+    loadStateData();
 
     mGUI = GUI(this, &mConfig, mWindowSDL, mRendererSDL, mTextureSDL);
     mDebug = debug;
@@ -110,6 +111,12 @@ void ChimpGBApp::createDataDirectories()
     {
         std::filesystem::create_directories(configsPath);
     }
+
+    std::string statePath = getStatePath();
+    if (statePath != "")
+    {
+        std::filesystem::create_directories(statePath);
+    }
 }
 
 void ChimpGBApp::loadConfig()
@@ -127,6 +134,16 @@ void ChimpGBApp::loadConfig()
     mConfig.load(userIniBuffer);
 }
 
+void ChimpGBApp::loadStateData()
+{
+    std::ifstream stateFileStream(getStatePath() + RECENT_FILES_NAME);
+    std::stringstream buffer;
+    buffer << stateFileStream.rdbuf();
+
+    std::string inString(buffer.str());
+    recentFiles.load(inString);
+}
+
 void ChimpGBApp::saveConfig()
 {
     // Load default INI and modify it with config values.
@@ -140,6 +157,15 @@ void ChimpGBApp::saveConfig()
     configFileStream.close();
 
     mConfig.save(configFilepath);
+}
+
+void ChimpGBApp::saveStateData()
+{
+    std::string outString;
+    recentFiles.save(outString);
+
+    std::ofstream stateFileStream(getStatePath() + RECENT_FILES_NAME);
+    stateFileStream << outString;
 }
 
 void ChimpGBApp::setVideoParameters()
@@ -603,6 +629,7 @@ void ChimpGBApp::terminate(int error_code)
         try
         {
             saveConfig();
+            saveStateData();
         }
         catch (std::exception err)
         {

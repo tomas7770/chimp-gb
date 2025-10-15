@@ -20,6 +20,7 @@ set(SOURCE_FILES
     MBC/MBC5.cpp
     Config.cpp
     GUI.cpp
+    RecentFiles.cpp
 )
 
 set (IMGUI_SOURCE_FILES
