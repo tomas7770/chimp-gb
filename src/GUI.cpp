@@ -10,6 +10,7 @@
 #include "ChimpGBApp.h"
 
 #include <filesystem>
+#include <format>
 
 GUI::GUI(ChimpGBApp *app, Config *config, SDL_Window *windowSDL, SDL_Renderer *rendererSDL, SDL_Texture *textureSDL)
 {
@@ -220,6 +221,11 @@ void GUI::draw()
                     }
                     ImGui::EndMenu();
                 }
+                std::string fpsString = std::format("{:.0f} FPS", io.Framerate);
+                ImGui::SetCursorPosX(ImGui::GetCursorPosX() +
+                                     std::max(0.0F, ImGui::GetContentRegionAvail().x -
+                                                        ImGui::CalcTextSize(fpsString.c_str()).x));
+                ImGui::Text("%s", fpsString.c_str());
                 ImGui::EndMainMenuBar();
             }
         }
