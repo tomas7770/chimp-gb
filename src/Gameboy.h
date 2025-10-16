@@ -51,6 +51,12 @@ public:
 
     void doCycle()
     {
+        // 2 MHz cycle (2 T-cycles) (1 M-cycle at double speed mode);
+        // CPU is emulated at M-cycle accuracy;
+        // PPU timings are multiples of 2 T-cycles (with current implementation);
+        // APU maximum audio frequency is 2 MHz;
+        // Performance can be optimized by emulating 2 T-cycles at once, without affecting accuracy.
+
         if (!(cycleCounter % 2) || mCPU.isDoubleSpeed())
         {
             tickSystemCounter();

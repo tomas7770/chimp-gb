@@ -9,10 +9,6 @@ public:
 
     void doCycle()
     {
-        // 2 MHz cycle (2 T-cycles)
-        // Technically the APU runs at 4 MHz, but in practice important events only happen every 2 cycles,
-        // so performance can be optimized by emulating 2 cycles at once.
-
         mFrameSequencerTimer -= 2;
         if (mFrameSequencerTimer == 0)
         {

@@ -34,9 +34,6 @@ public:
 
     void doCycle()
     {
-        // 2 MHz cycle (2 T-cycles)
-        // See the comment on APU.h, the logic is the same.
-
         if (!mEnabled)
         {
             return;
