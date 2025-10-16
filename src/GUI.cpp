@@ -114,7 +114,7 @@ void GUI::draw()
                         std::string selectedRom = "";
                         for (int i = 0; i < recentFiles.recentFiles.size(); i++)
                         {
-                            std::string filename = std::filesystem::path(recentFiles.recentFiles.at(i)).filename();
+                            std::string filename = std::filesystem::path(recentFiles.recentFiles.at(i)).filename().string();
                             std::string itemString = filename + "##" + std::to_string(i);
                             if (ImGui::MenuItem(itemString.c_str()))
                             {
@@ -249,7 +249,7 @@ void GUI::loadRomFile(std::string &openFilenameString)
 {
     mApp->loadRomFile(openFilenameString);
     mApp->recentFiles.lastOpenLocation =
-        std::filesystem::path(openFilenameString).remove_filename();
+        std::filesystem::path(openFilenameString).remove_filename().string();
     mApp->recentFiles.push(openFilenameString);
 }
 
