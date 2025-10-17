@@ -199,6 +199,11 @@ void GUI::draw()
                         mConfig->fullscreen = !mConfig->fullscreen;
                         mApp->setVideoParameters();
                     }
+                    if (ImGui::MenuItem("Exclusive fullscreen", nullptr, mConfig->exclusiveFullscreen))
+                    {
+                        mConfig->exclusiveFullscreen = !mConfig->exclusiveFullscreen;
+                        mApp->setVideoParameters();
+                    }
                     if (ImGui::MenuItem("Integer scaling", nullptr, mConfig->integerScaling))
                     {
                         mConfig->integerScaling = !mConfig->integerScaling;

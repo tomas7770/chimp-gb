@@ -23,6 +23,7 @@ const char *defaultIni =
     "\n"
     "[video]\n"
     "fullscreen = 0\n"
+    "exclusiveFullscreen = 0\n"
     "integerScaling = 0\n"
     "uiScale = 1.0\n"
     "\n"

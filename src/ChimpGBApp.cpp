@@ -205,21 +205,28 @@ void ChimpGBApp::setVideoParameters()
 {
     if (mConfig.fullscreen)
     {
-        int displayIndex = SDL_GetWindowDisplayIndex(mWindowSDL);
-        if (displayIndex < 0)
+        if (mConfig.exclusiveFullscreen)
         {
-            return;
+            int displayIndex = SDL_GetWindowDisplayIndex(mWindowSDL);
+            if (displayIndex < 0)
+            {
+                return;
+            }
+            SDL_DisplayMode currentMode;
+            if (SDL_GetCurrentDisplayMode(displayIndex, &currentMode) != 0)
+            {
+                return;
+            }
+            if (SDL_SetWindowDisplayMode(mWindowSDL, &currentMode) != 0)
+            {
+                return;
+            }
+            SDL_SetWindowFullscreen(mWindowSDL, SDL_WINDOW_FULLSCREEN);
         }
-        SDL_DisplayMode currentMode;
-        if (SDL_GetCurrentDisplayMode(displayIndex, &currentMode) != 0)
+        else
         {
-            return;
+            SDL_SetWindowFullscreen(mWindowSDL, SDL_WINDOW_FULLSCREEN_DESKTOP);
         }
-        if (SDL_SetWindowDisplayMode(mWindowSDL, &currentMode) != 0)
-        {
-            return;
-        }
-        SDL_SetWindowFullscreen(mWindowSDL, SDL_WINDOW_FULLSCREEN);
     }
     else
     {

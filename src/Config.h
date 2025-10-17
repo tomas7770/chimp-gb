@@ -21,6 +21,7 @@ public:
 
     // video
     int fullscreen;
+    int exclusiveFullscreen;
     int integerScaling;
     float uiScale;
 
