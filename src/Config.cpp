@@ -69,6 +69,8 @@ void Config::load(std::stringstream &configString)
     loadFloatKey(ini, uiScale, "video", "uiScale");
 
     loadIntKey(ini, audioSampleRate, "audio", "sampleRate");
+    loadIntKey(ini, audioBufferSize, "audio", "bufferSize");
+    loadIntKey(ini, audioLatency, "audio", "latency");
     loadIntKey(ini, audioQuality, "audio", "quality");
 
     loadStringKey(ini, dmgBootRomPath, "emulation", "dmgBootRomPath");
@@ -102,6 +104,8 @@ void Config::save(std::string &configFilepath)
     ini["video"]["uiScale"] = std::to_string(uiScale);
 
     ini["audio"]["sampleRate"] = std::to_string(audioSampleRate);
+    ini["audio"]["bufferSize"] = std::to_string(audioBufferSize);
+    ini["audio"]["latency"] = std::to_string(audioLatency);
     ini["audio"]["quality"] = std::to_string(audioQuality);
 
     ini["emulation"]["dmgBootRomPath"] = dmgBootRomPath;

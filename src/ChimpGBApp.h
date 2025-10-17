@@ -32,8 +32,6 @@ private:
     constexpr static int WINDOW_WIDTH = 640;
     constexpr static int WINDOW_HEIGHT = 576;
 
-    constexpr static uint16_t AUDIO_INTERNAL_BUFFER_SIZE = 256;
-    constexpr static int AUDIO_BUFFER_SIZE = 1024;
     constexpr static double FRAME_TIME = 1000.0 * double(Gameboy::CYCLES_PER_FRAME) / double(Gameboy::CLOCK_RATE);
 
     constexpr const static char *SAVE_EXTENSION = ".sav";

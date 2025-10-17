@@ -27,6 +27,8 @@ public:
 
     // audio
     int audioSampleRate;
+    int audioBufferSize;
+    int audioLatency;
     int audioQuality;
 
     // emulation

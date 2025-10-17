@@ -233,7 +233,7 @@ void ChimpGBApp::setupAudio()
     desiredAudioSpec.freq = mConfig.audioSampleRate;
     desiredAudioSpec.format = AUDIO_F32;
     desiredAudioSpec.channels = 2;
-    desiredAudioSpec.samples = AUDIO_INTERNAL_BUFFER_SIZE;
+    desiredAudioSpec.samples = mConfig.audioBufferSize;
     desiredAudioSpec.callback = NULL;
     mAudioDevSDL = SDL_OpenAudioDevice(NULL, 0, &desiredAudioSpec, &obtainedAudioSpec, 0);
     if (mAudioDevSDL == 0)
@@ -369,7 +369,7 @@ void ChimpGBApp::mainLoop()
         }
 
         std::vector<float> audioSamples;
-        bool generateAudio = !mFastForward || (SDL_GetQueuedAudioSize(mAudioDevSDL) <= AUDIO_BUFFER_SIZE * sizeof(float) * 2);
+        bool generateAudio = !mFastForward || (SDL_GetQueuedAudioSize(mAudioDevSDL) <= mConfig.audioLatency * sizeof(float) * 2);
         for (int i = 0; i < Gameboy::CYCLES_PER_FRAME; i++)
         {
             try
@@ -448,7 +448,7 @@ void ChimpGBApp::mainLoop()
         }
         SDL_QueueAudio(mAudioDevSDL, audioSamples.data(), audioSamples.size() * sizeof(float));
         drawDisplay();
-        while (!mFastForward && (SDL_GetQueuedAudioSize(mAudioDevSDL) > AUDIO_BUFFER_SIZE * sizeof(float) * 2))
+        while (!mFastForward && (SDL_GetQueuedAudioSize(mAudioDevSDL) > mConfig.audioLatency * sizeof(float) * 2))
         {
             uint64_t deltaTime = SDL_GetTicks64() - frameTimestamp;
             sleepTimeAccum -= deltaTime;
