@@ -29,4 +29,5 @@ private:
     std::string mImguiIniFilename; // need to keep a char buffer persistently
 
     void loadRomFile(std::string &openFilenameString);
+    void setAudioSampleRate(int audioSampleRate);
 };

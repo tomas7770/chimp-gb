@@ -212,6 +212,30 @@ void GUI::draw()
                 }
                 if (ImGui::BeginMenu("Audio"))
                 {
+                    if (ImGui::BeginMenu("Sample rate (Hz)"))
+                    {
+                        if (ImGui::MenuItem("8000", nullptr, mConfig->audioSampleRate == 8000))
+                        {
+                            setAudioSampleRate(8000);
+                        }
+                        if (ImGui::MenuItem("11025", nullptr, mConfig->audioSampleRate == 11025))
+                        {
+                            setAudioSampleRate(11025);
+                        }
+                        if (ImGui::MenuItem("22050", nullptr, mConfig->audioSampleRate == 22050))
+                        {
+                            setAudioSampleRate(22050);
+                        }
+                        if (ImGui::MenuItem("44100", nullptr, mConfig->audioSampleRate == 44100))
+                        {
+                            setAudioSampleRate(44100);
+                        }
+                        if (ImGui::MenuItem("48000", nullptr, mConfig->audioSampleRate == 48000))
+                        {
+                            setAudioSampleRate(48000);
+                        }
+                        ImGui::EndMenu();
+                    }
                     if (ImGui::BeginMenu("Quality"))
                     {
                         if (ImGui::MenuItem("Low", nullptr, mConfig->audioQuality == Config::AudioQuality::Low))
@@ -256,6 +280,12 @@ void GUI::loadRomFile(std::string &openFilenameString)
     mApp->recentFiles.lastOpenLocation =
         std::filesystem::path(openFilenameString).remove_filename().string();
     mApp->recentFiles.push(openFilenameString);
+}
+
+void GUI::setAudioSampleRate(int audioSampleRate)
+{
+    mConfig->audioSampleRate = audioSampleRate;
+    mApp->setupAudio();
 }
 
 void GUI::destroy()

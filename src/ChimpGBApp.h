@@ -16,6 +16,7 @@ public:
 
     void loadRomFile(std::string &filepath);
     void setVideoParameters();
+    void setupAudio();
     bool isPoweredOn();
     void powerOff();
     void reset();
@@ -54,6 +55,7 @@ private:
     bool mDebug;
     bool mPaused = false;
     bool mFastForward = false;
+    double mAudioTimeAccum;
 
     Gameboy *mGameboy = nullptr;
 

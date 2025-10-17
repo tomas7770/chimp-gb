@@ -44,20 +44,7 @@ ChimpGBApp::ChimpGBApp(std::string &filepath, bool debug)
         terminate(-1);
     }
 
-    cyclesPerSample = double(Gameboy::CLOCK_RATE) / double(mConfig.audioSampleRate);
-    SDL_AudioSpec desiredAudioSpec, obtainedAudioSpec;
-    desiredAudioSpec.freq = mConfig.audioSampleRate;
-    desiredAudioSpec.format = AUDIO_F32;
-    desiredAudioSpec.channels = 2;
-    desiredAudioSpec.samples = AUDIO_INTERNAL_BUFFER_SIZE;
-    desiredAudioSpec.callback = NULL;
-    mAudioDevSDL = SDL_OpenAudioDevice(NULL, 0, &desiredAudioSpec, &obtainedAudioSpec, 0);
-    if (mAudioDevSDL == 0)
-    {
-        std::cout << "Audio device could not be opened! SDL_Error: " << SDL_GetError() << std::endl;
-        terminate(-1);
-    }
-    SDL_PauseAudioDevice(mAudioDevSDL, 0);
+    setupAudio();
 
     createDataDirectories();
 
@@ -236,6 +223,29 @@ void ChimpGBApp::setVideoParameters()
     }
 }
 
+void ChimpGBApp::setupAudio()
+{
+    if (mAudioDevSDL)
+        SDL_CloseAudioDevice(mAudioDevSDL);
+
+    cyclesPerSample = double(Gameboy::CLOCK_RATE) / double(mConfig.audioSampleRate);
+    SDL_AudioSpec desiredAudioSpec, obtainedAudioSpec;
+    desiredAudioSpec.freq = mConfig.audioSampleRate;
+    desiredAudioSpec.format = AUDIO_F32;
+    desiredAudioSpec.channels = 2;
+    desiredAudioSpec.samples = AUDIO_INTERNAL_BUFFER_SIZE;
+    desiredAudioSpec.callback = NULL;
+    mAudioDevSDL = SDL_OpenAudioDevice(NULL, 0, &desiredAudioSpec, &obtainedAudioSpec, 0);
+    if (mAudioDevSDL == 0)
+    {
+        std::cout << "Audio device could not be opened! SDL_Error: " << SDL_GetError() << std::endl;
+        terminate(-1);
+    }
+    SDL_PauseAudioDevice(mAudioDevSDL, 0);
+
+    mAudioTimeAccum = 0.0;
+}
+
 void gameboyDrawCallback(void *userdata)
 {
     ChimpGBApp *app = (ChimpGBApp *)userdata;
@@ -296,7 +306,6 @@ void ChimpGBApp::mainLoop()
 {
     uint64_t frameTimestamp = SDL_GetTicks64();
     mRunning = true;
-    double audioTimeAccum = 0.0;
     double sleepTimeAccum = 0.0;
     std::vector<float> leftAudioSamples, rightAudioSamples;
     while (mRunning)
@@ -390,10 +399,10 @@ void ChimpGBApp::mainLoop()
                 rightAudioSamples.push_back(mGameboy->getRightAudioSample());
             }
 
-            audioTimeAccum += 1.0;
-            if (audioTimeAccum >= cyclesPerSample)
+            mAudioTimeAccum += 1.0;
+            if (mAudioTimeAccum >= cyclesPerSample)
             {
-                audioTimeAccum -= cyclesPerSample;
+                mAudioTimeAccum -= cyclesPerSample;
 
                 float leftSample = 0.0F, rightSample = 0.0F;
                 switch (mConfig.audioQuality)
