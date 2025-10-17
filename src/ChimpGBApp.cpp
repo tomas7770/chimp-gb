@@ -16,6 +16,8 @@ ChimpGBApp::ChimpGBApp(std::string &filepath, bool debug)
         terminate(-1);
     }
 
+    loadConfig();
+
     int windowWidth, windowHeight;
     loadStateData(&windowWidth, &windowHeight);
     mWindowSDL = SDL_CreateWindow(WINDOW_TITLE, SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED,
@@ -42,8 +44,9 @@ ChimpGBApp::ChimpGBApp(std::string &filepath, bool debug)
         terminate(-1);
     }
 
+    cyclesPerSample = double(Gameboy::CLOCK_RATE) / double(mConfig.audioSampleRate);
     SDL_AudioSpec desiredAudioSpec, obtainedAudioSpec;
-    desiredAudioSpec.freq = AUDIO_SAMPLE_RATE;
+    desiredAudioSpec.freq = mConfig.audioSampleRate;
     desiredAudioSpec.format = AUDIO_F32;
     desiredAudioSpec.channels = 2;
     desiredAudioSpec.samples = AUDIO_INTERNAL_BUFFER_SIZE;
@@ -57,7 +60,6 @@ ChimpGBApp::ChimpGBApp(std::string &filepath, bool debug)
     SDL_PauseAudioDevice(mAudioDevSDL, 0);
 
     createDataDirectories();
-    loadConfig();
 
     mGUI = GUI(this, &mConfig, mWindowSDL, mRendererSDL, mTextureSDL);
     mDebug = debug;
@@ -389,9 +391,9 @@ void ChimpGBApp::mainLoop()
             }
 
             audioTimeAccum += 1.0;
-            if (audioTimeAccum >= CYCLES_PER_SAMPLE)
+            if (audioTimeAccum >= cyclesPerSample)
             {
-                audioTimeAccum -= CYCLES_PER_SAMPLE;
+                audioTimeAccum -= cyclesPerSample;
 
                 float leftSample = 0.0F, rightSample = 0.0F;
                 switch (mConfig.audioQuality)

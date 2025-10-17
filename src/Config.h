@@ -26,6 +26,7 @@ public:
     float uiScale;
 
     // audio
+    int audioSampleRate;
     int audioQuality;
 
     // emulation

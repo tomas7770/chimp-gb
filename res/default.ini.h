@@ -28,6 +28,7 @@ const char *defaultIni =
     "uiScale = 1.0\n"
     "\n"
     "[audio]\n"
+    "sampleRate = 44100\n"
     "; Audio sampling quality. Set to \"Low\" if you experience performance issues.\n"
     "; 0 = Low, 1 = High\n"
     "quality = 1\n"

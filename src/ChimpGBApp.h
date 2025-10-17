@@ -31,10 +31,8 @@ private:
     constexpr static int WINDOW_WIDTH = 640;
     constexpr static int WINDOW_HEIGHT = 576;
 
-    constexpr static int AUDIO_SAMPLE_RATE = 44100;
     constexpr static uint16_t AUDIO_INTERNAL_BUFFER_SIZE = 256;
     constexpr static int AUDIO_BUFFER_SIZE = 1024;
-    constexpr static double CYCLES_PER_SAMPLE = double(Gameboy::CLOCK_RATE) / double(AUDIO_SAMPLE_RATE);
     constexpr static double FRAME_TIME = 1000.0 * double(Gameboy::CYCLES_PER_FRAME) / double(Gameboy::CLOCK_RATE);
 
     constexpr const static char *SAVE_EXTENSION = ".sav";
@@ -49,6 +47,8 @@ private:
     SDL_AudioDeviceID mAudioDevSDL;
     uint32_t mTexturePixels[LCD::SCREEN_W * LCD::SCREEN_H];
     std::string mRomFilename;
+
+    double cyclesPerSample;
 
     bool mRunning;
     bool mDebug;
