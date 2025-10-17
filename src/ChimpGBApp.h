@@ -40,6 +40,7 @@ private:
     constexpr const static char *SAVE_EXTENSION = ".sav";
 
     constexpr const static char *RECENT_FILES_NAME = "recent_files";
+    constexpr const static char *WINDOW_STATE_NAME = "window_state";
 
     SDL_Window *mWindowSDL = NULL;
     SDL_Renderer *mRendererSDL = NULL;
@@ -63,7 +64,7 @@ private:
     void drawDisplay();
     void createDataDirectories();
     void loadConfig();
-    void loadStateData();
+    void loadStateData(int *windowWidth, int *windowHeight);
     void saveConfig();
     void saveStateData();
     void loadCart(const Cartridge &cart, std::string &romFilename);

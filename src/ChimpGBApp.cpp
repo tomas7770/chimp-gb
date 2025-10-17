@@ -16,8 +16,10 @@ ChimpGBApp::ChimpGBApp(std::string &filepath, bool debug)
         terminate(-1);
     }
 
+    int windowWidth, windowHeight;
+    loadStateData(&windowWidth, &windowHeight);
     mWindowSDL = SDL_CreateWindow(WINDOW_TITLE, SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED,
-                                  WINDOW_WIDTH, WINDOW_HEIGHT,
+                                  windowWidth, windowHeight,
                                   SDL_WINDOW_SHOWN | SDL_WINDOW_RESIZABLE);
     if (mWindowSDL == NULL)
     {
@@ -56,7 +58,6 @@ ChimpGBApp::ChimpGBApp(std::string &filepath, bool debug)
 
     createDataDirectories();
     loadConfig();
-    loadStateData();
 
     mGUI = GUI(this, &mConfig, mWindowSDL, mRendererSDL, mTextureSDL);
     mDebug = debug;
@@ -134,14 +135,36 @@ void ChimpGBApp::loadConfig()
     mConfig.load(userIniBuffer);
 }
 
-void ChimpGBApp::loadStateData()
+void ChimpGBApp::loadStateData(int *windowWidth, int *windowHeight)
 {
-    std::ifstream stateFileStream(getStatePath() + RECENT_FILES_NAME);
+    // Recent files
+    std::ifstream recentFilesStream(getStatePath() + RECENT_FILES_NAME);
     std::stringstream buffer;
-    buffer << stateFileStream.rdbuf();
-
-    std::string inString(buffer.str());
+    buffer << recentFilesStream.rdbuf();
+    std::string inString = buffer.str();
     recentFiles.load(inString);
+
+    // Window state
+    *windowWidth = WINDOW_WIDTH;
+    *windowHeight = WINDOW_HEIGHT;
+    std::ifstream windowStateStream(getStatePath() + WINDOW_STATE_NAME);
+    buffer = std::stringstream();
+    buffer << windowStateStream.rdbuf();
+    inString = buffer.str();
+    auto sizeDelim = inString.find("x");
+    if (sizeDelim != inString.npos)
+    {
+        try
+        {
+            int w = std::stoi(inString.substr(0, sizeDelim));
+            int h = std::stoi(inString.substr(sizeDelim + 1, inString.length()));
+            *windowWidth = w;
+            *windowHeight = h;
+        }
+        catch (std::exception err)
+        {
+        }
+    }
 }
 
 void ChimpGBApp::saveConfig()
@@ -161,11 +184,21 @@ void ChimpGBApp::saveConfig()
 
 void ChimpGBApp::saveStateData()
 {
+    // Recent files
     std::string outString;
     recentFiles.save(outString);
+    std::ofstream recentFilesStream(getStatePath() + RECENT_FILES_NAME);
+    recentFilesStream << outString;
 
-    std::ofstream stateFileStream(getStatePath() + RECENT_FILES_NAME);
-    stateFileStream << outString;
+    // Window state
+    if (!mConfig.fullscreen)
+    {
+        std::ofstream windowStateStream(getStatePath() + WINDOW_STATE_NAME);
+        int w, h;
+        SDL_GetWindowSize(mWindowSDL, &w, &h);
+        outString = std::to_string(w) + "x" + std::to_string(h);
+        windowStateStream << outString;
+    }
 }
 
 void ChimpGBApp::setVideoParameters()
@@ -615,14 +648,6 @@ void ChimpGBApp::terminate(int error_code)
 
     mGUI.destroy();
 
-    if (mWindowSDL)
-        SDL_DestroyWindow(mWindowSDL);
-    if (mRendererSDL)
-        SDL_DestroyRenderer(mRendererSDL);
-    if (mAudioDevSDL)
-        SDL_CloseAudioDevice(mAudioDevSDL);
-    SDL_Quit();
-
     if (error_code == 0)
     {
         try
@@ -635,6 +660,14 @@ void ChimpGBApp::terminate(int error_code)
             SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, WINDOW_TITLE, err.what(), mWindowSDL);
         }
     }
+
+    if (mWindowSDL)
+        SDL_DestroyWindow(mWindowSDL);
+    if (mRendererSDL)
+        SDL_DestroyRenderer(mRendererSDL);
+    if (mAudioDevSDL)
+        SDL_CloseAudioDevice(mAudioDevSDL);
+    SDL_Quit();
 
     std::exit(error_code);
 }
