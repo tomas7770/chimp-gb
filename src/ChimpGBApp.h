@@ -24,7 +24,7 @@ public:
     void pause();
     void doExit();
 
-    void mainLoop();
+    void startMainLoop();
     void gameboyDraw();
 
 private:
@@ -53,7 +53,9 @@ private:
     bool mDebug;
     bool mPaused = false;
     bool mFastForward = false;
-    double mAudioTimeAccum;
+    uint64_t frameTimestamp;
+    double mAudioTimeAccum, mSleepTimeAccum;
+    std::vector<float> leftAudioSamples, rightAudioSamples;
 
     Gameboy *mGameboy = nullptr;
 
@@ -61,6 +63,7 @@ private:
 
     GUI mGUI;
 
+    void mainLoop();
     void drawDisplay();
     void createDataDirectories();
     void loadConfig();

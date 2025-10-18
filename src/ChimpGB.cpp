@@ -22,7 +22,7 @@ int main(int argc, char *args[])
     }
 
     ChimpGBApp *app = new ChimpGBApp(filepath, debug);
-    app->mainLoop();
+    app->startMainLoop();
 
     return 0;
 }

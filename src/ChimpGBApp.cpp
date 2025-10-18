@@ -302,13 +302,24 @@ void ChimpGBApp::drawDisplay()
     mGUI.draw();
 }
 
+void ChimpGBApp::startMainLoop()
+{
+    frameTimestamp = SDL_GetTicks64();
+    mRunning = true;
+    mSleepTimeAccum = 0.0;
+    while (1)
+    {
+        mainLoop();
+    }
+}
+
 void ChimpGBApp::mainLoop()
 {
-    uint64_t frameTimestamp = SDL_GetTicks64();
-    mRunning = true;
-    double sleepTimeAccum = 0.0;
-    std::vector<float> leftAudioSamples, rightAudioSamples;
-    while (mRunning)
+    if (!mRunning)
+    {
+        return terminate(0);
+    }
+
     {
         while (SDL_PollEvent(&mEventSDL) != 0)
         {
@@ -365,7 +376,7 @@ void ChimpGBApp::mainLoop()
         if (mGameboy == nullptr || mPaused)
         {
             drawDisplay();
-            continue;
+            return;
         }
 
         std::vector<float> audioSamples;
@@ -451,20 +462,18 @@ void ChimpGBApp::mainLoop()
         while (!mFastForward && (SDL_GetQueuedAudioSize(mAudioDevSDL) > mConfig.audioLatency * sizeof(float) * 2))
         {
             uint64_t deltaTime = SDL_GetTicks64() - frameTimestamp;
-            sleepTimeAccum -= deltaTime;
-            sleepTimeAccum += FRAME_TIME;
+            mSleepTimeAccum -= deltaTime;
+            mSleepTimeAccum += FRAME_TIME;
             uint64_t startTime = SDL_GetTicks64();
-            if (sleepTimeAccum < 0.0)
+            if (mSleepTimeAccum < 0.0)
             {
-                sleepTimeAccum = 0.0;
+                mSleepTimeAccum = 0.0;
             }
-            mainSleep(sleepTimeAccum * 1e6);
-            sleepTimeAccum -= SDL_GetTicks64() - startTime;
+            mainSleep(mSleepTimeAccum * 1e6);
+            mSleepTimeAccum -= SDL_GetTicks64() - startTime;
         }
         frameTimestamp = SDL_GetTicks64();
     }
-
-    terminate(0);
 }
 
 bool ChimpGBApp::isPoweredOn()
