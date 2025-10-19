@@ -2,6 +2,8 @@
 #include "Gameboy.h"
 #include "CPUDebug.h"
 
+#include <bit>
+
 void CPU::requestInterrupt(InterruptSource source)
 {
     IF |= (1 << source);
