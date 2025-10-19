@@ -4,6 +4,11 @@
 #include <iostream>
 #include <fstream>
 #include <filesystem>
+#include <sstream>
+
+#ifdef __EMSCRIPTEN__
+#include <emscripten.h>
+#endif
 
 void gameboyDrawCallback(void *userdata);
 
@@ -302,15 +307,25 @@ void ChimpGBApp::drawDisplay()
     mGUI.draw();
 }
 
+void mainLoopCallback(void *userdata)
+{
+    ChimpGBApp *app = (ChimpGBApp *)userdata;
+    app->mainLoop();
+}
+
 void ChimpGBApp::startMainLoop()
 {
     frameTimestamp = SDL_GetTicks64();
     mRunning = true;
     mSleepTimeAccum = 0.0;
+#ifdef __EMSCRIPTEN__
+    emscripten_set_main_loop_arg(mainLoopCallback, this, 0, 1);
+#else
     while (1)
     {
         mainLoop();
     }
+#endif
 }
 
 void ChimpGBApp::mainLoop()
@@ -696,5 +711,9 @@ void ChimpGBApp::terminate(int error_code)
         SDL_CloseAudioDevice(mAudioDevSDL);
     SDL_Quit();
 
+#ifdef __EMSCRIPTEN__
+    emscripten_cancel_main_loop();
+#else
     std::exit(error_code);
+#endif
 }

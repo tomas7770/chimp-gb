@@ -25,6 +25,7 @@ public:
     void doExit();
 
     void startMainLoop();
+    void mainLoop();
     void gameboyDraw();
 
 private:
@@ -63,7 +64,6 @@ private:
 
     GUI mGUI;
 
-    void mainLoop();
     void drawDisplay();
     void createDataDirectories();
     void loadConfig();

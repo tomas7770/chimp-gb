@@ -38,11 +38,19 @@ set (MISC_SOURCE_FILES
 
 add_executable(ChimpGB ${SOURCE_FILES} ${IMGUI_SOURCE_FILES} ${MISC_SOURCE_FILES})
 
-include_directories(${SDL2_INCLUDE_DIR} imgui)
+if(EMSCRIPTEN)
+    include_directories(${SDL2_INCLUDE_DIRS} imgui)
+else()
+    include_directories(${SDL2_INCLUDE_DIR} imgui)
+endif()
 if (MINGW)
     target_link_libraries(ChimpGB mingw32)
 endif()
 target_link_libraries(ChimpGB ${SDL2_LIBRARIES})
 if (WIN32)
     target_link_libraries(ChimpGB shlwapi)
+endif()
+if (EMSCRIPTEN)
+    set_target_properties(ChimpGB PROPERTIES LINK_FLAGS
+        "-sASYNCIFY=1 --preload-file ${CMAKE_CURRENT_SOURCE_DIR}/tetris.gb@./tetris.gb")
 endif()
