@@ -30,14 +30,26 @@ const char *defaultIni =
     "[audio]\n"
     "sampleRate = 44100\n"
     "; Internal audio buffer size, in samples.\n"
+#ifdef __EMSCRIPTEN__
+    "bufferSize = 512\n"
+#else
     "bufferSize = 256\n"
+#endif
     "; Audio latency, in samples.\n"
     "; If the audio feels delayed compared to video, decrease this value.\n"
     "; If the audio stutters or sounds distorted, increase this value.\n"
+#ifdef __EMSCRIPTEN__
+    "latency = 2048\n"
+#else
     "latency = 1024\n"
+#endif
     "; Audio sampling quality. Set to \"Low\" if you experience performance issues.\n"
     "; 0 = Low, 1 = High\n"
+#ifdef __EMSCRIPTEN__
+    "quality = 0\n"
+#else
     "quality = 1\n"
+#endif
     "\n"
     "[emulation]\n"
     "; Game Boy (monochrome) boot ROM path. This should be a 256 byte file.\n"
