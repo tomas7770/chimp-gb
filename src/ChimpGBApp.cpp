@@ -519,7 +519,9 @@ void ChimpGBApp::loadCart(const Cartridge &cart, std::string &romFilename)
 {
     powerOff();
 
+#ifndef __EMSCRIPTEN__
     SDL_RenderSetVSync(mRendererSDL, 0);
+#endif
 
     mRomFilename = romFilename;
 
@@ -586,7 +588,9 @@ void ChimpGBApp::pause()
     if (isPoweredOn())
     {
         mPaused = !mPaused;
+#ifndef __EMSCRIPTEN__
         SDL_RenderSetVSync(mRendererSDL, mPaused ? 1 : 0);
+#endif
     }
 }
 
