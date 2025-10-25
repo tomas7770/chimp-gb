@@ -144,11 +144,13 @@ void GUI::draw()
                         }
                         ImGui::EndMenu();
                     }
+#ifndef __EMSCRIPTEN__
                     ImGui::Separator();
                     if (ImGui::MenuItem("Exit"))
                     {
                         mApp->doExit();
                     }
+#endif
                     ImGui::EndMenu();
                 }
                 if (ImGui::BeginMenu("Emulation"))
@@ -203,11 +205,13 @@ void GUI::draw()
                         mConfig->fullscreen = !mConfig->fullscreen;
                         mApp->setVideoParameters();
                     }
+#ifndef __EMSCRIPTEN__
                     if (ImGui::MenuItem("Exclusive fullscreen", nullptr, mConfig->exclusiveFullscreen))
                     {
                         mConfig->exclusiveFullscreen = !mConfig->exclusiveFullscreen;
                         mApp->setVideoParameters();
                     }
+#endif
                     if (ImGui::MenuItem("Integer scaling", nullptr, mConfig->integerScaling))
                     {
                         mConfig->integerScaling = !mConfig->integerScaling;
@@ -216,6 +220,7 @@ void GUI::draw()
                 }
                 if (ImGui::BeginMenu("Audio"))
                 {
+#ifndef __EMSCRIPTEN__
                     if (ImGui::BeginMenu("Sample rate (Hz)"))
                     {
                         if (ImGui::MenuItem("8000", nullptr, mConfig->audioSampleRate == 8000))
@@ -240,6 +245,7 @@ void GUI::draw()
                         }
                         ImGui::EndMenu();
                     }
+#endif
                     if (ImGui::BeginMenu("Quality"))
                     {
                         if (ImGui::MenuItem("Low", nullptr, mConfig->audioQuality == Config::AudioQuality::Low))
