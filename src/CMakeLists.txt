@@ -52,5 +52,6 @@ if (WIN32)
 endif()
 if (EMSCRIPTEN)
     set_target_properties(ChimpGB PROPERTIES LINK_FLAGS
-        "-sASYNCIFY=1 --shell-file ${CMAKE_CURRENT_SOURCE_DIR}/../web/shell.html")
+        "-sASYNCIFY=1 --shell-file ${CMAKE_CURRENT_SOURCE_DIR}/../web/shell.html \
+        -sEXPORTED_RUNTIME_METHODS=ccall")
 endif()

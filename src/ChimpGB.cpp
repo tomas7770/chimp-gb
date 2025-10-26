@@ -5,6 +5,23 @@
 #include <fstream>
 #include <filesystem>
 
+static ChimpGBApp *app;
+
+#ifdef __EMSCRIPTEN__
+#include <emscripten.h>
+extern "C"
+{
+    void EMSCRIPTEN_KEEPALIVE loadDownloadedRom()
+    {
+        if (app != nullptr)
+        {
+            std::string filepath = "rom.gb";
+            app->loadRomFile(filepath);
+        }
+    }
+}
+#endif
+
 int main(int argc, char *args[])
 {
     std::string filepath = "";
@@ -21,7 +38,7 @@ int main(int argc, char *args[])
         }
     }
 
-    ChimpGBApp *app = new ChimpGBApp(filepath, debug);
+    app = new ChimpGBApp(filepath, debug);
     app->startMainLoop();
 
     return 0;
