@@ -96,7 +96,7 @@ void GUI::draw()
                     {
                         char const *filterPatterns[2] = {"*.gb", "*.gbc"};
 #ifdef __EMSCRIPTEN__
-                        char *openFilename = "tetris.gb";
+                        const char *openFilename = "rom.gb";
 #else
                         char *openFilename = tinyfd_openFileDialog("Load ROM", mApp->recentFiles.lastOpenLocation.c_str(),
                                                                    2, filterPatterns, "Game Boy ROM files", 0);
