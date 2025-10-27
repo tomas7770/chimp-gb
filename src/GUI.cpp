@@ -92,21 +92,19 @@ void GUI::draw()
             {
                 if (ImGui::BeginMenu("File"))
                 {
+#ifndef __EMSCRIPTEN__
                     if (ImGui::MenuItem("Load ROM"))
                     {
                         char const *filterPatterns[2] = {"*.gb", "*.gbc"};
-#ifdef __EMSCRIPTEN__
-                        const char *openFilename = "rom.gb";
-#else
                         char *openFilename = tinyfd_openFileDialog("Load ROM", mApp->recentFiles.lastOpenLocation.c_str(),
                                                                    2, filterPatterns, "Game Boy ROM files", 0);
-#endif
                         if (openFilename)
                         {
                             std::string openFilenameString(openFilename);
                             loadRomFile(openFilenameString);
                         }
                     }
+#endif
                     // Constrain recent files menu size so it doesn't cover other menus,
                     // since file names can get quite long.
                     ImGui::SetNextWindowSizeConstraints(

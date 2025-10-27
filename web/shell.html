@@ -154,7 +154,7 @@
         FS.write(stream, data, 0, data.length, 0);
         FS.close(stream);
 
-        Module.ccall('loadDownloadedRom');
+        Module.ccall('loadDownloadedRom', null, ['string'], [filename]);
       }
     </script>
     {{{ SCRIPT }}}

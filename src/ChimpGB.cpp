@@ -11,11 +11,11 @@ static ChimpGBApp *app;
 #include <emscripten.h>
 extern "C"
 {
-    void EMSCRIPTEN_KEEPALIVE loadDownloadedRom()
+    void EMSCRIPTEN_KEEPALIVE loadDownloadedRom(const char *filepathChars)
     {
         if (app != nullptr)
         {
-            std::string filepath = "rom.gb";
+            std::string filepath = filepathChars;
             app->loadRomFile(filepath);
         }
     }
