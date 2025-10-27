@@ -698,5 +698,6 @@ void Gameboy::simulateBootRom()
             std::memcpy(mLCD.colorOBJPaletteMemory + 8, DMG_MODE_FALLBACK_PALETTE, 8);
         }
     }
+    std::memset(mPPU.vram, 0, PPU::vramSize);
     mCPU.simulateBootRom();
 }
