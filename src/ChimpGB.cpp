@@ -17,6 +17,7 @@ extern "C"
         {
             std::string filepath = filepathChars;
             app->loadRomFile(filepath);
+            app->recentFiles.push(filepath);
         }
     }
 }
