@@ -7,7 +7,7 @@
 void CPU::requestInterrupt(InterruptSource source)
 {
     IF |= (1 << source);
-    if (mHalted)
+    if (mHalted && (IE & IF))
     {
         mHalted = false;
         mMCycleFunc = &CPU::prefetchOpcode;
