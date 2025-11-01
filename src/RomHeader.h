@@ -24,7 +24,7 @@ struct RomHeader
 
     static constexpr int MBC_BYTE = 0x0147;
     static constexpr int RAM_SIZE_BYTE = 0x0149;
-    static constexpr int RAM_SIZES[] = {0, 0, 8192, 32768, 131072, 65536};
+    static constexpr int RAM_SIZES[] = {0, 8192, 8192, 32768, 131072, 65536};
 
     char titleChars[16];
     CartridgeType cartType;
