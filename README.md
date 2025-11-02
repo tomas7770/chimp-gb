@@ -114,6 +114,8 @@ This is a non-exhaustive list of references used in the development of this emul
 
 - [Game Boy CPU internals](https://gist.github.com/SonoSooS/c0055300670d678b5ae8433e20bea595)
 
+- [The Cycle-Accurate Game Boy Docs](https://raw.githubusercontent.com/geaz/emu-gameboy/master/docs/The%20Cycle-Accurate%20Game%20Boy%20Docs.pdf)
+
 - [Gameboy sound hardware](https://gbdev.gg8.se/wiki/articles/Gameboy_sound_hardware)
 
 - [MBC3 RTC save format](https://bgb.bircd.org/rtcsave.html)

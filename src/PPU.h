@@ -49,6 +49,10 @@ public:
             {
                 newLine();
             }
+            else if (mLCD->LY == LCD::SCREEN_H && mScanlineDots == 4 && delayedVBLInterrupt())
+            {
+                doVBLInterrupt();
+            }
             else if (mLCD->LY == (LCD::SCREEN_H + VBLANK_LINES - 1) && mScanlineDots >= 4)
             {
                 // LY is updated early (original hardware quirk)
@@ -105,6 +109,8 @@ private:
 
     void updateLYCInterrupt();
     void newLine();
+    bool delayedVBLInterrupt();
+    void doVBLInterrupt();
 
     uint8_t getBGTileAtScreenPixel(int x, int y, bool isWindow, bool doGetAttributes = false);
     int getBGTilePixel(uint8_t tileId, int tilePixelX, int tilePixelY, bool drawingObj,

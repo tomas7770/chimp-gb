@@ -170,7 +170,10 @@ void PPU::newLine()
         mLCD->windowLineCounter = 0;
         mWYTriggered = false;
         setMode(VBlank);
-        mGameboy->requestInterrupt(CPU::InterruptSource::VBlank);
+        if (!delayedVBLInterrupt())
+        {
+            doVBLInterrupt();
+        }
         if (mFirstFrameAfterEnable)
         {
             mFirstFrameAfterEnable = false;
@@ -191,6 +194,16 @@ void PPU::newLine()
     }
 
     updateLYCInterrupt();
+}
+
+bool PPU::delayedVBLInterrupt()
+{
+    return !(mGameboy->inCGBMode()) || mGameboy->isCPUDoubleSpeed();
+}
+
+void PPU::doVBLInterrupt()
+{
+    mGameboy->requestInterrupt(CPU::InterruptSource::VBlank);
 }
 
 uint8_t PPU::getBGTileAtScreenPixel(int x, int y, bool isWindow, bool doGetAttributes)

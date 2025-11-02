@@ -78,6 +78,7 @@ public:
     SystemType getSystemType() { return mSystemType; }
     bool inDMGMode() { return mKEY0 & 0x04; }
     bool inCGBMode() { return mSystemType == CGB && !inDMGMode(); }
+    bool isCPUDoubleSpeed() { return mCPU.isDoubleSpeed(); }
 
     bool inHBlank() { return mPPU.getMode() == 0; }
 
