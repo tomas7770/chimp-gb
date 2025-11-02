@@ -4,7 +4,9 @@
 #include "backends/imgui_impl_sdl2.h"
 #include "backends/imgui_impl_sdlrenderer2.h"
 
+#ifndef __EMSCRIPTEN__
 #include "tinyfiledialogs/tinyfiledialogs.h"
+#endif
 
 #include "Platform.h"
 #include "ChimpGBApp.h"
