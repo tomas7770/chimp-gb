@@ -3,6 +3,7 @@
 #include <iostream>
 #include <format>
 #include <cstring>
+#include <cmath>
 
 uint8_t Gameboy::readByte(uint16_t address)
 {
@@ -607,15 +608,6 @@ void Gameboy::requestInterrupt(CPU::InterruptSource source)
     mCPU.requestInterrupt(source);
 }
 
-void Gameboy::tickSystemCounter()
-{
-    mSysCounter++;
-    if (mTimer.tick(mSysCounter, mSysCounter - 1))
-    {
-        mCPU.requestInterrupt(CPU::InterruptSource::Timer);
-    }
-}
-
 const LCD::Color *Gameboy::getPixels() const
 {
     return mLCD.pixels;
@@ -623,51 +615,94 @@ const LCD::Color *Gameboy::getPixels() const
 
 void Gameboy::doFrame(bool generateAudio)
 {
-    for (int i = 0; i < Gameboy::CYCLES_PER_FRAME; i++)
+    mEvents.insert(SchedulerEvent{.type = FinishFrame, .timestamp = cycleCounter + CYCLES_PER_FRAME});
+    if (generateAudio)
     {
-        // 2 MHz cycle (2 T-cycles) (1 M-cycle at double speed mode);
-        // CPU is emulated at M-cycle accuracy;
-        // PPU timings are multiples of 2 T-cycles (with current implementation);
-        // APU maximum audio frequency is 2 MHz;
-        // Performance can be optimized by emulating 2 T-cycles at once, without affecting accuracy.
-
-        if (!(cycleCounter % 2) || mCPU.isDoubleSpeed())
+        bool addAudioEvent = true;
+        for (const auto &event : mEvents)
         {
-            tickSystemCounter();
-            mCPU.doMCycle();
+            if (event.type == PushAudioSample)
+            {
+                addAudioEvent = false;
+                break;
+            }
         }
-        mPPU.doCycle();
-        mAPU.doCycle();
-        cycleCounter++;
-
-        if (!generateAudio)
+        if (addAudioEvent)
         {
-            continue;
+            mEvents.insert(SchedulerEvent{.type = PushAudioSample,
+                                          .timestamp = cycleCounter +
+                                                       uint64_t(std::ceil(mCyclesPerAudioSample - mAudioTimeAccum))});
         }
+    }
 
-        if (!audioPointSample)
+    while (1)
+    {
+        while (cycleCounter < mEvents.begin()->timestamp)
         {
-            mAPU.computeAudioSamples();
-            mLeftAudioSamples.push_back(mAPU.leftAudioSample);
-            mRightAudioSamples.push_back(mAPU.rightAudioSample);
-        }
+            // 2 MHz cycle (2 T-cycles) (1 M-cycle at double speed mode);
+            // CPU is emulated at M-cycle accuracy;
+            // PPU timings are multiples of 2 T-cycles (with current implementation);
+            // APU maximum audio frequency is 2 MHz;
+            // Performance can be optimized by emulating 2 T-cycles at once, without affecting accuracy.
 
-        mAudioTimeAccum += 1.0;
-        if (mAudioTimeAccum >= mCyclesPerAudioSample)
-        {
-            mAudioTimeAccum -= mCyclesPerAudioSample;
-            if (audioPointSample)
+            if (!(cycleCounter % 2) || mCPU.isDoubleSpeed())
+            {
+                mSysCounter++;
+                if (mTimer.tick(mSysCounter, mSysCounter - 1))
+                {
+                    mCPU.requestInterrupt(CPU::InterruptSource::Timer);
+                }
+                mCPU.doMCycle();
+            }
+            mPPU.doCycle();
+            mAPU.doCycle();
+            cycleCounter++;
+
+            if (!generateAudio)
+            {
+                continue;
+            }
+
+            if (!audioPointSample)
             {
                 mAPU.computeAudioSamples();
                 mLeftAudioSamples.push_back(mAPU.leftAudioSample);
                 mRightAudioSamples.push_back(mAPU.rightAudioSample);
             }
-            if (audioCallback != nullptr)
+        }
+
+        SchedulerEvent event = *(mEvents.begin());
+        mEvents.erase(event);
+        switch (event.type)
+        {
+        case PushAudioSample:
+            if (generateAudio)
             {
-                audioCallback(mAudioCallbackUserdata, mLeftAudioSamples, mRightAudioSamples);
+                mAudioTimeAccum += std::ceil(mCyclesPerAudioSample - mAudioTimeAccum);
+                mAudioTimeAccum -= mCyclesPerAudioSample;
+                if (audioPointSample)
+                {
+                    mAPU.computeAudioSamples();
+                    mLeftAudioSamples.push_back(mAPU.leftAudioSample);
+                    mRightAudioSamples.push_back(mAPU.rightAudioSample);
+                }
+                if (audioCallback != nullptr)
+                {
+                    audioCallback(mAudioCallbackUserdata, mLeftAudioSamples, mRightAudioSamples);
+                }
+                mLeftAudioSamples.clear();
+                mRightAudioSamples.clear();
+                mEvents.insert(SchedulerEvent{.type = PushAudioSample,
+                                              .timestamp = cycleCounter +
+                                                           uint64_t(std::ceil(mCyclesPerAudioSample - mAudioTimeAccum))});
             }
-            mLeftAudioSamples.clear();
-            mRightAudioSamples.clear();
+            break;
+
+        case FinishFrame:
+            return;
+
+        default:
+            break;
         }
     }
 }
