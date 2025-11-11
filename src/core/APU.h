@@ -53,20 +53,6 @@ public:
 
         for (int i = 0; i < 4; i++)
         {
-            if (i == 2)
-            {
-                mDAC[i] = (NR30 >> DAC_BIT_WAVE_CHANNEL) ? true : false;
-            }
-            else
-            {
-                mDAC[i] = (NRx2[i] >> DAC_BIT) ? true : false;
-            }
-
-            if (!mDAC[i])
-            {
-                mChannelEnabled[i] = false;
-            }
-
             mChannelFrequencyTimer[i] -= 2;
             if (mChannelFrequencyTimer[i] == 0)
             {
@@ -112,7 +98,10 @@ public:
     void computeAudioSamples();
 
     void writeNRx1(int channel, uint8_t value);
+    void writeNRx2(int channel, uint8_t value);
     void writeNRx4(int channel, uint8_t value);
+
+    void writeNR30(uint8_t value);
 
     uint8_t readNR52();
     void writeNR52(uint8_t value);

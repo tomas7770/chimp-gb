@@ -375,7 +375,7 @@ void Gameboy::writeByte(uint16_t address, uint8_t value)
     }
     else if (address == NR12_ADDR)
     {
-        mAPU.NRx2[0] = value;
+        mAPU.writeNRx2(0, value);
     }
     else if (address == NR13_ADDR)
     {
@@ -391,7 +391,7 @@ void Gameboy::writeByte(uint16_t address, uint8_t value)
     }
     else if (address == NR22_ADDR)
     {
-        mAPU.NRx2[1] = value;
+        mAPU.writeNRx2(1, value);
     }
     else if (address == NR23_ADDR)
     {
@@ -403,7 +403,7 @@ void Gameboy::writeByte(uint16_t address, uint8_t value)
     }
     else if (address == NR30_ADDR)
     {
-        mAPU.NR30 = value;
+        mAPU.writeNR30(value);
     }
     else if (address == NR31_ADDR)
     {
@@ -411,7 +411,7 @@ void Gameboy::writeByte(uint16_t address, uint8_t value)
     }
     else if (address == NR32_ADDR)
     {
-        mAPU.NRx2[2] = value;
+        mAPU.writeNRx2(2, value);
     }
     else if (address == NR33_ADDR)
     {
@@ -427,7 +427,7 @@ void Gameboy::writeByte(uint16_t address, uint8_t value)
     }
     else if (address == NR42_ADDR)
     {
-        mAPU.NRx2[3] = value;
+        mAPU.writeNRx2(3, value);
     }
     else if (address == NR43_ADDR)
     {
