@@ -33,45 +33,24 @@ public:
 
     unsigned int cycleCounter = 0;
 
+    bool audioPointSample;
+
     void requestInterrupt(CPU::InterruptSource source);
 
-    void tickSystemCounter()
-    {
-        mSysCounter++;
-        if (mTimer.tick(mSysCounter, mSysCounter - 1))
-        {
-            mCPU.requestInterrupt(CPU::InterruptSource::Timer);
-        }
-    }
+    void tickSystemCounter();
 
     const LCD::Color *getPixels() const;
-    void computeAudioSamples();
-    float getLeftAudioSample() const;
-    float getRightAudioSample() const;
 
-    void doCycle()
-    {
-        // 2 MHz cycle (2 T-cycles) (1 M-cycle at double speed mode);
-        // CPU is emulated at M-cycle accuracy;
-        // PPU timings are multiples of 2 T-cycles (with current implementation);
-        // APU maximum audio frequency is 2 MHz;
-        // Performance can be optimized by emulating 2 T-cycles at once, without affecting accuracy.
-
-        if (!(cycleCounter % 2) || mCPU.isDoubleSpeed())
-        {
-            tickSystemCounter();
-            mCPU.doMCycle();
-        }
-        mPPU.doCycle();
-        mAPU.doCycle();
-        cycleCounter++;
-    }
+    void doFrame(bool generateAudio);
     void onKeyPress(int key);
     void onKeyRelease(int key);
 
     Cartridge &getCart();
 
     void setDrawCallback(void (*drawCallback)(void *), void *userdata);
+    void setAudioCallback(void (*audioCallback)(void *, const std::vector<float> &,
+                                                const std::vector<float> &),
+                          void *userdata, double cyclesPerSample);
     void setBootRom(std::istream &dataStream);
     void simulateBootRom();
 
@@ -99,6 +78,12 @@ private:
     uint16_t mSysCounter = 0xABCC;
     uint8_t mKEY0 = 0;
     int mWRAMBank = 1;
+
+    std::vector<float> mLeftAudioSamples, mRightAudioSamples;
+    void (*audioCallback)(void *userdata, const std::vector<float> &leftAudioSamples,
+                          const std::vector<float> &rightAudioSamples) = nullptr;
+    void *mAudioCallbackUserdata = nullptr;
+    double mCyclesPerAudioSample, mAudioTimeAccum;
 
     static constexpr uint16_t WRAM_BANK_SIZE = (1 << 12);
 

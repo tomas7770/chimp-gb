@@ -607,24 +607,69 @@ void Gameboy::requestInterrupt(CPU::InterruptSource source)
     mCPU.requestInterrupt(source);
 }
 
+void Gameboy::tickSystemCounter()
+{
+    mSysCounter++;
+    if (mTimer.tick(mSysCounter, mSysCounter - 1))
+    {
+        mCPU.requestInterrupt(CPU::InterruptSource::Timer);
+    }
+}
+
 const LCD::Color *Gameboy::getPixels() const
 {
     return mLCD.pixels;
 }
 
-void Gameboy::computeAudioSamples()
+void Gameboy::doFrame(bool generateAudio)
 {
-    mAPU.computeAudioSamples();
-}
+    for (int i = 0; i < Gameboy::CYCLES_PER_FRAME; i++)
+    {
+        // 2 MHz cycle (2 T-cycles) (1 M-cycle at double speed mode);
+        // CPU is emulated at M-cycle accuracy;
+        // PPU timings are multiples of 2 T-cycles (with current implementation);
+        // APU maximum audio frequency is 2 MHz;
+        // Performance can be optimized by emulating 2 T-cycles at once, without affecting accuracy.
 
-float Gameboy::getLeftAudioSample() const
-{
-    return mAPU.leftAudioSample;
-}
+        if (!(cycleCounter % 2) || mCPU.isDoubleSpeed())
+        {
+            tickSystemCounter();
+            mCPU.doMCycle();
+        }
+        mPPU.doCycle();
+        mAPU.doCycle();
+        cycleCounter++;
 
-float Gameboy::getRightAudioSample() const
-{
-    return mAPU.rightAudioSample;
+        if (!generateAudio)
+        {
+            continue;
+        }
+
+        if (!audioPointSample)
+        {
+            mAPU.computeAudioSamples();
+            mLeftAudioSamples.push_back(mAPU.leftAudioSample);
+            mRightAudioSamples.push_back(mAPU.rightAudioSample);
+        }
+
+        mAudioTimeAccum += 1.0;
+        if (mAudioTimeAccum >= mCyclesPerAudioSample)
+        {
+            mAudioTimeAccum -= mCyclesPerAudioSample;
+            if (audioPointSample)
+            {
+                mAPU.computeAudioSamples();
+                mLeftAudioSamples.push_back(mAPU.leftAudioSample);
+                mRightAudioSamples.push_back(mAPU.rightAudioSample);
+            }
+            if (audioCallback != nullptr)
+            {
+                audioCallback(mAudioCallbackUserdata, mLeftAudioSamples, mRightAudioSamples);
+            }
+            mLeftAudioSamples.clear();
+            mRightAudioSamples.clear();
+        }
+    }
 }
 
 void Gameboy::onKeyPress(int key)
@@ -650,6 +695,16 @@ Cartridge &Gameboy::getCart()
 void Gameboy::setDrawCallback(void (*drawCallback)(void *), void *userdata)
 {
     mPPU.setDrawCallback(drawCallback, userdata);
+}
+
+void Gameboy::setAudioCallback(void (*audioCallback)(void *, const std::vector<float> &,
+                                                     const std::vector<float> &),
+                               void *userdata, double cyclesPerSample)
+{
+    this->audioCallback = audioCallback;
+    mAudioCallbackUserdata = userdata;
+    mCyclesPerAudioSample = cyclesPerSample;
+    mAudioTimeAccum = 0.0;
 }
 
 void Gameboy::setBootRom(std::istream &dataStream)
