@@ -653,7 +653,6 @@ void Gameboy::doFrame(bool generateAudio)
                 mCPU.doMCycle();
             }
             mPPU.doCycle();
-            mAPU.doCycle();
             cycleCounter++;
 
             if (!generateAudio)
@@ -675,6 +674,22 @@ void Gameboy::doFrame(bool generateAudio)
         {
         case APU_FrameSequencerTick:
             mAPU.onFrameSequencerTick();
+            break;
+
+        case APU_Channel0Tick:
+            mAPU.onChannel0Tick();
+            break;
+
+        case APU_Channel1Tick:
+            mAPU.onChannel1Tick();
+            break;
+
+        case APU_Channel2Tick:
+            mAPU.onChannel2Tick();
+            break;
+
+        case APU_Channel3Tick:
+            mAPU.onChannel3Tick();
             break;
 
         case PushAudioSample:
@@ -795,4 +810,16 @@ void Gameboy::simulateBootRom()
 void Gameboy::addEvent(SchedulerEventType type, uint64_t time)
 {
     mEvents.insert(SchedulerEvent{.type = type, .timestamp = cycleCounter + time});
+}
+
+void Gameboy::removeEvent(SchedulerEventType type)
+{
+    for (auto it = mEvents.begin(); it != mEvents.end(); it++)
+    {
+        if (it->type == type)
+        {
+            mEvents.erase(it);
+            break;
+        }
+    }
 }

@@ -9,57 +9,6 @@ class APU
 public:
     APU(Gameboy *gameboy);
 
-    void doCycle()
-    {
-        if (!mAPUEnabled)
-        {
-            return;
-        }
-
-        for (int i = 0; i < 4; i++)
-        {
-            mChannelFrequencyTimer[i] -= 2;
-            if (mChannelFrequencyTimer[i] == 0)
-            {
-                reloadFrequencyTimer(i);
-                int xorValue;
-                switch (i)
-                {
-                case 0:
-                case 1:
-                    mSquareWaveCounter[i] = (mSquareWaveCounter[i] + 1) % 8;
-                    break;
-
-                case 2:
-                    mWavePositionCounter = (mWavePositionCounter + 1) % (waveRamSize * 2);
-                    if (mWavePositionCounter % 2)
-                    {
-                        mWaveSampleBuffer = waveRam[mWavePositionCounter / 2] & 0xF;
-                    }
-                    else
-                    {
-                        mWaveSampleBuffer = waveRam[mWavePositionCounter / 2] >> 4;
-                    }
-                    break;
-
-                case 3:
-                    xorValue = (mLFSR & 1) ^ ((mLFSR >> 1) & 1);
-                    mLFSR >>= 1;
-                    mLFSR |= (xorValue << 14);
-                    if (NRx3[3] & NOISE_LFSR_WIDTH_BITMASK)
-                    {
-                        mLFSR &= ~(1 << 6);
-                        mLFSR |= (xorValue << 6);
-                    }
-                    break;
-
-                default:
-                    break;
-                }
-            }
-        }
-    }
-
     void computeAudioSamples();
 
     void writeNRx1(int channel, uint8_t value);
@@ -72,6 +21,10 @@ public:
     void writeNR30(uint8_t value);
 
     void onFrameSequencerTick();
+    void onChannel0Tick();
+    void onChannel1Tick();
+    void onChannel2Tick();
+    void onChannel3Tick();
 
     uint8_t NR10 = 0x80;
     uint8_t NR30 = 0x7F;

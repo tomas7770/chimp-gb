@@ -16,8 +16,17 @@ APU::APU(Gameboy *gameboy)
     writeNRx1(3, 0xFF);
     writeNRx4(3, 0xBF);
 
+    for (int i = 0; i < 4; i++)
+    {
+        reloadFrequencyTimer(i);
+    }
+
     mGameboy = gameboy;
     mGameboy->addEvent(APU_FrameSequencerTick, FRAME_SEQUENCER_PERIOD / 2);
+    mGameboy->addEvent(APU_Channel0Tick, mChannelFrequencyTimer[0] / 2);
+    mGameboy->addEvent(APU_Channel1Tick, mChannelFrequencyTimer[1] / 2);
+    mGameboy->addEvent(APU_Channel2Tick, mChannelFrequencyTimer[2] / 2);
+    mGameboy->addEvent(APU_Channel3Tick, mChannelFrequencyTimer[3] / 2);
 }
 
 float convertVolume(int volume)
@@ -310,6 +319,17 @@ void APU::writeNR52(uint8_t value)
         mSquareWaveCounter[0] = 0;
         mSquareWaveCounter[1] = 0;
         mWaveSampleBuffer = 0;
+        mGameboy->addEvent(APU_Channel0Tick, mChannelFrequencyTimer[0] / 2);
+        mGameboy->addEvent(APU_Channel1Tick, mChannelFrequencyTimer[1] / 2);
+        mGameboy->addEvent(APU_Channel2Tick, mChannelFrequencyTimer[2] / 2);
+        mGameboy->addEvent(APU_Channel3Tick, mChannelFrequencyTimer[3] / 2);
+    }
+    else if (!mAPUEnabled)
+    {
+        mGameboy->removeEvent(APU_Channel0Tick);
+        mGameboy->removeEvent(APU_Channel1Tick);
+        mGameboy->removeEvent(APU_Channel2Tick);
+        mGameboy->removeEvent(APU_Channel3Tick);
     }
 }
 
@@ -384,4 +404,48 @@ void APU::onFrameSequencerTick()
         break;
     }
     mFrameSequencerStep = (mFrameSequencerStep + 1) % 8;
+}
+
+void APU::onChannel0Tick()
+{
+    reloadFrequencyTimer(0);
+    mSquareWaveCounter[0] = (mSquareWaveCounter[0] + 1) % 8;
+    mGameboy->addEvent(APU_Channel0Tick, mChannelFrequencyTimer[0] / 2);
+}
+
+void APU::onChannel1Tick()
+{
+    reloadFrequencyTimer(1);
+    mSquareWaveCounter[1] = (mSquareWaveCounter[1] + 1) % 8;
+    mGameboy->addEvent(APU_Channel1Tick, mChannelFrequencyTimer[1] / 2);
+}
+
+void APU::onChannel2Tick()
+{
+    reloadFrequencyTimer(2);
+    mWavePositionCounter = (mWavePositionCounter + 1) % (waveRamSize * 2);
+    if (mWavePositionCounter % 2)
+    {
+        mWaveSampleBuffer = waveRam[mWavePositionCounter / 2] & 0xF;
+    }
+    else
+    {
+        mWaveSampleBuffer = waveRam[mWavePositionCounter / 2] >> 4;
+    }
+    mGameboy->addEvent(APU_Channel2Tick, mChannelFrequencyTimer[2] / 2);
+}
+
+void APU::onChannel3Tick()
+{
+    reloadFrequencyTimer(3);
+    int xorValue;
+    xorValue = (mLFSR & 1) ^ ((mLFSR >> 1) & 1);
+    mLFSR >>= 1;
+    mLFSR |= (xorValue << 14);
+    if (NRx3[3] & NOISE_LFSR_WIDTH_BITMASK)
+    {
+        mLFSR &= ~(1 << 6);
+        mLFSR |= (xorValue << 6);
+    }
+    mGameboy->addEvent(APU_Channel3Tick, mChannelFrequencyTimer[3] / 2);
 }

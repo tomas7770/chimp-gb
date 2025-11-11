@@ -5,6 +5,10 @@
 enum SchedulerEventType
 {
     APU_FrameSequencerTick,
+    APU_Channel0Tick,
+    APU_Channel1Tick,
+    APU_Channel2Tick,
+    APU_Channel3Tick,
     PushAudioSample,
     FinishFrame
 };

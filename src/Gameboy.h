@@ -57,6 +57,7 @@ public:
     void simulateBootRom();
 
     void addEvent(SchedulerEventType type, uint64_t time);
+    void removeEvent(SchedulerEventType type);
 
     SystemType getSystemType() { return mSystemType; }
     bool inDMGMode() { return mKEY0 & 0x04; }
