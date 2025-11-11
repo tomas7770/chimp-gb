@@ -4,6 +4,7 @@
 
 enum SchedulerEventType
 {
+    APU_FrameSequencerTick,
     PushAudioSample,
     FinishFrame
 };

@@ -615,7 +615,7 @@ const LCD::Color *Gameboy::getPixels() const
 
 void Gameboy::doFrame(bool generateAudio)
 {
-    mEvents.insert(SchedulerEvent{.type = FinishFrame, .timestamp = cycleCounter + CYCLES_PER_FRAME});
+    addEvent(FinishFrame, CYCLES_PER_FRAME);
     if (generateAudio)
     {
         bool addAudioEvent = true;
@@ -629,9 +629,7 @@ void Gameboy::doFrame(bool generateAudio)
         }
         if (addAudioEvent)
         {
-            mEvents.insert(SchedulerEvent{.type = PushAudioSample,
-                                          .timestamp = cycleCounter +
-                                                       uint64_t(std::ceil(mCyclesPerAudioSample - mAudioTimeAccum))});
+            addEvent(PushAudioSample, uint64_t(std::ceil(mCyclesPerAudioSample - mAudioTimeAccum)));
         }
     }
 
@@ -672,9 +670,13 @@ void Gameboy::doFrame(bool generateAudio)
         }
 
         SchedulerEvent event = *(mEvents.begin());
-        mEvents.erase(event);
+        mEvents.erase(mEvents.begin());
         switch (event.type)
         {
+        case APU_FrameSequencerTick:
+            mAPU.onFrameSequencerTick();
+            break;
+
         case PushAudioSample:
             if (generateAudio)
             {
@@ -692,9 +694,7 @@ void Gameboy::doFrame(bool generateAudio)
                 }
                 mLeftAudioSamples.clear();
                 mRightAudioSamples.clear();
-                mEvents.insert(SchedulerEvent{.type = PushAudioSample,
-                                              .timestamp = cycleCounter +
-                                                           uint64_t(std::ceil(mCyclesPerAudioSample - mAudioTimeAccum))});
+                addEvent(PushAudioSample, uint64_t(std::ceil(mCyclesPerAudioSample - mAudioTimeAccum)));
             }
             break;
 
@@ -790,4 +790,9 @@ void Gameboy::simulateBootRom()
     }
     std::memset(mPPU.vram, 0, PPU::vramSize);
     mCPU.simulateBootRom();
+}
+
+void Gameboy::addEvent(SchedulerEventType type, uint64_t time)
+{
+    mEvents.insert(SchedulerEvent{.type = type, .timestamp = cycleCounter + time});
 }

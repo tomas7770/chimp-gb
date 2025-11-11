@@ -1,6 +1,8 @@
 #include "APU.h"
 
-APU::APU()
+#include "Gameboy.h"
+
+APU::APU(Gameboy *gameboy)
 {
     writeNRx1(0, 0xBF);
     writeNRx4(0, 0xBF);
@@ -13,6 +15,9 @@ APU::APU()
 
     writeNRx1(3, 0xFF);
     writeNRx4(3, 0xBF);
+
+    mGameboy = gameboy;
+    mGameboy->addEvent(APU_FrameSequencerTick, FRAME_SEQUENCER_PERIOD / 2);
 }
 
 float convertVolume(int volume)
@@ -306,4 +311,42 @@ void APU::writeNR52(uint8_t value)
         mSquareWaveCounter[1] = 0;
         mWaveSampleBuffer = 0;
     }
+}
+
+void APU::onFrameSequencerTick()
+{
+    mGameboy->addEvent(APU_FrameSequencerTick, FRAME_SEQUENCER_PERIOD / 2);
+
+    if (!mAPUEnabled)
+    {
+        return;
+    }
+    switch (mFrameSequencerStep)
+    {
+    case 0:
+        decrementLengthCounters();
+        break;
+
+    case 2:
+        decrementLengthCounters();
+        clockSweep();
+        break;
+
+    case 4:
+        decrementLengthCounters();
+        break;
+
+    case 6:
+        decrementLengthCounters();
+        clockSweep();
+        break;
+
+    case 7:
+        decrementVolumeEnvelopes();
+        break;
+
+    default:
+        break;
+    }
+    mFrameSequencerStep = (mFrameSequencerStep + 1) % 8;
 }

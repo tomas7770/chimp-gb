@@ -21,7 +21,8 @@ public:
     };
 
     Gameboy(const Cartridge &cart, bool debug, SystemType systemType)
-        : mSystemType(systemType), mCart(std::move(cart)), mCPU(this, debug), mPPU(this, &(this->mLCD)) {}
+        : mSystemType(systemType), mCart(std::move(cart)), mCPU(this, debug), mPPU(this, &(this->mLCD)),
+          mAPU(this) {}
 
     uint8_t readByte(uint16_t address);
     void writeByte(uint16_t address, uint8_t value);
@@ -55,6 +56,8 @@ public:
     void setBootRom(std::istream &dataStream);
     void simulateBootRom();
 
+    void addEvent(SchedulerEventType type, uint64_t time);
+
     SystemType getSystemType() { return mSystemType; }
     bool inDMGMode() { return mKEY0 & 0x04; }
     bool inCGBMode() { return mSystemType == CGB && !inDMGMode(); }
@@ -66,6 +69,8 @@ public:
     static constexpr int CLOCK_RATE = 4194304 / 2;
 
 private:
+    std::multiset<SchedulerEvent> mEvents;
+
     SystemType mSystemType;
     Cartridge mCart;
     CPU mCPU;
@@ -85,8 +90,6 @@ private:
                           const std::vector<float> &rightAudioSamples) = nullptr;
     void *mAudioCallbackUserdata = nullptr;
     double mCyclesPerAudioSample, mAudioTimeAccum;
-
-    std::set<SchedulerEvent> mEvents;
 
     static constexpr uint16_t WRAM_BANK_SIZE = (1 << 12);
 
