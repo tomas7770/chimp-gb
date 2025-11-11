@@ -9,6 +9,7 @@ enum SchedulerEventType
     PPU_NewLine,
     PPU_DelayedVBlank,
     PPU_EarlyLYUpdate,
+    APU_FrameSequencerTick,
     FinishFrame
 };
 

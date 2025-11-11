@@ -693,6 +693,10 @@ void Gameboy::doFrame(bool generateAudio)
             mPPU.eventEarlyLYUpdate();
             break;
 
+        case APU_FrameSequencerTick:
+            mAPU.eventFrameSequencerTick();
+            break;
+
         case FinishFrame:
             return;
 

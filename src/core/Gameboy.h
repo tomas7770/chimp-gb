@@ -16,7 +16,8 @@ class Gameboy
 {
 public:
     Gameboy(const Cartridge &cart, bool debug, SystemType systemType)
-        : mSystemType(systemType), mCart(std::move(cart)), mCPU(this, debug), mPPU(this, &(this->mLCD)) {}
+        : mSystemType(systemType), mCart(std::move(cart)), mCPU(this, debug), mPPU(this, &(this->mLCD)),
+          mAPU(this) {}
 
     uint8_t readByte(uint16_t address);
     void writeByte(uint16_t address, uint8_t value);

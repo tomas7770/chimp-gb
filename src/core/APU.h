@@ -2,51 +2,16 @@
 
 #include <cstdint>
 
+class Gameboy;
+
 class APU
 {
 public:
-    APU();
+    APU(Gameboy *gameboy);
 
     void doCycle()
     {
-        mFrameSequencerTimer -= 2;
-        if (mFrameSequencerTimer == 0)
-        {
-            mFrameSequencerTimer = FRAME_SEQUENCER_PERIOD;
-            if (!mAPUEnabled)
-            {
-                return;
-            }
-            switch (mFrameSequencerStep)
-            {
-            case 0:
-                decrementLengthCounters();
-                break;
-
-            case 2:
-                decrementLengthCounters();
-                clockSweep();
-                break;
-
-            case 4:
-                decrementLengthCounters();
-                break;
-
-            case 6:
-                decrementLengthCounters();
-                clockSweep();
-                break;
-
-            case 7:
-                decrementVolumeEnvelopes();
-                break;
-
-            default:
-                break;
-            }
-            mFrameSequencerStep = (mFrameSequencerStep + 1) % 8;
-        }
-        else if (!mAPUEnabled)
+        if (!mAPUEnabled)
         {
             return;
         }
@@ -106,6 +71,8 @@ public:
     uint8_t readNR52();
     void writeNR52(uint8_t value);
 
+    void eventFrameSequencerTick();
+
     uint8_t NR10 = 0x80;
     uint8_t NR30 = 0x7F;
 
@@ -134,8 +101,9 @@ private:
     void triggerChannel(int channel);
     void updateDAC(int channel);
 
+    Gameboy *mGameboy;
+
     int mFrameSequencerStep = 0;
-    int mFrameSequencerTimer = FRAME_SEQUENCER_PERIOD;
 
     bool mAPUEnabled = true;
     bool mDAC[4] = {false, false, false, false};
