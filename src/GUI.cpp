@@ -250,11 +250,11 @@ void GUI::draw()
                     {
                         if (ImGui::MenuItem("Low", nullptr, mConfig->audioQuality == Config::AudioQuality::Low))
                         {
-                            mConfig->audioQuality = Config::AudioQuality::Low;
+                            mApp->setAudioQuality(Config::AudioQuality::Low);
                         }
                         if (ImGui::MenuItem("High", nullptr, mConfig->audioQuality == Config::AudioQuality::High))
                         {
-                            mConfig->audioQuality = Config::AudioQuality::High;
+                            mApp->setAudioQuality(Config::AudioQuality::High);
                         }
                         ImGui::EndMenu();
                     }

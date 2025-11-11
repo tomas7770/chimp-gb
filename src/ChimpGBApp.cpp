@@ -11,6 +11,8 @@
 #endif
 
 void gameboyDrawCallback(void *userdata);
+void gameboyAudioCallback(void *userdata, const std::vector<float> &leftAudioSamples,
+                          const std::vector<float> &rightAudioSamples);
 
 ChimpGBApp::ChimpGBApp(std::string &filepath, bool debug)
 {
@@ -233,7 +235,7 @@ void ChimpGBApp::setupAudio()
     if (mAudioDevSDL)
         SDL_CloseAudioDevice(mAudioDevSDL);
 
-    cyclesPerSample = double(Gameboy::CLOCK_RATE) / double(mConfig.audioSampleRate);
+    mCyclesPerSample = double(Gameboy::CLOCK_RATE) / double(mConfig.audioSampleRate);
     SDL_AudioSpec desiredAudioSpec, obtainedAudioSpec;
     desiredAudioSpec.freq = mConfig.audioSampleRate;
     desiredAudioSpec.format = AUDIO_F32;
@@ -248,13 +250,32 @@ void ChimpGBApp::setupAudio()
     }
     SDL_PauseAudioDevice(mAudioDevSDL, 0);
 
-    mAudioTimeAccum = 0.0;
+    if (mGameboy != nullptr)
+    {
+        mGameboy->setAudioCallback(gameboyAudioCallback, this, mCyclesPerSample);
+    }
+}
+
+void ChimpGBApp::setAudioQuality(Config::AudioQuality quality)
+{
+    mConfig.audioQuality = quality;
+    if (mGameboy != nullptr)
+    {
+        mGameboy->audioPointSample = mConfig.audioQuality == Config::AudioQuality::Low;
+    }
 }
 
 void gameboyDrawCallback(void *userdata)
 {
     ChimpGBApp *app = (ChimpGBApp *)userdata;
     app->gameboyDraw();
+}
+
+void gameboyAudioCallback(void *userdata, const std::vector<float> &leftAudioSamples,
+                          const std::vector<float> &rightAudioSamples)
+{
+    ChimpGBApp *app = (ChimpGBApp *)userdata;
+    app->pushAudioSample(leftAudioSamples, rightAudioSamples);
 }
 
 void ChimpGBApp::gameboyDraw()
@@ -300,6 +321,48 @@ void ChimpGBApp::gameboyDraw()
     }
 
     SDL_UpdateTexture(mTextureSDL, NULL, mTexturePixels, LCD::SCREEN_W * 4);
+}
+
+void ChimpGBApp::pushAudioSample(const std::vector<float> &leftAudioSamples,
+                                 const std::vector<float> &rightAudioSamples)
+{
+    float leftSample = 0.0F, rightSample = 0.0F;
+    switch (mConfig.audioQuality)
+    {
+    case Config::AudioQuality::Low:
+        leftSample = leftAudioSamples.at(0);
+        rightSample = rightAudioSamples.at(0);
+        break;
+
+    default:
+    case Config::AudioQuality::High:
+        for (float sample : leftAudioSamples)
+        {
+            leftSample += sample;
+        }
+        for (float sample : rightAudioSamples)
+        {
+            rightSample += sample;
+        }
+        leftSample /= leftAudioSamples.size();
+        rightSample /= rightAudioSamples.size();
+        break;
+    }
+
+    // Clip to ensure bugs don't cause loud audio
+    if (leftSample < -1.0F)
+        leftSample = -1.0F;
+    else if (leftSample > 1.0F)
+        leftSample = 1.0F;
+
+    if (rightSample < -1.0F)
+        rightSample = -1.0F;
+    else if (rightSample > 1.0F)
+        rightSample = 1.0F;
+
+    // -1.0 to 1.0 is too loud so the range is decreased
+    mAudioSamples.push_back(leftSample * 0.5F);
+    mAudioSamples.push_back(rightSample * 0.5F);
 }
 
 void ChimpGBApp::drawDisplay()
@@ -394,85 +457,23 @@ void ChimpGBApp::mainLoop()
             return;
         }
 
-        std::vector<float> audioSamples;
+        mAudioSamples.clear();
         bool generateAudio = !mFastForward || (SDL_GetQueuedAudioSize(mAudioDevSDL) <= mConfig.audioLatency * sizeof(float) * 2);
-        for (int i = 0; i < Gameboy::CYCLES_PER_FRAME; i++)
+        try
         {
-            try
-            {
-                mGameboy->doCycle();
-            }
-            catch (std::runtime_error err)
-            {
-                SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, WINDOW_TITLE, err.what(), mWindowSDL);
-                terminate(-1);
-            }
-            catch (std::logic_error err)
-            {
-                SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, WINDOW_TITLE, err.what(), mWindowSDL);
-                terminate(-1);
-            }
-
-            if (!generateAudio)
-            {
-                continue;
-            }
-
-            if (mConfig.audioQuality == Config::AudioQuality::High)
-            {
-                mGameboy->computeAudioSamples();
-                leftAudioSamples.push_back(mGameboy->getLeftAudioSample());
-                rightAudioSamples.push_back(mGameboy->getRightAudioSample());
-            }
-
-            mAudioTimeAccum += 1.0;
-            if (mAudioTimeAccum >= cyclesPerSample)
-            {
-                mAudioTimeAccum -= cyclesPerSample;
-
-                float leftSample = 0.0F, rightSample = 0.0F;
-                switch (mConfig.audioQuality)
-                {
-                case Config::AudioQuality::Low:
-                    mGameboy->computeAudioSamples();
-                    leftSample = mGameboy->getLeftAudioSample();
-                    rightSample = mGameboy->getRightAudioSample();
-                    break;
-
-                default:
-                case Config::AudioQuality::High:
-                    for (float sample : leftAudioSamples)
-                    {
-                        leftSample += sample;
-                    }
-                    for (float sample : rightAudioSamples)
-                    {
-                        rightSample += sample;
-                    }
-                    leftSample /= leftAudioSamples.size();
-                    rightSample /= rightAudioSamples.size();
-                    leftAudioSamples.clear();
-                    rightAudioSamples.clear();
-                    break;
-                }
-
-                // Clip to ensure bugs don't cause loud audio
-                if (leftSample < -1.0F)
-                    leftSample = -1.0F;
-                else if (leftSample > 1.0F)
-                    leftSample = 1.0F;
-
-                if (rightSample < -1.0F)
-                    rightSample = -1.0F;
-                else if (rightSample > 1.0F)
-                    rightSample = 1.0F;
-
-                // -1.0 to 1.0 is too loud so the range is decreased
-                audioSamples.push_back(leftSample * 0.5F);
-                audioSamples.push_back(rightSample * 0.5F);
-            }
+            mGameboy->doFrame(generateAudio);
         }
-        SDL_QueueAudio(mAudioDevSDL, audioSamples.data(), audioSamples.size() * sizeof(float));
+        catch (std::runtime_error err)
+        {
+            SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, WINDOW_TITLE, err.what(), mWindowSDL);
+            terminate(-1);
+        }
+        catch (std::logic_error err)
+        {
+            SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, WINDOW_TITLE, err.what(), mWindowSDL);
+            terminate(-1);
+        }
+        SDL_QueueAudio(mAudioDevSDL, mAudioSamples.data(), mAudioSamples.size() * sizeof(float));
         drawDisplay();
         while (!mFastForward && (SDL_GetQueuedAudioSize(mAudioDevSDL) > mConfig.audioLatency * sizeof(float) * 2))
         {
@@ -536,6 +537,8 @@ void ChimpGBApp::loadCart(const Cartridge &cart, std::string &romFilename)
     {
         mGameboy = new Gameboy(cart, mDebug, systemType);
         mGameboy->setDrawCallback(gameboyDrawCallback, this);
+        mGameboy->setAudioCallback(gameboyAudioCallback, this, mCyclesPerSample);
+        mGameboy->audioPointSample = mConfig.audioQuality == Config::AudioQuality::Low;
 
         std::string bootRomPath;
         switch (systemType)

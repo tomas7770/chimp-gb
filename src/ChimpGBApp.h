@@ -17,6 +17,7 @@ public:
     void loadRomFile(std::string &filepath);
     void setVideoParameters();
     void setupAudio();
+    void setAudioQuality(Config::AudioQuality quality);
     bool isPoweredOn();
     void powerOff();
     void reset();
@@ -27,6 +28,8 @@ public:
     void startMainLoop();
     void mainLoop();
     void gameboyDraw();
+    void pushAudioSample(const std::vector<float> &leftAudioSamples,
+                         const std::vector<float> &rightAudioSamples);
 
 private:
     constexpr const static char *WINDOW_TITLE = "ChimpGB - Game Boy Emulator";
@@ -48,15 +51,15 @@ private:
     uint32_t mTexturePixels[LCD::SCREEN_W * LCD::SCREEN_H];
     std::string mRomFilename;
 
-    double cyclesPerSample;
+    double mCyclesPerSample;
 
     bool mRunning;
     bool mDebug;
     bool mPaused = false;
     bool mFastForward = false;
     uint64_t frameTimestamp;
-    double mAudioTimeAccum, mSleepTimeAccum;
-    std::vector<float> leftAudioSamples, rightAudioSamples;
+    double mSleepTimeAccum;
+    std::vector<float> mAudioSamples;
 
     Gameboy *mGameboy = nullptr;
 
