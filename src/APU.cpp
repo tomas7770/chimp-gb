@@ -313,6 +313,41 @@ void APU::writeNR52(uint8_t value)
     }
 }
 
+void APU::writeNRx2(int channel, uint8_t value)
+{
+    NRx2[channel] = value;
+    if (!mAPUEnabled)
+    {
+        return;
+    }
+
+    if (channel != 2)
+    {
+        mDAC[channel] = (NRx2[channel] >> DAC_BIT) ? true : false;
+    }
+
+    if (!mDAC[channel])
+    {
+        mChannelEnabled[channel] = false;
+    }
+}
+
+void APU::writeNR30(uint8_t value)
+{
+    NR30 = value;
+    if (!mAPUEnabled)
+    {
+        return;
+    }
+
+    mDAC[2] = (NR30 >> DAC_BIT_WAVE_CHANNEL) ? true : false;
+
+    if (!mDAC[2])
+    {
+        mChannelEnabled[2] = false;
+    }
+}
+
 void APU::onFrameSequencerTick()
 {
     mGameboy->addEvent(APU_FrameSequencerTick, FRAME_SEQUENCER_PERIOD / 2);
