@@ -2,12 +2,22 @@
 
 ChimpGB is a cross platform Game Boy (DMG) and Game Boy Color (CGB) emulator written in C++.
 
+[Try a demo in your browser!](https://tomas7770.github.io/chimp-gb-web-demo/)
+
 <picture>
     <img src="images/screenshot0.png" alt="ChimpGB running Pokemon Crystal">
 </picture>
 <picture>
     <img src="images/screenshot1.png" alt="ChimpGB running Tetris">
 </picture>
+
+## Supported platforms
+
+- 🪟 Windows
+- 🐧 Linux
+- 🌐 Web (Experimental)
+
+Others platforms (e.g. macOS) may function but are not tested or officially supported.
 
 ## Development status
 
