@@ -41,7 +41,7 @@ Detailed status:
 
     - MBC5 (except variants with rumble)
 
-## Compiling
+## Compiling (desktop)
 
 ChimpGB requires the following tools and libraries to build:
 
@@ -53,12 +53,49 @@ ChimpGB requires the following tools and libraries to build:
 
 - SDL2
 
-Run the following commands:
+In Linux, these should be available through your distribution's package manager.
+
+In Windows, you can use the [MSYS2](https://www.msys2.org/) environment or [Visual Studio](https://visualstudio.microsoft.com/).
+
+Run the following commands to compile an optimized build:
 
 ```
-cmake -S. -Bbuild
+cmake -S. -Bbuild -DCMAKE_BUILD_TYPE=Release
 cmake --build build
 ```
+
+To enable debugging, replace `Release` with `RelWithDebInfo` or `Debug`.
+
+## Compiling (web)
+
+Install the [Emscripten SDK](https://emscripten.org/).
+
+Then run the following commands:
+
+```
+emcmake cmake -S. -Bbuild -DCMAKE_BUILD_TYPE=Release
+cd build/
+emmake make
+```
+
+The files `ChimpGB.js` and `ChimpGB.wasm` should be generated. These contain the emulator. You then need a web shell in which to place it. The following sections explain some examples.
+
+### Embed with game
+
+To embed ChimpGB with a game in a web page, copy `web/index.html` and place it in the same directory as the compiled files. Also place a file named `rom.gb` containing the game.
+
+This is useful for uploading games to websites such as [itch.io](https://itch.io/), and allowing them to be played directly on the web browser. In this case, create a zip file containing the following files:
+
+- `ChimpGB.js`
+- `ChimpGB.wasm`
+- `index.html`
+- `rom.gb`
+
+Note that distributing commercial games without permission is often **illegal**! The developers of ChimpGB are not responsible for such unauthorized distributions. Only distribute games you're allowed to.
+
+### Dedicated emulator page
+
+For an example of a full web page containing the emulator with some games and the ability to load ROMs from the user's device, check this [demo](https://github.com/tomas7770/chimp-gb-web-demo).
 
 ## Usage
 
