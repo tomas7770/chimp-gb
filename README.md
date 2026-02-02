@@ -17,7 +17,7 @@ ChimpGB is a cross platform Game Boy (DMG) and Game Boy Color (CGB) emulator wri
 - 🐧 Linux
 - 🌐 Web (Experimental)
 
-Others platforms (e.g. macOS) may function but are not tested or officially supported.
+Other platforms (e.g. macOS) may function but are not tested or officially supported.
 
 ## Development status
 
