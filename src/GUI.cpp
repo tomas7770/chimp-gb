@@ -38,6 +38,13 @@ GUI::GUI(ChimpGBApp *app, Config *config, SDL_Window *windowSDL, SDL_Renderer *r
 
 bool GUI::processEvent(SDL_Event *eventSDL)
 {
+    if (mChangingKeybind && eventSDL->type == SDL_KEYDOWN)
+    {
+        auto scancode = eventSDL->key.keysym.scancode;
+        mConfig->keysGame[mKeybindToChange] = scancode;
+        mChangingKeybind = false;
+        return false;
+    }
     ImGui_ImplSDL2_ProcessEvent(eventSDL);
     ImGuiIO &io = ImGui::GetIO();
     return !io.WantCaptureKeyboard;
@@ -260,6 +267,10 @@ void GUI::draw()
                     }
                     ImGui::EndMenu();
                 }
+                if (ImGui::MenuItem("Controls"))
+                {
+                    mShowControlsWindow = !mShowControlsWindow;
+                }
                 std::string fpsString = std::format("{:.0f} FPS", io.Framerate);
                 ImGui::SetCursorPosX(ImGui::GetCursorPosX() +
                                      std::max(0.0F, ImGui::GetContentRegionAvail().x -
@@ -272,6 +283,41 @@ void GUI::draw()
         {
             ImGui::SetMouseCursor(ImGuiMouseCursor_None);
         }
+    }
+
+    if (mShowControlsWindow)
+    {
+        ImGui::Begin("Controls", &mShowControlsWindow);
+        if (ImGui::BeginTable("controlsTable", 2))
+        {
+            for (int i = 0; i < 8; i++)
+            {
+                auto gameboyKeyName = KEYS_GAME_NAMES[i];
+                auto nativeKeyName = SDL_GetScancodeName(static_cast<SDL_Scancode>(mConfig->keysGame[i]));
+                ImGui::TableNextColumn();
+                ImGui::Text("%s", gameboyKeyName);
+                ImGui::TableNextColumn();
+                ImGui::PushID(i);
+                if (ImGui::Button(nativeKeyName))
+                {
+                    mChangingKeybind = true;
+                    mKeybindToChange = i;
+                }
+                ImGui::PopID();
+            }
+            ImGui::EndTable();
+        }
+        ImGui::Separator();
+        if (mChangingKeybind)
+        {
+            ImGui::Text("%s", "Press any key...");
+        }
+        else
+        {
+            // Easy way to auto-resize window to text bar
+            ImGui::Text("%s", "");
+        }
+        ImGui::End();
     }
 
     ImGui::Render();

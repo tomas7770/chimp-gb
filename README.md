@@ -129,7 +129,7 @@ ChimpGB [<rom file>] [-debug]
 
 - **Fullscreen:** F11
 
-Controls can be changed in the configuration file.
+Controls can be changed within the emulator GUI or in the configuration file.
 
 ## Saves location
 

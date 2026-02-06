@@ -20,6 +20,7 @@ public:
 
 private:
     constexpr static float SCREEN_RATIO = float(LCD::SCREEN_W) / float(LCD::SCREEN_H);
+    constexpr static const char *KEYS_GAME_NAMES[] = {"Right", "Left", "Up", "Down", "A", "B", "Select", "Start"};
 
     ChimpGBApp *mApp;
     Config *mConfig;
@@ -27,6 +28,11 @@ private:
     SDL_Texture *mTextureSDL;
 
     std::string mImguiIniFilename; // need to keep a char buffer persistently
+
+    bool mShowControlsWindow = false;
+
+    bool mChangingKeybind = false;
+    int mKeybindToChange;
 
     void loadRomFile(std::string &openFilenameString);
     void setAudioSampleRate(int audioSampleRate);
