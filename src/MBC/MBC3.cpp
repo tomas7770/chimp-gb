@@ -47,7 +47,13 @@ void MBC3::writeByte(std::vector<uint8_t> &romData, uint16_t address, uint8_t va
 {
     if (address <= RAM_ENABLE_END)
     {
+        bool wasEnabled = mRAMEnabled;
         mRAMEnabled = (value & 0b1111) == 0xA;
+        if (wasEnabled && !mRAMEnabled && mRAMDirty && saveCallback != nullptr)
+        {
+            mRAMDirty = false;
+            saveCallback(mSaveCallbackUserdata);
+        }
     }
     else if (address >= ROM_BANK_SELECT_START && address <= ROM_BANK_SELECT_END)
     {
@@ -112,6 +118,7 @@ void MBC3::writeByte(std::vector<uint8_t> &romData, uint16_t address, uint8_t va
                 break;
             }
         }
+        mRAMDirty = true;
     }
 }
 

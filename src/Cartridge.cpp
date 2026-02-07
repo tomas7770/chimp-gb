@@ -105,3 +105,8 @@ void Cartridge::loadRTC(MBC::RTC &rtcData)
 {
     *(mMBC->getRTC()) = rtcData;
 }
+
+void Cartridge::setSaveCallback(void (*saveCallback)(void *), void *userdata)
+{
+    mMBC->setSaveCallback(saveCallback, userdata);
+}

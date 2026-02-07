@@ -23,7 +23,13 @@ void MBC5::writeByte(std::vector<uint8_t> &romData, uint16_t address, uint8_t va
 {
     if (address <= RAM_ENABLE_END)
     {
+        bool wasEnabled = mRAMEnabled;
         mRAMEnabled = (value & 0b1111) == 0xA;
+        if (wasEnabled && !mRAMEnabled && mRAMDirty && saveCallback != nullptr)
+        {
+            mRAMDirty = false;
+            saveCallback(mSaveCallbackUserdata);
+        }
     }
     else if (address >= ROM_BANK_SELECT_LOW_START && address <= ROM_BANK_SELECT_LOW_END)
     {
@@ -44,5 +50,6 @@ void MBC5::writeByte(std::vector<uint8_t> &romData, uint16_t address, uint8_t va
         int bigAddress = address;
         bigAddress += RAM_BANK_SIZE * mRAMBank;
         mRAM[bigAddress - SRAM_ADDR] = value;
+        mRAMDirty = true;
     }
 }

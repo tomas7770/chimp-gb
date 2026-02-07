@@ -14,6 +14,7 @@ private:
     int mROMBank = 1;
     int mRAMBank = 0;
     bool mRAMEnabled = false;
+    bool mRAMDirty = false;
 
     static constexpr uint16_t RAM_ENABLE_END = 0x1FFF;
 

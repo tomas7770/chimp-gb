@@ -24,6 +24,8 @@ public:
     void pause();
     void doExit();
 
+    void saveGameSafe();
+
     void startMainLoop();
     void mainLoop();
     void gameboyDraw();
@@ -70,7 +72,7 @@ private:
     void loadStateData(int *windowWidth, int *windowHeight);
     void saveConfig();
     void saveStateData();
-    void loadCart(const Cartridge &cart, std::string &romFilename);
+    void loadCart(Cartridge &cart, std::string &romFilename);
     void saveGame();
     void loadGame();
     void terminate(int error_code);

@@ -31,6 +31,12 @@ public:
     virtual RTC *getRTC() { return nullptr; }
     virtual bool hasClock() { return false; }
 
+    void setSaveCallback(void (*saveCallback)(void *), void *userdata)
+    {
+        this->saveCallback = saveCallback;
+        mSaveCallbackUserdata = userdata;
+    }
+
     static constexpr uint16_t SWITCHABLE_BANK_ADDR = 0x4000;
     static constexpr uint16_t ROM_END = 0x7FFF;
     static constexpr uint16_t ROM_BANK_SIZE = (1 << 14);
@@ -40,6 +46,8 @@ public:
 
 protected:
     uint8_t mRAM[131072];
+    void (*saveCallback)(void *userdata) = nullptr;
+    void *mSaveCallbackUserdata = nullptr;
 
 private:
     bool mHasBattery;

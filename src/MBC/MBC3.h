@@ -25,6 +25,7 @@ private:
     int mLatchClockReg;
 
     bool mRAMEnabled = false;
+    bool mRAMDirty = false;
 
     void updateRTC();
 

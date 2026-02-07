@@ -26,6 +26,8 @@ public:
     const MBC::RTC *getRTC() const;
     void loadRTC(MBC::RTC &rtcData);
 
+    void setSaveCallback(void (*saveCallback)(void *), void *userdata);
+
 private:
     void init();
 

@@ -11,6 +11,7 @@
 #endif
 
 void gameboyDrawCallback(void *userdata);
+void saveGameCallback(void *userdata);
 
 ChimpGBApp::ChimpGBApp(std::string &filepath, bool debug)
 {
@@ -500,14 +501,7 @@ void ChimpGBApp::powerOff()
 {
     if (mGameboy != nullptr)
     {
-        try
-        {
-            saveGame();
-        }
-        catch (std::exception err)
-        {
-            SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, WINDOW_TITLE, err.what(), mWindowSDL);
-        }
+        saveGameSafe();
         delete mGameboy;
         mGameboy = nullptr;
         mPaused = false;
@@ -515,7 +509,7 @@ void ChimpGBApp::powerOff()
     }
 }
 
-void ChimpGBApp::loadCart(const Cartridge &cart, std::string &romFilename)
+void ChimpGBApp::loadCart(Cartridge &cart, std::string &romFilename)
 {
     powerOff();
 
@@ -536,6 +530,7 @@ void ChimpGBApp::loadCart(const Cartridge &cart, std::string &romFilename)
     {
         mGameboy = new Gameboy(cart, mDebug, systemType);
         mGameboy->setDrawCallback(gameboyDrawCallback, this);
+        mGameboy->getCart().setSaveCallback(saveGameCallback, this);
 
         std::string bootRomPath;
         switch (systemType)
@@ -574,7 +569,8 @@ void ChimpGBApp::reset()
 {
     if (mGameboy != nullptr)
     {
-        loadCart(Cartridge(mGameboy->getCart()), mRomFilename);
+        Cartridge cart = Cartridge(mGameboy->getCart());
+        loadCart(cart, mRomFilename);
     }
 }
 
@@ -591,6 +587,24 @@ void ChimpGBApp::pause()
 #ifndef __EMSCRIPTEN__
         SDL_RenderSetVSync(mRendererSDL, mPaused ? 1 : 0);
 #endif
+    }
+}
+
+void saveGameCallback(void *userdata)
+{
+    ChimpGBApp *app = (ChimpGBApp *)userdata;
+    app->saveGameSafe();
+}
+
+void ChimpGBApp::saveGameSafe()
+{
+    try
+    {
+        saveGame();
+    }
+    catch (std::exception err)
+    {
+        SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, WINDOW_TITLE, err.what(), mWindowSDL);
     }
 }
 
