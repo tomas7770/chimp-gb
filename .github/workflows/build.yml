@@ -1,0 +1,61 @@
+name: Continuous Integration
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  build:
+    name: ${{ matrix.config.name }}
+    runs-on: ${{ matrix.config.os }}
+    defaults:
+      run:
+        shell: ${{ matrix.config.shell }}
+    strategy:
+      fail-fast: false
+
+      matrix:
+        config:
+          - name: "🪟 Windows (MSYS2 UCRT64)"
+            os: windows-latest
+            c_compiler: gcc
+            cpp_compiler: g++
+            shell: "msys2 {0}"
+          - name: "🐧 Linux (GCC)"
+            os: ubuntu-latest
+            c_compiler: gcc
+            cpp_compiler: g++
+            shell: bash
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Install Dependencies (MSYS2)
+      if: matrix.config.shell == 'msys2 {0}'
+      uses: msys2/setup-msys2@v2
+      with:
+        msystem: ucrt64
+        install: >-
+          mingw-w64-ucrt-x86_64-cmake
+          mingw-w64-ucrt-x86_64-gcc
+          mingw-w64-ucrt-x86_64-make
+          mingw-w64-ucrt-x86_64-SDL2
+
+    - name: Install Dependencies (Linux)
+      if: runner.os == 'Linux'
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y \
+          libsdl2-dev
+
+    - name: Configure
+      run: >
+        cmake -B build
+        -DCMAKE_CXX_COMPILER=${{ matrix.config.cpp_compiler }}
+        -DCMAKE_C_COMPILER=${{ matrix.config.c_compiler }}
+        -DCMAKE_BUILD_TYPE=Release
+
+    - name: Build
+      run: cmake --build build --config Release
