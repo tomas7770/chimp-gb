@@ -20,6 +20,11 @@ extern "C"
             app->recentFiles.push(filepath);
         }
     }
+
+    void EMSCRIPTEN_KEEPALIVE onWebPageHidden()
+    {
+        app->saveConfig();
+    }
 }
 #endif
 
