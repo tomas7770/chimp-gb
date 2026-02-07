@@ -25,7 +25,7 @@ GUI::GUI(ChimpGBApp *app, Config *config, SDL_Window *windowSDL, SDL_Renderer *r
     ImGui::CreateContext();
     ImGuiIO &io = ImGui::GetIO();
     io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;
-    mImguiIniFilename = getConfigsPath() + "imgui.ini";
+    mImguiIniFilename = getStatePath() + "imgui.ini";
     io.IniFilename = mImguiIniFilename.c_str();
     ImGui::StyleColorsDark();
     // Setup scaling
