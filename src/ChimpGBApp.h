@@ -24,6 +24,7 @@ public:
     void pause();
     void doExit();
 
+    void saveConfig();
     void saveGameSafe();
 
     void startMainLoop();
@@ -70,7 +71,6 @@ private:
     void createDataDirectories();
     void loadConfig();
     void loadStateData(int *windowWidth, int *windowHeight);
-    void saveConfig();
     void saveStateData();
     void loadCart(Cartridge &cart, std::string &romFilename);
     void saveGame();

@@ -109,25 +109,65 @@
       };
     </script>
     <script type="module">
-      Module['onRuntimeInitialized'] = async function() {
+      // Data persistence
+      addRunDependency("syncfs");
+      FS.mkdir("/data");
+      FS.mount(IDBFS, {
+          autoPersist: true
+      }, "/data");
+      FS.syncfs(true, function (err) {
+          if (err) {
+              console.error(err);
+          }
+          removeRunDependency("syncfs");
+      });
+
+      document.addEventListener("visibilitychange", () => {
+        if (document.hidden) {
+          Module.ccall('onWebPageHidden', null);
+        }
+      });
+      //
+
+      async function loadRom(filename) {
         // Download ROM file and add to file system
         let url = window.location.href;
-        let blob = await fetch(url.substring(0, url.lastIndexOf('/')) + '/rom.gb').then(response => {
+        let blob = await fetch(url.substring(0, url.lastIndexOf('/')) + '/' + filename).then(response => {
           if (!response.ok) {
             return null;
           }     
           return response.blob();
         });
-  
+
+        if (!blob) {
+          return;
+        }
+
         let data = new Uint8Array(await blob.arrayBuffer());
   
-        let filename = 'rom.gb';
+        loadRomRaw(filename, data);
+      }
+
+      async function loadRomRaw(filename, data) {
         let stream = FS.open(filename, 'w+');
         FS.write(stream, data, 0, data.length, 0);
         FS.close(stream);
 
         Module.ccall('loadDownloadedRom', null, ['string'], [filename]);
       }
+
+      Module['onRuntimeInitialized'] = async function() {
+        loadRom("rom.gb");
+      }
+
+      window.addEventListener("message", (e) => {
+        if (e.data?.type === "loadRom") {
+          loadRom(e.data.filename);
+        }
+        else if (e.data?.type === "loadRomRaw") {
+          loadRomRaw(e.data.filename, e.data.data);
+        }
+      });
     </script>
     <script src="ChimpGB.js"></script>
   </body>

@@ -26,6 +26,9 @@ void mainSleep(uint64_t ns)
 }
 
 constexpr char const *FOLDER_NAME = "ChimpGB";
+#ifdef __EMSCRIPTEN__
+constexpr char const *IDBFS_MOUNT_PATH = "/data";
+#endif
 
 // App-specific subfolder under 'Saved Games' on Windows, XDG_DATA_HOME (~/.local/share) on Linux
 std::string getSavesPath()
@@ -57,6 +60,9 @@ std::string getSavesPath()
 
     std::string savesPath = std::string(savedGamesChars) + "\\" + FOLDER_NAME + "\\";
     delete savedGamesChars;
+    return savesPath;
+#elif defined(__EMSCRIPTEN__)
+    std::string savesPath = std::string(IDBFS_MOUNT_PATH) + "/save/";
     return savesPath;
 #else
     std::string dataHome;
@@ -112,6 +118,9 @@ std::string getConfigsPath()
 
     std::string configsPath = std::string(localAppDataChars) + "\\" + FOLDER_NAME + "\\";
     delete localAppDataChars;
+    return configsPath;
+#elif defined(__EMSCRIPTEN__)
+    std::string configsPath = std::string(IDBFS_MOUNT_PATH) + "/config/";
     return configsPath;
 #else
     std::string configHome;
