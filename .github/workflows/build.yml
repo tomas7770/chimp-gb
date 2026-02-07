@@ -28,6 +28,13 @@ jobs:
             c_compiler: gcc
             cpp_compiler: g++
             shell: bash
+          - name: "🌐 Web (Emscripten)"
+            os: ubuntu-latest
+            c_compiler: emcc
+            cpp_compiler: em++
+            shell: bash
+            extra_options: -DCMAKE_TOOLCHAIN_FILE=${EMSDK}/upstream/emscripten/cmake/Modules/Platform/Emscripten.cmake
+            web: true
 
     steps:
     - uses: actions/checkout@v4
@@ -44,11 +51,15 @@ jobs:
           mingw-w64-ucrt-x86_64-SDL2
 
     - name: Install Dependencies (Linux)
-      if: runner.os == 'Linux'
+      if: ${{ (runner.os == 'Linux') && (matrix.config.web != true) }}
       run: |
         sudo apt-get update
         sudo apt-get install -y \
           libsdl2-dev
+
+    - name: Install emsdk
+      if: ${{ matrix.config.web }}
+      uses: mymindstorm/setup-emsdk@v14
 
     - name: Configure
       run: >
@@ -56,6 +67,7 @@ jobs:
         -DCMAKE_CXX_COMPILER=${{ matrix.config.cpp_compiler }}
         -DCMAKE_C_COMPILER=${{ matrix.config.c_compiler }}
         -DCMAKE_BUILD_TYPE=Release
+        ${{ matrix.config.extra_options }}
 
     - name: Build
       run: cmake --build build --config Release
