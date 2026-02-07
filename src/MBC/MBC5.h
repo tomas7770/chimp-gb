@@ -13,6 +13,9 @@ public:
 private:
     int mROMBank = 1;
     int mRAMBank = 0;
+    bool mRAMEnabled = false;
+
+    static constexpr uint16_t RAM_ENABLE_END = 0x1FFF;
 
     static constexpr uint16_t ROM_BANK_SELECT_LOW_START = 0x2000;
     static constexpr uint16_t ROM_BANK_SELECT_LOW_END = 0x2FFF;

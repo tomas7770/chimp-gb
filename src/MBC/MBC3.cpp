@@ -13,7 +13,7 @@ uint8_t MBC3::readByte(std::vector<uint8_t> &romData, uint16_t address)
         }
         return romData.at(bigAddress % romData.size());
     }
-    else if (bigAddress >= MBC::SRAM_ADDR)
+    else if (bigAddress >= MBC::SRAM_ADDR && mRAMEnabled)
     {
         if (mRAM_RTC_Select <= 0x03)
         {
@@ -40,12 +40,16 @@ uint8_t MBC3::readByte(std::vector<uint8_t> &romData, uint16_t address)
             }
         }
     }
-    return 0;
+    return 0xFF;
 }
 
 void MBC3::writeByte(std::vector<uint8_t> &romData, uint16_t address, uint8_t value)
 {
-    if (address >= ROM_BANK_SELECT_START && address <= ROM_BANK_SELECT_END)
+    if (address <= RAM_ENABLE_END)
+    {
+        mRAMEnabled = (value & 0b1111) == 0xA;
+    }
+    else if (address >= ROM_BANK_SELECT_START && address <= ROM_BANK_SELECT_END)
     {
         mROMBank = value & 0b1111111;
         if (mROMBank == 0)
@@ -70,7 +74,7 @@ void MBC3::writeByte(std::vector<uint8_t> &romData, uint16_t address, uint8_t va
         }
         mLatchClockReg = value;
     }
-    else if (address >= SRAM_ADDR)
+    else if (address >= SRAM_ADDR && mRAMEnabled)
     {
         if (mRAM_RTC_Select <= 0x03)
         {

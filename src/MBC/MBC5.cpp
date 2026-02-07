@@ -11,17 +11,21 @@ uint8_t MBC5::readByte(std::vector<uint8_t> &romData, uint16_t address)
         }
         return romData.at(bigAddress % romData.size());
     }
-    else if (bigAddress >= MBC::SRAM_ADDR)
+    else if (bigAddress >= MBC::SRAM_ADDR && mRAMEnabled)
     {
         bigAddress += RAM_BANK_SIZE * mRAMBank;
         return mRAM[bigAddress - SRAM_ADDR];
     }
-    return 0;
+    return 0xFF;
 }
 
 void MBC5::writeByte(std::vector<uint8_t> &romData, uint16_t address, uint8_t value)
 {
-    if (address >= ROM_BANK_SELECT_LOW_START && address <= ROM_BANK_SELECT_LOW_END)
+    if (address <= RAM_ENABLE_END)
+    {
+        mRAMEnabled = (value & 0b1111) == 0xA;
+    }
+    else if (address >= ROM_BANK_SELECT_LOW_START && address <= ROM_BANK_SELECT_LOW_END)
     {
         mROMBank &= ~0xFF;
         mROMBank |= value;
@@ -35,7 +39,7 @@ void MBC5::writeByte(std::vector<uint8_t> &romData, uint16_t address, uint8_t va
     {
         mRAMBank = value % 16;
     }
-    else if (address >= SRAM_ADDR)
+    else if (address >= SRAM_ADDR && mRAMEnabled)
     {
         int bigAddress = address;
         bigAddress += RAM_BANK_SIZE * mRAMBank;
