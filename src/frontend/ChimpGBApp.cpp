@@ -1,6 +1,6 @@
 #include "ChimpGBApp.h"
 #include "Platform.h"
-#include "../res/default.ini.h"
+#include "../../res/default.ini.h"
 #include <iostream>
 #include <fstream>
 #include <filesystem>
