@@ -29,6 +29,7 @@ const char *defaultIni =
     "\n"
     "[audio]\n"
     "volume = 1.0\n"
+    "mute = 0\n"
     "sampleRate = 44100\n"
     "; Internal audio buffer size, in samples.\n"
 #ifdef __EMSCRIPTEN__

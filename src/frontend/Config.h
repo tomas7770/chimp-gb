@@ -27,6 +27,7 @@ public:
 
     // audio
     float audioVolume;
+    int audioMute;
     int audioSampleRate;
     int audioBufferSize;
     int audioLatency;

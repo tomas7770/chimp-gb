@@ -398,7 +398,7 @@ void ChimpGBApp::mainLoop()
         std::vector<float> audioSamples;
         bool generateAudio = !mFastForward || (SDL_GetQueuedAudioSize(mAudioDevSDL) <= mConfig.audioLatency * sizeof(float) * 2);
         // Audio volume is not perceived as a linear function of amplitude; try to make up for that
-        float audioVolume = mConfig.audioVolume * mConfig.audioVolume;
+        float audioVolume = mConfig.audioMute ? 0.0F : mConfig.audioVolume * mConfig.audioVolume;
         for (int i = 0; i < Gameboy::CYCLES_PER_FRAME; i++)
         {
             try

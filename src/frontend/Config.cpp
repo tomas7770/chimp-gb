@@ -69,6 +69,7 @@ void Config::load(std::stringstream &configString)
     loadFloatKey(ini, uiScale, "video", "uiScale");
 
     loadFloatKey(ini, audioVolume, "audio", "volume");
+    loadIntKey(ini, audioMute, "audio", "mute");
     loadIntKey(ini, audioSampleRate, "audio", "sampleRate");
     loadIntKey(ini, audioBufferSize, "audio", "bufferSize");
     loadIntKey(ini, audioLatency, "audio", "latency");
@@ -105,6 +106,7 @@ void Config::save(std::string &configFilepath)
     ini["video"]["uiScale"] = std::to_string(uiScale);
 
     ini["audio"]["volume"] = std::to_string(audioVolume);
+    ini["audio"]["mute"] = std::to_string(audioMute);
     ini["audio"]["sampleRate"] = std::to_string(audioSampleRate);
     ini["audio"]["bufferSize"] = std::to_string(audioBufferSize);
     ini["audio"]["latency"] = std::to_string(audioLatency);
