@@ -227,6 +227,12 @@ void GUI::draw()
                 }
                 if (ImGui::BeginMenu("Audio"))
                 {
+                    ImGui::Text("%s", "Volume");
+                    float audioVolume = mConfig->audioVolume * 100.0F;
+                    ImGui::SliderFloat("##volume", &audioVolume, 0.0F, 100.0F, "%.0f%%",
+                                       ImGuiSliderFlags_AlwaysClamp);
+                    mConfig->audioVolume = audioVolume / 100.0F;
+                    ImGui::Separator();
 #ifndef __EMSCRIPTEN__
                     if (ImGui::BeginMenu("Sample rate (Hz)"))
                     {

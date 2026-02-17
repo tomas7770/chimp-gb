@@ -26,6 +26,7 @@ public:
     float uiScale;
 
     // audio
+    float audioVolume;
     int audioSampleRate;
     int audioBufferSize;
     int audioLatency;

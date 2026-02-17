@@ -397,6 +397,8 @@ void ChimpGBApp::mainLoop()
 
         std::vector<float> audioSamples;
         bool generateAudio = !mFastForward || (SDL_GetQueuedAudioSize(mAudioDevSDL) <= mConfig.audioLatency * sizeof(float) * 2);
+        // Audio volume is not perceived as a linear function of amplitude; try to make up for that
+        float audioVolume = mConfig.audioVolume * mConfig.audioVolume;
         for (int i = 0; i < Gameboy::CYCLES_PER_FRAME; i++)
         {
             try
@@ -457,6 +459,10 @@ void ChimpGBApp::mainLoop()
                     break;
                 }
 
+                // Apply volume
+                leftSample *= 0.5F * audioVolume;
+                rightSample *= 0.5F * audioVolume;
+
                 // Clip to ensure bugs don't cause loud audio
                 if (leftSample < -1.0F)
                     leftSample = -1.0F;
@@ -468,9 +474,8 @@ void ChimpGBApp::mainLoop()
                 else if (rightSample > 1.0F)
                     rightSample = 1.0F;
 
-                // -1.0 to 1.0 is too loud so the range is decreased
-                audioSamples.push_back(leftSample * 0.5F);
-                audioSamples.push_back(rightSample * 0.5F);
+                audioSamples.push_back(leftSample);
+                audioSamples.push_back(rightSample);
             }
         }
         SDL_QueueAudio(mAudioDevSDL, audioSamples.data(), audioSamples.size() * sizeof(float));
