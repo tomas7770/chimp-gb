@@ -87,6 +87,12 @@ void PPU::setDrawCallback(void (*drawCallback)(void *), void *userdata)
     mDrawCallbackUserdata = userdata;
 }
 
+void PPU::saveState(SaveState &state) const
+{
+    std::memcpy(state.vram, vram, vramSize);
+    std::memcpy(state.oam, oam, oamSize);
+}
+
 void PPU::setMode(PPU::Mode mode)
 {
     mMode = mode;

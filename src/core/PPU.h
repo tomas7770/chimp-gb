@@ -43,6 +43,8 @@ public:
     void eventDelayedVBlank();
     void eventEarlyLYUpdate();
 
+    void saveState(SaveState &state) const;
+
     static constexpr uint16_t VRAM_BANK_SIZE = (1 << 13);
 
 private:

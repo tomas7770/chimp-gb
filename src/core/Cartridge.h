@@ -28,6 +28,8 @@ public:
 
     void setSaveCallback(void (*saveCallback)(void *), void *userdata);
 
+    void saveState(SaveState &state) const;
+
 private:
     void init();
 

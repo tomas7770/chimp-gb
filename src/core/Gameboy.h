@@ -9,6 +9,7 @@
 #include "APU.h"
 #include "Joypad.h"
 #include "SchedulerEvent.h"
+#include "SaveState.h"
 
 #include <set>
 
@@ -60,6 +61,8 @@ public:
     bool isCPUDoubleSpeed() { return mCPU.isDoubleSpeed(); }
 
     bool inHBlank() { return mPPU.getMode() == 0; }
+
+    std::shared_ptr<std::vector<uint8_t>> serialize();
 
     static constexpr int CYCLES_PER_FRAME = 70224 / 2;
     static constexpr int CLOCK_RATE = 4194304 / 2;
