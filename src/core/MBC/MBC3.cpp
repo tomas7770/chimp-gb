@@ -164,3 +164,16 @@ void MBC3::updateRTC()
     }
     mRTC.timestamp = currentTime;
 }
+
+void MBC3::saveStateMBCBlock(SaveState &state)
+{
+    state.mbcBlock.push_back(0x00);
+    state.mbcBlock.push_back(0x00);
+    state.mbcBlock.push_back(mRAMEnabled ? 0xA : 0);
+    state.mbcBlock.push_back(0x00);
+    state.mbcBlock.push_back(0x20);
+    state.mbcBlock.push_back(mROMBank);
+    state.mbcBlock.push_back(0x00);
+    state.mbcBlock.push_back(0x40);
+    state.mbcBlock.push_back(mRAM_RTC_Select);
+}
