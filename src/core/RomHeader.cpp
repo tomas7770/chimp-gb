@@ -19,6 +19,8 @@ RomHeader::RomHeader(const std::vector<uint8_t> &romData)
     {
         throw std::runtime_error("Provided ROM is not valid: Checksum mismatch");
     }
+    globalChecksum[0] = romData[0x14E];
+    globalChecksum[1] = romData[0x14F];
 
     switch (romData[MBC_BYTE])
     {
@@ -59,4 +61,10 @@ RomHeader::RomHeader(const std::vector<uint8_t> &romData)
     newLicenseeCode[0] = romData[0x144];
     newLicenseeCode[1] = romData[0x145];
     cgbFlag = romData[0x143];
+}
+
+void RomHeader::saveState(SaveState &state) const
+{
+    std::memcpy(state.titleChars, titleChars, 16);
+    std::memcpy(state.globalChecksum, globalChecksum, 2);
 }

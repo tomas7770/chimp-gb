@@ -32,6 +32,8 @@ public:
     void writeLYC(uint8_t value);
     void setDrawCallback(void (*drawCallback)(void *), void *userdata);
 
+    void saveState(SaveState &state) const;
+
     void doCycle()
     {
         if (!mEnabled)

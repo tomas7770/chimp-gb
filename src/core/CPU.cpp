@@ -82,7 +82,7 @@ void CPU::simulateBootRom()
 {
     switch (mGameboy->getSystemType())
     {
-    case Gameboy::SystemType::DMG:
+    case SystemType::DMG:
         mRegA = 0x01;
         mRegF = FLAG_ZERO;
         if (mGameboy->getCart().getHeader().checksum != 0x00)
@@ -101,7 +101,7 @@ void CPU::simulateBootRom()
 
         break;
 
-    case Gameboy::SystemType::CGB:
+    case SystemType::CGB:
         mRegA = 0x11;
         mRegF = FLAG_ZERO;
         mRegC = 0x00;
@@ -145,6 +145,23 @@ void CPU::simulateBootRom()
     default:
         break;
     }
+}
+
+void CPU::saveState(SaveState &state) const
+{
+    state.PC = mPC;
+    state.regA = mRegA;
+    state.regF = mRegF;
+    state.regB = mRegB;
+    state.regC = mRegC;
+    state.regD = mRegD;
+    state.regE = mRegE;
+    state.regH = mRegH;
+    state.regL = mRegL;
+    state.SP = mSP;
+    state.IME = mIME;
+    state.IE = IE;
+    state.halted = mHalted;
 }
 
 bool CPU::doCGB_DMA()

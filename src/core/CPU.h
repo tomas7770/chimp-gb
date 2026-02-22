@@ -2,6 +2,7 @@
 
 #include <cstdint>
 #include <memory>
+#include "SaveState.h"
 
 class Gameboy;
 
@@ -60,6 +61,8 @@ public:
 
     void loadBootRom();
     void simulateBootRom();
+
+    void saveState(SaveState &state) const;
 
     // Interrupts (these registers are accessible through memory map)
     // Interrupt enable

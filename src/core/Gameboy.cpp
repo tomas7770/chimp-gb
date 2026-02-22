@@ -701,3 +701,20 @@ void Gameboy::simulateBootRom()
     std::memset(mPPU.vram, 0, PPU::vramSize);
     mCPU.simulateBootRom();
 }
+
+std::shared_ptr<std::vector<uint8_t>> Gameboy::serialize()
+{
+    SaveState state;
+    state.systemType = mSystemType;
+    mCart.saveState(state);
+    mCPU.saveState(state);
+    for (int i = 0; i < 128; i++)
+    {
+        state.ioRegisters[i] = readByte(0xFF00 + i);
+    }
+    std::memcpy(state.wram, wram, wramSize);
+    std::memcpy(state.hram, hram, hramSize);
+    mPPU.saveState(state);
+    mLCD.saveState(state);
+    return state.serialize();
+}

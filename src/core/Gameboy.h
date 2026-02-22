@@ -7,16 +7,12 @@
 #include "PPU.h"
 #include "APU.h"
 #include "Joypad.h"
+#include "SystemType.h"
+#include "SaveState.h"
 
 class Gameboy
 {
 public:
-    enum SystemType
-    {
-        DMG,
-        CGB,
-    };
-
     Gameboy(const Cartridge &cart, bool debug, SystemType systemType)
         : mSystemType(systemType), mCart(std::move(cart)), mCPU(this, debug), mPPU(this, &(this->mLCD)) {}
 
@@ -81,6 +77,8 @@ public:
     bool isCPUDoubleSpeed() { return mCPU.isDoubleSpeed(); }
 
     bool inHBlank() { return mPPU.getMode() == 0; }
+
+    std::shared_ptr<std::vector<uint8_t>> serialize();
 
     static constexpr int CYCLES_PER_FRAME = 70224 / 2;
     static constexpr int CLOCK_RATE = 4194304 / 2;

@@ -3,6 +3,7 @@
 #include <string>
 #include <vector>
 #include <cstdint>
+#include "SaveState.h"
 
 struct RomHeader
 {
@@ -30,10 +31,13 @@ struct RomHeader
     CartridgeType cartType;
     int ramSize;
     uint8_t checksum;
+    uint8_t globalChecksum[2];
     uint8_t oldLicenseeCode;
     uint8_t newLicenseeCode[2];
     uint8_t cgbFlag;
 
     RomHeader(const std::vector<uint8_t> &romData);
     RomHeader() = default;
+    
+    void saveState(SaveState &state) const;
 };

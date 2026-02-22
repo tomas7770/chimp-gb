@@ -151,6 +151,11 @@ void GUI::draw()
                         }
                         ImGui::EndMenu();
                     }
+                    ImGui::Separator();
+                    if (ImGui::MenuItem("Save state", nullptr, nullptr, mApp->isPoweredOn()))
+                    {
+                        mApp->saveState();
+                    }
 #ifndef __EMSCRIPTEN__
                     ImGui::Separator();
                     if (ImGui::MenuItem("Exit"))
@@ -179,25 +184,25 @@ void GUI::draw()
                     {
                         if (ImGui::BeginMenu("GB game"))
                         {
-                            if (ImGui::MenuItem("DMG (Game Boy)", nullptr, mConfig->dmgGameEmulatedConsole == Gameboy::SystemType::DMG))
+                            if (ImGui::MenuItem("DMG (Game Boy)", nullptr, mConfig->dmgGameEmulatedConsole == SystemType::DMG))
                             {
-                                mConfig->dmgGameEmulatedConsole = Gameboy::SystemType::DMG;
+                                mConfig->dmgGameEmulatedConsole = SystemType::DMG;
                             }
-                            if (ImGui::MenuItem("CGB (Game Boy Color)", nullptr, mConfig->dmgGameEmulatedConsole == Gameboy::SystemType::CGB))
+                            if (ImGui::MenuItem("CGB (Game Boy Color)", nullptr, mConfig->dmgGameEmulatedConsole == SystemType::CGB))
                             {
-                                mConfig->dmgGameEmulatedConsole = Gameboy::SystemType::CGB;
+                                mConfig->dmgGameEmulatedConsole = SystemType::CGB;
                             }
                             ImGui::EndMenu();
                         }
                         if (ImGui::BeginMenu("GBC game"))
                         {
-                            if (ImGui::MenuItem("DMG (Game Boy)", nullptr, mConfig->cgbGameEmulatedConsole == Gameboy::SystemType::DMG))
+                            if (ImGui::MenuItem("DMG (Game Boy)", nullptr, mConfig->cgbGameEmulatedConsole == SystemType::DMG))
                             {
-                                mConfig->cgbGameEmulatedConsole = Gameboy::SystemType::DMG;
+                                mConfig->cgbGameEmulatedConsole = SystemType::DMG;
                             }
-                            if (ImGui::MenuItem("CGB (Game Boy Color)", nullptr, mConfig->cgbGameEmulatedConsole == Gameboy::SystemType::CGB))
+                            if (ImGui::MenuItem("CGB (Game Boy Color)", nullptr, mConfig->cgbGameEmulatedConsole == SystemType::CGB))
                             {
-                                mConfig->cgbGameEmulatedConsole = Gameboy::SystemType::CGB;
+                                mConfig->cgbGameEmulatedConsole = SystemType::CGB;
                             }
                             ImGui::EndMenu();
                         }

@@ -12,6 +12,7 @@ public:
 
     uint8_t readByte(std::vector<uint8_t> &romData, uint16_t address) override;
     void writeByte(std::vector<uint8_t> &romData, uint16_t address, uint8_t value) override;
+    void saveStateMBCBlock(SaveState &state) override;
 
     RTC *getRTC() override { return &mRTC; }
     bool hasClock() override { return mHasClock; }

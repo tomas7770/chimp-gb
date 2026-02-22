@@ -2,6 +2,8 @@
 
 #include <cstdint>
 #include <vector>
+#include <cstring>
+#include "SaveState.h"
 
 class MBC
 {
@@ -27,6 +29,22 @@ public:
         uint8_t latchedTimeDays;
         uint8_t latchedTimeDaysHigh;
         uint64_t timestamp;
+
+        // rtcBytes must be 48 bytes long
+        void serialize(uint8_t *rtcBytes) const
+        {
+            rtcBytes[0] = timeSeconds;
+            rtcBytes[4] = timeMinutes;
+            rtcBytes[8] = timeHours;
+            rtcBytes[12] = timeDays;
+            rtcBytes[16] = timeDaysHigh;
+            rtcBytes[20] = latchedTimeSeconds;
+            rtcBytes[24] = latchedTimeMinutes;
+            rtcBytes[28] = latchedTimeHours;
+            rtcBytes[32] = latchedTimeDays;
+            rtcBytes[36] = latchedTimeDaysHigh;
+            memcpy(rtcBytes + 40, &timestamp, 8);
+        }
     };
     virtual RTC *getRTC() { return nullptr; }
     virtual bool hasClock() { return false; }
@@ -35,6 +53,20 @@ public:
     {
         this->saveCallback = saveCallback;
         mSaveCallbackUserdata = userdata;
+    }
+
+    virtual void saveStateMBCBlock(SaveState &state) {}
+    void saveState(SaveState &state)
+    {
+        memcpy(state.sram, mRAM, 131072);
+
+        saveStateMBCBlock(state);
+
+        auto rtc = getRTC();
+        if (rtc != nullptr)
+        {
+            rtc->serialize(state.rtcBytes);
+        }
     }
 
     static constexpr uint16_t SWITCHABLE_BANK_ADDR = 0x4000;

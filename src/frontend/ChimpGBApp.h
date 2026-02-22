@@ -27,6 +27,8 @@ public:
     void saveConfig();
     void saveGameSafe();
 
+    void saveState();
+
     void startMainLoop();
     void mainLoop();
     void gameboyDraw();
@@ -39,6 +41,7 @@ private:
     constexpr static double FRAME_TIME = 1000.0 * double(Gameboy::CYCLES_PER_FRAME) / double(Gameboy::CLOCK_RATE);
 
     constexpr const static char *SAVE_EXTENSION = ".sav";
+    constexpr const static char *SAVE_STATE_EXTENSION = ".ss0";
 
     constexpr const static char *RECENT_FILES_NAME = "recent_files";
     constexpr const static char *WINDOW_STATE_NAME = "window_state";

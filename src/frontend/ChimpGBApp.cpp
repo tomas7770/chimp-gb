@@ -263,7 +263,7 @@ void ChimpGBApp::gameboyDraw()
     auto pixels = mGameboy->getPixels();
     switch (mGameboy->getSystemType())
     {
-    case Gameboy::SystemType::DMG:
+    case SystemType::DMG:
         for (int i = 0; i < LCD::SCREEN_W * LCD::SCREEN_H; i++)
         {
             switch (pixels[i].dmg)
@@ -285,7 +285,7 @@ void ChimpGBApp::gameboyDraw()
         }
         break;
 
-    case Gameboy::SystemType::CGB:
+    case SystemType::CGB:
         for (int i = 0; i < LCD::SCREEN_W * LCD::SCREEN_H; i++)
         {
             LCD::CGBColor color = pixels[i].cgb;
@@ -524,11 +524,11 @@ void ChimpGBApp::loadCart(Cartridge &cart, std::string &romFilename)
 
     mRomFilename = romFilename;
 
-    Gameboy::SystemType systemType = static_cast<Gameboy::SystemType>(mConfig.dmgGameEmulatedConsole);
+    SystemType systemType = static_cast<SystemType>(mConfig.dmgGameEmulatedConsole);
     if (cart.getHeader().cgbFlag & (1 << 7))
     {
         // CGB game
-        systemType = static_cast<Gameboy::SystemType>(mConfig.cgbGameEmulatedConsole);
+        systemType = static_cast<SystemType>(mConfig.cgbGameEmulatedConsole);
     }
 
     try
@@ -540,11 +540,11 @@ void ChimpGBApp::loadCart(Cartridge &cart, std::string &romFilename)
         std::string bootRomPath;
         switch (systemType)
         {
-        case Gameboy::SystemType::DMG:
+        case SystemType::DMG:
             bootRomPath = mConfig.dmgBootRomPath;
             break;
 
-        case Gameboy::SystemType::CGB:
+        case SystemType::CGB:
             bootRomPath = mConfig.cgbBootRomPath;
             break;
 
@@ -639,17 +639,7 @@ void ChimpGBApp::saveGame()
             if (rtc != nullptr)
             {
                 uint8_t rtcBytes[48] = {0};
-                rtcBytes[0] = rtc->timeSeconds;
-                rtcBytes[4] = rtc->timeMinutes;
-                rtcBytes[8] = rtc->timeHours;
-                rtcBytes[12] = rtc->timeDays;
-                rtcBytes[16] = rtc->timeDaysHigh;
-                rtcBytes[20] = rtc->latchedTimeSeconds;
-                rtcBytes[24] = rtc->latchedTimeMinutes;
-                rtcBytes[28] = rtc->latchedTimeHours;
-                rtcBytes[32] = rtc->latchedTimeDays;
-                rtcBytes[36] = rtc->latchedTimeDaysHigh;
-                memcpy(rtcBytes + 40, &(rtc->timestamp), 8);
+                rtc->serialize(rtcBytes);
                 dataStream.write(reinterpret_cast<char *>(rtcBytes), 48);
             }
         }
@@ -693,6 +683,20 @@ void ChimpGBApp::loadGame()
             cart.loadRTC(rtcData);
         }
     }
+}
+
+void ChimpGBApp::saveState()
+{
+    if (mGameboy == nullptr)
+    {
+        return;
+    }
+
+    auto stateData = mGameboy->serialize();
+    auto stateDataBytes = stateData->data();
+    std::string saveStateFilepath = getSavesPath() + mRomFilename + std::string(SAVE_STATE_EXTENSION);
+    std::ofstream dataStream(saveStateFilepath, std::ios::binary | std::ios::trunc);
+    dataStream.write(reinterpret_cast<const char *>(stateDataBytes), stateData->size());
 }
 
 void ChimpGBApp::doExit()

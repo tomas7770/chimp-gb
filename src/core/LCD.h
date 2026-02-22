@@ -1,6 +1,8 @@
 #pragma once
 
 #include <cstdint>
+#include <cstring>
+#include "SaveState.h"
 
 struct LCD
 {
@@ -46,6 +48,12 @@ struct LCD
     uint8_t OCPS;
     uint8_t colorBGPaletteMemory[64];
     uint8_t colorOBJPaletteMemory[64];
+
+    void saveState(SaveState &state) const
+    {
+        memcpy(state.colorBGPaletteMemory, colorBGPaletteMemory, 64);
+        memcpy(state.colorBGPaletteMemory, colorOBJPaletteMemory, 64);
+    }
 
     static constexpr uint8_t LCDC_FLAG_LCD_PPU_ENABLE = (1 << 7);
     static constexpr uint8_t LCDC_FLAG_WINDOW_TILE_MAP = (1 << 6);
