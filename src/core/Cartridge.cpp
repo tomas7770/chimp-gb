@@ -110,3 +110,9 @@ void Cartridge::setSaveCallback(void (*saveCallback)(void *), void *userdata)
 {
     mMBC->setSaveCallback(saveCallback, userdata);
 }
+
+void Cartridge::saveState(SaveState &state) const
+{
+    mHeader.saveState(state);
+    mMBC->saveState(state);
+}

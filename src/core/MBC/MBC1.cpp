@@ -51,3 +51,16 @@ void MBC1::writeByte(std::vector<uint8_t> &romData, uint16_t address, uint8_t va
         mRAMDirty = true;
     }
 }
+
+void MBC1::saveStateMBCBlock(SaveState &state)
+{
+    state.mbcBlock.push_back(0x00);
+    state.mbcBlock.push_back(0x00);
+    state.mbcBlock.push_back(mRAMEnabled ? 0xA : 0);
+    state.mbcBlock.push_back(0x00);
+    state.mbcBlock.push_back(0x20);
+    state.mbcBlock.push_back(mROMBank);
+    state.mbcBlock.push_back(0x00);
+    state.mbcBlock.push_back(0x40);
+    state.mbcBlock.push_back(mRAMBank);
+}

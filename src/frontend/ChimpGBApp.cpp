@@ -693,17 +693,7 @@ void ChimpGBApp::saveGame()
             if (rtc != nullptr)
             {
                 uint8_t rtcBytes[48] = {0};
-                rtcBytes[0] = rtc->timeSeconds;
-                rtcBytes[4] = rtc->timeMinutes;
-                rtcBytes[8] = rtc->timeHours;
-                rtcBytes[12] = rtc->timeDays;
-                rtcBytes[16] = rtc->timeDaysHigh;
-                rtcBytes[20] = rtc->latchedTimeSeconds;
-                rtcBytes[24] = rtc->latchedTimeMinutes;
-                rtcBytes[28] = rtc->latchedTimeHours;
-                rtcBytes[32] = rtc->latchedTimeDays;
-                rtcBytes[36] = rtc->latchedTimeDaysHigh;
-                memcpy(rtcBytes + 40, &(rtc->timestamp), 8);
+                rtc->serialize(rtcBytes);
                 dataStream.write(reinterpret_cast<char *>(rtcBytes), 48);
             }
         }
@@ -747,6 +737,20 @@ void ChimpGBApp::loadGame()
             cart.loadRTC(rtcData);
         }
     }
+}
+
+void ChimpGBApp::saveState()
+{
+    if (mGameboy == nullptr)
+    {
+        return;
+    }
+
+    auto stateData = mGameboy->serialize();
+    auto stateDataBytes = stateData->data();
+    std::string saveStateFilepath = getSavesPath() + mRomFilename + std::string(SAVE_STATE_EXTENSION);
+    std::ofstream dataStream(saveStateFilepath, std::ios::binary | std::ios::trunc);
+    dataStream.write(reinterpret_cast<const char *>(stateDataBytes), stateData->size());
 }
 
 void ChimpGBApp::doExit()
