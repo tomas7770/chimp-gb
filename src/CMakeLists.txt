@@ -10,6 +10,7 @@ set(SOURCE_FILES
     core/CPUDebug.cpp
     core/PPU.cpp
     core/APU.cpp
+    core/SaveState.cpp
     core/MBC/NoMBC.cpp
     core/MBC/MBC1.cpp
     core/MBC/MBC3.cpp
