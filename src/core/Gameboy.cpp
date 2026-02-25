@@ -255,7 +255,7 @@ uint8_t Gameboy::readByte(uint16_t address)
     }
     else if (address == VBK_ADDR)
     {
-        return mPPU.VRAMBank & 0xFE;
+        return mPPU.VRAMBank | 0xFE;
     }
     else if (address == HDMA5_ADDR && inCGBMode())
     {
