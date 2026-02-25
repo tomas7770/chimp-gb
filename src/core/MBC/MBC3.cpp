@@ -176,4 +176,7 @@ void MBC3::saveStateMBCBlock(SaveState &state)
     state.mbcBlock.push_back(0x00);
     state.mbcBlock.push_back(0x40);
     state.mbcBlock.push_back(mRAM_RTC_Select);
+    state.mbcBlock.push_back(0x00);
+    state.mbcBlock.push_back(0x60);
+    state.mbcBlock.push_back(mLatchClockReg);
 }
