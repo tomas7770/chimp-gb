@@ -52,7 +52,7 @@ struct LCD
     void saveState(SaveState &state) const
     {
         memcpy(state.colorBGPaletteMemory, colorBGPaletteMemory, 64);
-        memcpy(state.colorBGPaletteMemory, colorOBJPaletteMemory, 64);
+        memcpy(state.colorOBJPaletteMemory, colorOBJPaletteMemory, 64);
     }
 
     static constexpr uint8_t LCDC_FLAG_LCD_PPU_ENABLE = (1 << 7);
