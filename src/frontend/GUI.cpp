@@ -429,6 +429,10 @@ void GUI::draw()
                 {
                     mShowControlsWindow = !mShowControlsWindow;
                 }
+                if (ImGui::MenuItem("Debug", nullptr, nullptr, mApp->isPoweredOn()))
+                {
+                    mShowDebugWindow = !mShowDebugWindow;
+                }
                 std::string fpsString = std::format("{:.0f} FPS", io.Framerate);
                 ImGui::SetCursorPosX(ImGui::GetCursorPosX() +
                                      std::max(0.0F, ImGui::GetContentRegionAvail().x -
@@ -525,6 +529,33 @@ void GUI::draw()
             mConfig->uiScale = mUIScale;
             updateUIScale();
         }
+        ImGui::End();
+    }
+
+    if (mShowDebugWindow && mApp->isPoweredOn())
+    {
+        ImGui::Begin("Debug", &mShowDebugWindow);
+
+        SaveState debugState = mApp->getDebugState();
+        ImGui::Text("PC: %d", debugState.PC);
+        ImGui::Text("A: %d", debugState.regA);
+        ImGui::Text("F: %d", debugState.regF);
+        ImGui::Text("B: %d", debugState.regB);
+        ImGui::Text("C: %d", debugState.regC);
+        ImGui::Text("D: %d", debugState.regD);
+        ImGui::Text("E: %d", debugState.regE);
+        ImGui::Text("H: %d", debugState.regH);
+        ImGui::Text("L: %d", debugState.regL);
+        ImGui::Text("SP: %d", debugState.SP);
+        ImGui::Text("IME: %s", debugState.IME ? "true" : "false");
+        ImGui::Text("IE: %d", debugState.IE);
+        ImGui::Text("Halted: %s", debugState.halted ? "true" : "false");
+
+        if (ImGui::Button("Step instruction"))
+        {
+            mApp->debugStep();
+        }
+
         ImGui::End();
     }
 

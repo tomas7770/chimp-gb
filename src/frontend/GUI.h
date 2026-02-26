@@ -32,6 +32,7 @@ private:
     bool mShowControlsWindow = false;
     bool mShowSpeedWindow = false;
     bool mShowUIScaleWindow = false;
+    bool mShowDebugWindow = false;
 
     bool mChangingKeybind = false;
     int mKeybindToChange;

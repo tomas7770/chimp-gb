@@ -2497,6 +2497,7 @@ void CPU::interrupt_M5()
 
 void CPU::prefetchOpcode()
 {
+    waitingForDebugStep = false;
     mOpcode = readByteAtPC();
     mPC++;
     mMCycleFunc = &CPU::decodeExecuteOpcode;

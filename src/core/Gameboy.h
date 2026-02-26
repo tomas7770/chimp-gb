@@ -67,6 +67,9 @@ public:
     std::shared_ptr<std::vector<uint8_t>> requestSaveState();
     void loadState(const SaveState &state);
 
+    SaveState getDebugState() const;
+    void debugStep();
+
     static constexpr int CYCLES_PER_FRAME = 70224 / 2;
     static constexpr int CLOCK_RATE = 4194304 / 2;
 

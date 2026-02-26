@@ -564,7 +564,6 @@ void ChimpGBApp::powerOff(int error_code)
         }
         delete mGameboy;
         mGameboy = nullptr;
-        mPaused = false;
         SDL_RenderSetVSync(mRendererSDL, 1);
     }
 }
@@ -574,7 +573,7 @@ void ChimpGBApp::loadCart(Cartridge &cart, std::string &romFilename)
     powerOff();
 
 #ifndef __EMSCRIPTEN__
-    SDL_RenderSetVSync(mRendererSDL, 0);
+    SDL_RenderSetVSync(mRendererSDL, mPaused ? 1 : 0);
 #endif
 
     mRomFilename = romFilename;
@@ -643,13 +642,13 @@ bool ChimpGBApp::isPaused()
 
 void ChimpGBApp::pause()
 {
+    mPaused = !mPaused;
+#ifndef __EMSCRIPTEN__
     if (isPoweredOn())
     {
-        mPaused = !mPaused;
-#ifndef __EMSCRIPTEN__
         SDL_RenderSetVSync(mRendererSDL, mPaused ? 1 : 0);
-#endif
     }
+#endif
 }
 
 void saveGameCallback(void *userdata)
@@ -779,6 +778,39 @@ void ChimpGBApp::loadState()
     catch (std::runtime_error err)
     {
         SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, WINDOW_TITLE, err.what(), mWindowSDL);
+    }
+}
+
+SaveState ChimpGBApp::getDebugState() const
+{
+    if (mGameboy == nullptr)
+    {
+        return SaveState();
+    }
+
+    return mGameboy->getDebugState();
+}
+
+void ChimpGBApp::debugStep()
+{
+    if (mGameboy == nullptr)
+    {
+        return;
+    }
+
+    try
+    {
+        mGameboy->debugStep();
+    }
+    catch (std::runtime_error err)
+    {
+        SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, WINDOW_TITLE, err.what(), mWindowSDL);
+        return powerOff(-1);
+    }
+    catch (std::logic_error err)
+    {
+        SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, WINDOW_TITLE, err.what(), mWindowSDL);
+        return powerOff(-1);
     }
 }
 

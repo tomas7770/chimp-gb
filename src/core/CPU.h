@@ -77,6 +77,8 @@ public:
 
     bool armedSpeedSwitch = false;
 
+    bool waitingForDebugStep = false;
+
 private:
     uint8_t readByteAtPC() const;
 
