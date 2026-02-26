@@ -164,6 +164,27 @@ void CPU::saveState(SaveState &state) const
     state.halted = mHalted;
 }
 
+void CPU::loadState(const SaveState &state)
+{
+    mPC = state.PC;
+    mRegA = state.regA;
+    mRegF = state.regF;
+    mRegB = state.regB;
+    mRegC = state.regC;
+    mRegD = state.regD;
+    mRegE = state.regE;
+    mRegH = state.regH;
+    mRegL = state.regL;
+    mSP = state.SP;
+    mIME = state.IME;
+    IE = state.IE;
+    mHalted = state.halted;
+    if (mGameboy->inCGBMode())
+    {
+        mDoubleSpeed = (state.ioRegisters[0x4D] & (1 << 7)) ? true : false;
+    }
+}
+
 bool CPU::doCGB_DMA()
 {
     if (mHBlankDMACopying && !mGameboy->inHBlank())
