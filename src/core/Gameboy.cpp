@@ -712,6 +712,7 @@ std::shared_ptr<std::vector<uint8_t>> Gameboy::serialize()
     {
         state.ioRegisters[i] = readByte(0xFF00 + i);
     }
+    state.ioRegisters[BANK_ADDR - 0xFF00] = mBootRomFinished ? 1 : 0;
     std::memcpy(state.wram, wram, wramSize);
     std::memcpy(state.hram, hram, hramSize);
     mPPU.saveState(state);
