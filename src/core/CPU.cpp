@@ -185,6 +185,11 @@ void CPU::loadState(const SaveState &state)
     }
 }
 
+bool CPU::debugStepped() const
+{
+    return mMCycleFunc == &CPU::decodeExecuteOpcode;
+}
+
 bool CPU::doCGB_DMA()
 {
     if (mHBlankDMACopying && !mGameboy->inHBlank())

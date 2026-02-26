@@ -768,3 +768,19 @@ void Gameboy::loadState(const SaveState &state)
     mPPU.loadState(state);
     mLCD.loadState(state);
 }
+
+SaveState Gameboy::getDebugState() const
+{
+    SaveState state;
+    mCPU.saveState(state);
+    return state;
+}
+
+void Gameboy::debugStep()
+{
+    // TODO WIP
+    do
+    {
+        doCycle();
+    } while (!mCPU.debugStepped());
+}

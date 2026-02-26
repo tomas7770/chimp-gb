@@ -30,6 +30,7 @@ private:
     std::string mImguiIniFilename; // need to keep a char buffer persistently
 
     bool mShowControlsWindow = false;
+    bool mShowDebugWindow = false;
 
     bool mChangingKeybind = false;
     int mKeybindToChange;

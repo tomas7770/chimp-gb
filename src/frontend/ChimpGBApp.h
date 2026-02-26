@@ -30,6 +30,9 @@ public:
     void saveState();
     void loadState();
 
+    SaveState getDebugState() const;
+    void debugStep();
+
     void startMainLoop();
     void mainLoop();
     void gameboyDraw();
