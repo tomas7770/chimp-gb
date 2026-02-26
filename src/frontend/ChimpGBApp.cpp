@@ -668,17 +668,7 @@ void ChimpGBApp::loadGame()
             dataStream.read(reinterpret_cast<char *>(rtcBytes), 48);
 
             MBC::RTC rtcData;
-            rtcData.timeSeconds = rtcBytes[0];
-            rtcData.timeMinutes = rtcBytes[4];
-            rtcData.timeHours = rtcBytes[8];
-            rtcData.timeDays = rtcBytes[12];
-            rtcData.timeDaysHigh = rtcBytes[16];
-            rtcData.latchedTimeSeconds = rtcBytes[20];
-            rtcData.latchedTimeMinutes = rtcBytes[24];
-            rtcData.latchedTimeHours = rtcBytes[28];
-            rtcData.latchedTimeDays = rtcBytes[32];
-            rtcData.latchedTimeDaysHigh = rtcBytes[36];
-            memcpy(&(rtcData.timestamp), rtcBytes + 40, 8);
+            rtcData.deserialize(rtcBytes);
 
             cart.loadRTC(rtcData);
         }
@@ -697,6 +687,42 @@ void ChimpGBApp::saveState()
     std::string saveStateFilepath = getSavesPath() + mRomFilename + std::string(SAVE_STATE_EXTENSION);
     std::ofstream dataStream(saveStateFilepath, std::ios::binary | std::ios::trunc);
     dataStream.write(reinterpret_cast<const char *>(stateDataBytes), stateData->size());
+}
+
+void ChimpGBApp::loadState()
+{
+    if (mGameboy == nullptr)
+    {
+        return;
+    }
+
+    std::string saveStateFilepath = getSavesPath() + mRomFilename + std::string(SAVE_STATE_EXTENSION);
+    std::ifstream dataStream(saveStateFilepath, std::ios::binary | std::ios::ate);
+    if (!dataStream.good())
+    {
+        SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, WINDOW_TITLE,
+                                 "Error loading save state. Perhaps it doesn't exist?", mWindowSDL);
+        return;
+    }
+    auto size = dataStream.tellg();
+    dataStream.seekg(0);
+
+    std::vector<uint8_t> stateData;
+    stateData.resize(size);
+    dataStream.read(reinterpret_cast<char *>(stateData.data()), size);
+
+    try
+    {
+        Cartridge cart = Cartridge(mGameboy->getCart());
+        loadCart(cart, mRomFilename);
+
+        SaveState state(stateData);
+        mGameboy->loadState(state);
+    }
+    catch (std::runtime_error err)
+    {
+        SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, WINDOW_TITLE, err.what(), mWindowSDL);
+    }
 }
 
 void ChimpGBApp::doExit()

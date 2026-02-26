@@ -19,7 +19,7 @@ uint8_t MBC1::readByte(std::vector<uint8_t> &romData, uint16_t address)
     return 0xFF;
 }
 
-void MBC1::writeByte(std::vector<uint8_t> &romData, uint16_t address, uint8_t value)
+void MBC1::writeByte(uint16_t address, uint8_t value)
 {
     if (address <= RAM_ENABLE_END)
     {

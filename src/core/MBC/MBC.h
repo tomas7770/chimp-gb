@@ -12,7 +12,7 @@ public:
     MBC(bool hasBattery) : mHasBattery(hasBattery) {}
 
     virtual uint8_t readByte(std::vector<uint8_t> &romData, uint16_t address) = 0;
-    virtual void writeByte(std::vector<uint8_t> &romData, uint16_t address, uint8_t value) {}
+    virtual void writeByte(uint16_t address, uint8_t value) {}
     bool hasBattery() const { return mHasBattery; }
     uint8_t *getRAM() { return mRAM; }
 
@@ -45,6 +45,21 @@ public:
             rtcBytes[36] = latchedTimeDaysHigh;
             memcpy(rtcBytes + 40, &timestamp, 8);
         }
+
+        void deserialize(const uint8_t *rtcBytes)
+        {
+            timeSeconds = rtcBytes[0];
+            timeMinutes = rtcBytes[4];
+            timeHours = rtcBytes[8];
+            timeDays = rtcBytes[12];
+            timeDaysHigh = rtcBytes[16];
+            latchedTimeSeconds = rtcBytes[20];
+            latchedTimeMinutes = rtcBytes[24];
+            latchedTimeHours = rtcBytes[28];
+            latchedTimeDays = rtcBytes[32];
+            latchedTimeDaysHigh = rtcBytes[36];
+            memcpy(&timestamp, rtcBytes + 40, 8);
+        }
     };
     virtual RTC *getRTC() { return nullptr; }
     virtual bool hasClock() { return false; }
@@ -66,6 +81,24 @@ public:
         if (rtc != nullptr)
         {
             rtc->serialize(state.rtcBytes);
+        }
+    }
+    void loadState(const SaveState &state)
+    {
+        memcpy(mRAM, state.sram, 131072);
+
+        for (int i = 0; i + 2 < state.mbcBlock.size(); i += 3)
+        {
+            uint8_t addressLow = state.mbcBlock.at(i);
+            uint8_t addressHigh = state.mbcBlock.at(i + 1);
+            uint8_t value = state.mbcBlock.at(i + 2);
+            writeByte((addressHigh << 8) & addressLow, value);
+        }
+
+        auto rtc = getRTC();
+        if (rtc != nullptr)
+        {
+            rtc->deserialize(state.rtcBytes);
         }
     }
 

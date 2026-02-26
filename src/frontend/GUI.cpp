@@ -152,6 +152,10 @@ void GUI::draw()
                         ImGui::EndMenu();
                     }
                     ImGui::Separator();
+                    if (ImGui::MenuItem("Load state", nullptr, nullptr, mApp->isPoweredOn()))
+                    {
+                        mApp->loadState();
+                    }
                     if (ImGui::MenuItem("Save state", nullptr, nullptr, mApp->isPoweredOn()))
                     {
                         mApp->saveState();

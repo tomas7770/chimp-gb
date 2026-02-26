@@ -33,6 +33,7 @@ public:
     void setDrawCallback(void (*drawCallback)(void *), void *userdata);
 
     void saveState(SaveState &state) const;
+    void loadState(const SaveState &state);
 
     void doCycle()
     {

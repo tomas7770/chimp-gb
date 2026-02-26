@@ -81,6 +81,12 @@ void PPU::saveState(SaveState &state) const
     std::memcpy(state.oam, oam, oamSize);
 }
 
+void PPU::loadState(const SaveState &state)
+{
+    std::memcpy(vram, state.vram, vramSize);
+    std::memcpy(oam, state.oam, oamSize);
+}
+
 void PPU::setMode(PPU::Mode mode)
 {
     mMode = mode;

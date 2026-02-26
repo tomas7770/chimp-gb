@@ -719,3 +719,52 @@ std::shared_ptr<std::vector<uint8_t>> Gameboy::serialize()
     mLCD.saveState(state);
     return state.serialize();
 }
+
+void Gameboy::loadState(const SaveState &state)
+{
+    if (memcmp(state.titleChars, mCart.getHeader().titleChars, 16) != 0 ||
+        memcmp(state.globalChecksum, mCart.getHeader().globalChecksum, 2) != 0)
+    {
+        throw std::runtime_error("Attempt to load save state from different game");
+    }
+
+    mSystemType = state.systemType;
+    mCart.loadState(state);
+    for (int i = 0; i < 128; i++)
+    {
+        uint16_t address = 0xFF00 + i;
+        if (address == DIV_ADDR)
+        {
+            mSysCounter = state.ioRegisters[i] << 6;
+        }
+        else if (address == DMA_ADDR || address == HDMA5_ADDR)
+        {
+            // Intentionally left empty
+        }
+        else if (address == KEY0_ADDR)
+        {
+            mKEY0 = state.ioRegisters[i];
+        }
+        else if (address == BANK_ADDR)
+        {
+            mBootRomFinished = state.ioRegisters[i] ? true : false;
+        }
+        else if (address == SVBK_ADDR)
+        {
+            mWRAMBank = state.ioRegisters[i] & 0b111;
+            if (mWRAMBank == 0)
+            {
+                mWRAMBank = 1;
+            }
+        }
+        else
+        {
+            writeByte(address, state.ioRegisters[i]);
+        }
+    }
+    mCPU.loadState(state);
+    std::memcpy(wram, state.wram, wramSize);
+    std::memcpy(hram, state.hram, hramSize);
+    mPPU.loadState(state);
+    mLCD.loadState(state);
+}
