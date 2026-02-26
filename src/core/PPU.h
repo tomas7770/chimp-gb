@@ -42,6 +42,7 @@ public:
     void eventEarlyLYUpdate();
 
     void saveState(SaveState &state) const;
+    void loadState(const SaveState &state);
 
     static constexpr uint16_t VRAM_BANK_SIZE = (1 << 13);
 

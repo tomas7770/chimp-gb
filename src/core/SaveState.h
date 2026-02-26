@@ -6,8 +6,9 @@
 #include "SystemType.h"
 
 // Implements the BESS spec
-struct SaveState
+class SaveState
 {
+public:
     uint8_t titleChars[16];
     uint8_t globalChecksum[2];
 
@@ -50,4 +51,7 @@ struct SaveState
     SaveState(const std::vector<uint8_t> &stateData);
     SaveState() = default;
     std::shared_ptr<std::vector<uint8_t>> serialize() const;
+
+private:
+    uint32_t parseBlock(const std::vector<uint8_t> &stateData, int offset);
 };

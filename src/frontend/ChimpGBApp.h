@@ -29,6 +29,7 @@ public:
     void saveGameSafe();
 
     void saveState();
+    void loadState();
 
     void startMainLoop();
     void mainLoop();

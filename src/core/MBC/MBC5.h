@@ -8,7 +8,7 @@ public:
     MBC5(bool hasBattery) : MBC(hasBattery) {}
 
     uint8_t readByte(std::vector<uint8_t> &romData, uint16_t address) override;
-    void writeByte(std::vector<uint8_t> &romData, uint16_t address, uint8_t value) override;
+    void writeByte(uint16_t address, uint8_t value) override;
     void saveStateMBCBlock(SaveState &state) override;
 
 private:
