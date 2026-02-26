@@ -22,6 +22,181 @@ const std::vector<uint8_t> wordToByteArray(uint32_t word)
     return std::vector<uint8_t>{wordBytes[0], wordBytes[1], wordBytes[2], wordBytes[3]};
 }
 
+uint32_t byteArrayToWord(const std::vector<uint8_t> &bytes, int offset)
+{
+    return (bytes.at(offset + 3) << 24) | (bytes.at(offset + 2) << 16) |
+           (bytes.at(offset + 1) << 8) | bytes.at(offset);
+}
+
+// Check whether data of the given length actually exists after the header
+void validateLength(const std::vector<uint8_t> &stateData, int headerOffset, uint32_t length)
+{
+    if (headerOffset + 8 + length > stateData.size())
+    {
+        throw std::runtime_error("Invalid save state: block body cut by EOF");
+    }
+}
+
+// Check whether the block length as reported by the header is the expected
+void checkLength(const std::vector<uint8_t> &stateData, int headerOffset, uint32_t correctLength,
+                 const std::string &blockName)
+{
+    uint32_t length = byteArrayToWord(stateData, headerOffset + 4);
+    if (length != correctLength)
+    {
+        throw std::runtime_error("Invalid save state: invalid " + blockName + " length");
+    }
+    validateLength(stateData, headerOffset, correctLength);
+}
+
+void validateMemoryLength(const std::vector<uint8_t> &stateData, int offset, uint32_t length)
+{
+    if (offset + length > stateData.size())
+    {
+        throw std::runtime_error("Invalid save state: memory block cut by EOF");
+    }
+}
+
+void copyMemoryBlock(uint8_t *dest, const std::vector<uint8_t> &stateData,
+                     int bodyOffset, int sizeOffset)
+{
+    uint32_t ramSize = byteArrayToWord(stateData, bodyOffset + sizeOffset);
+    uint32_t ramOffset = byteArrayToWord(stateData, bodyOffset + sizeOffset + 4);
+    validateMemoryLength(stateData, ramOffset, ramSize);
+    memcpy(dest, stateData.data() + ramOffset, ramSize);
+}
+
+uint32_t SaveState::parseBlock(const std::vector<uint8_t> &stateData, int headerOffset)
+{
+    if (headerOffset + 8 > stateData.size())
+    {
+        throw std::runtime_error("Invalid save state: block header cut by EOF");
+    }
+
+    int bodyOffset = headerOffset + 8;
+    auto data = stateData.data();
+    if (memcmp(data + headerOffset, INFO_STRING.c_str(), 4) == 0)
+    {
+        checkLength(stateData, headerOffset, 0x12, INFO_STRING);
+
+        for (int i = 0; i < 16; i++)
+        {
+            titleChars[i] = stateData.at(bodyOffset + i);
+        }
+        globalChecksum[0] = stateData.at(bodyOffset + 0x10);
+        globalChecksum[1] = stateData.at(bodyOffset + 0x11);
+
+        return 0x12;
+    }
+    else if (memcmp(data + headerOffset, CORE_STRING.c_str(), 4) == 0)
+    {
+        checkLength(stateData, headerOffset, 0xD0, CORE_STRING);
+
+        uint16_t majorBESSVersion = (stateData.at(bodyOffset + 0x01) << 8) | stateData.at(bodyOffset);
+        if (majorBESSVersion != 1)
+        {
+            throw std::runtime_error("Incompatible save state: major BESS version is " +
+                                     std::to_string(majorBESSVersion) + ", supported version is 1");
+        }
+
+        uint8_t modelFamily = stateData.at(bodyOffset + 0x04);
+        uint8_t model = stateData.at(bodyOffset + 0x05);
+        if (modelFamily == 'G' && model == 'D')
+        {
+            systemType = SystemType::DMG;
+        }
+        else if (modelFamily == 'C' && model == 'C')
+        {
+            systemType = SystemType::CGB;
+        }
+        else
+        {
+            throw std::runtime_error("Incompatible save state: unsupported console model");
+        }
+
+        PC = (stateData.at(bodyOffset + 0x09) << 8) | stateData.at(bodyOffset + 0x08);
+        regA = stateData.at(bodyOffset + 0x0A);
+        regF = stateData.at(bodyOffset + 0x0B);
+        regB = stateData.at(bodyOffset + 0x0C);
+        regC = stateData.at(bodyOffset + 0x0D);
+        regD = stateData.at(bodyOffset + 0x0E);
+        regE = stateData.at(bodyOffset + 0x0F);
+        regH = stateData.at(bodyOffset + 0x10);
+        regL = stateData.at(bodyOffset + 0x11);
+        SP = (stateData.at(bodyOffset + 0x13) << 8) | stateData.at(bodyOffset + 0x12);
+        IME = stateData.at(bodyOffset + 0x14) ? true : false;
+        IE = stateData.at(bodyOffset + 0x15);
+        halted = stateData.at(bodyOffset + 0x16) == 1 ? true : false;
+        memcpy(ioRegisters, data + bodyOffset + 0x18, 128);
+
+        copyMemoryBlock(wram, stateData, bodyOffset, 0x98);
+        copyMemoryBlock(vram, stateData, bodyOffset, 0xA0);
+        copyMemoryBlock(sram, stateData, bodyOffset, 0xA8);
+        copyMemoryBlock(oam, stateData, bodyOffset, 0xB0);
+        copyMemoryBlock(hram, stateData, bodyOffset, 0xB8);
+        copyMemoryBlock(colorBGPaletteMemory, stateData, bodyOffset, 0xC0);
+        copyMemoryBlock(colorOBJPaletteMemory, stateData, bodyOffset, 0xC8);
+
+        return 0xD0;
+    }
+    else if (memcmp(data + headerOffset, MBC_STRING.c_str(), 4) == 0)
+    {
+        uint32_t length = byteArrayToWord(stateData, headerOffset + 4);
+        if (length % 3)
+        {
+            throw std::runtime_error("Invalid save state: MBC block length must be divisible by 3");
+        }
+        validateLength(stateData, headerOffset, length);
+
+        for (int i = 0; i < length; i++)
+        {
+            mbcBlock.push_back(stateData.at(bodyOffset + i));
+        }
+
+        return length;
+    }
+    else if (memcmp(data + headerOffset, RTC_STRING.c_str(), 4) == 0)
+    {
+        checkLength(stateData, headerOffset, 0x30, RTC_STRING);
+
+        memcpy(rtcBytes, data + bodyOffset, 0x30);
+
+        return 0x30;
+    }
+    else if (memcmp(data + headerOffset, END_STRING.c_str(), 4) == 0)
+    {
+        checkLength(stateData, headerOffset, 0x00, END_STRING);
+        return 0;
+    }
+    else
+    {
+        // Unknown block
+        return byteArrayToWord(stateData, headerOffset + 4);
+    }
+}
+
+SaveState::SaveState(const std::vector<uint8_t> &stateData)
+{
+    int size = stateData.size();
+    if (size < 8)
+    {
+        throw std::runtime_error("Invalid save state: too small");
+    }
+
+    // Look for BESS footer
+    if (memcmp(stateData.data() + size - 4, "BESS", 4) != 0)
+    {
+        throw std::runtime_error("Invalid save state: BESS footer not found");
+    }
+
+    uint32_t blockOffset = byteArrayToWord(stateData, size - 8);
+    uint32_t blockLength;
+    while (blockLength = parseBlock(stateData, blockOffset))
+    {
+        blockOffset += blockLength + 8;
+    }
+}
+
 const std::vector<uint8_t> CHIMPGB_STRING_LEN = wordToByteArray(CHIMPGB_STRING.length());
 
 std::shared_ptr<std::vector<uint8_t>> SaveState::serialize() const
