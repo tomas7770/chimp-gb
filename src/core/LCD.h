@@ -55,6 +55,12 @@ struct LCD
         memcpy(state.colorOBJPaletteMemory, colorOBJPaletteMemory, 64);
     }
 
+    void loadState(const SaveState &state)
+    {
+        memcpy(colorBGPaletteMemory, state.colorBGPaletteMemory, 64);
+        memcpy(colorOBJPaletteMemory, state.colorOBJPaletteMemory, 64);
+    }
+
     static constexpr uint8_t LCDC_FLAG_LCD_PPU_ENABLE = (1 << 7);
     static constexpr uint8_t LCDC_FLAG_WINDOW_TILE_MAP = (1 << 6);
     static constexpr uint8_t LCDC_FLAG_WINDOW_ENABLE = (1 << 5);

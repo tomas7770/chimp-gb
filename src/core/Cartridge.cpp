@@ -73,7 +73,7 @@ uint8_t Cartridge::readByte(uint16_t address)
 
 void Cartridge::writeByte(uint16_t address, uint8_t value)
 {
-    mMBC->writeByte(mData, address, value);
+    mMBC->writeByte(address, value);
 }
 
 bool Cartridge::hasBattery() const
@@ -115,4 +115,9 @@ void Cartridge::saveState(SaveState &state) const
 {
     mHeader.saveState(state);
     mMBC->saveState(state);
+}
+
+void Cartridge::loadState(const SaveState &state)
+{
+    mMBC->loadState(state);
 }
