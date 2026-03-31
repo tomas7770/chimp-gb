@@ -7,6 +7,9 @@
 #include "PPU.h"
 #include "APU.h"
 #include "Joypad.h"
+#include "SchedulerEvent.h"
+
+#include <set>
 
 class Gameboy
 {
@@ -31,13 +34,11 @@ public:
     uint8_t hram[hramSize];
     uint8_t bootRom[cgbBootRomSize];
 
-    unsigned int cycleCounter = 0;
+    uint64_t cycleCounter = 0;
 
     bool audioPointSample;
 
     void requestInterrupt(CPU::InterruptSource source);
-
-    void tickSystemCounter();
 
     const LCD::Color *getPixels() const;
 
@@ -53,6 +54,8 @@ public:
                           void *userdata, double cyclesPerSample);
     void setBootRom(std::istream &dataStream);
     void simulateBootRom();
+
+    void addEvent(SchedulerEventType type, uint64_t time);
 
     SystemType getSystemType() { return mSystemType; }
     bool inDMGMode() { return mKEY0 & 0x04; }
@@ -84,6 +87,8 @@ private:
                           const std::vector<float> &rightAudioSamples) = nullptr;
     void *mAudioCallbackUserdata = nullptr;
     double mCyclesPerAudioSample, mAudioTimeAccum;
+
+    std::multiset<SchedulerEvent> mEvents;
 
     static constexpr uint16_t WRAM_BANK_SIZE = (1 << 12);
 

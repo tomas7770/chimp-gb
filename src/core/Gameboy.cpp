@@ -607,15 +607,6 @@ void Gameboy::requestInterrupt(CPU::InterruptSource source)
     mCPU.requestInterrupt(source);
 }
 
-void Gameboy::tickSystemCounter()
-{
-    mSysCounter++;
-    if (mTimer.tick(mSysCounter, mSysCounter - 1))
-    {
-        mCPU.requestInterrupt(CPU::InterruptSource::Timer);
-    }
-}
-
 const LCD::Color *Gameboy::getPixels() const
 {
     return mLCD.pixels;
@@ -623,51 +614,71 @@ const LCD::Color *Gameboy::getPixels() const
 
 void Gameboy::doFrame(bool generateAudio)
 {
-    for (int i = 0; i < Gameboy::CYCLES_PER_FRAME; i++)
+    addEvent(FinishFrame, CYCLES_PER_FRAME);
+
+    while (1)
     {
-        // 2 MHz cycle (2 T-cycles) (1 M-cycle at double speed mode);
-        // CPU is emulated at M-cycle accuracy;
-        // PPU timings are multiples of 2 T-cycles (with current implementation);
-        // APU maximum audio frequency is 2 MHz;
-        // Performance can be optimized by emulating 2 T-cycles at once, without affecting accuracy.
-
-        if (!(cycleCounter % 2) || mCPU.isDoubleSpeed())
+        while (cycleCounter < mEvents.begin()->timestamp)
         {
-            tickSystemCounter();
-            mCPU.doMCycle();
-        }
-        mPPU.doCycle();
-        mAPU.doCycle();
-        cycleCounter++;
+            // 2 MHz cycle (2 T-cycles) (1 M-cycle at double speed mode);
+            // CPU is emulated at M-cycle accuracy;
+            // PPU timings are multiples of 2 T-cycles (with current implementation);
+            // APU maximum audio frequency is 2 MHz;
+            // Performance can be optimized by emulating 2 T-cycles at once, without affecting accuracy.
 
-        if (!generateAudio)
-        {
-            continue;
-        }
+            if (!(cycleCounter % 2) || mCPU.isDoubleSpeed())
+            {
+                mSysCounter++;
+                if (mTimer.tick(mSysCounter, mSysCounter - 1))
+                {
+                    mCPU.requestInterrupt(CPU::InterruptSource::Timer);
+                }
+                mCPU.doMCycle();
+            }
+            mPPU.doCycle();
+            mAPU.doCycle();
+            cycleCounter++;
 
-        if (!audioPointSample)
-        {
-            mAPU.computeAudioSamples();
-            mLeftAudioSamples.push_back(mAPU.leftAudioSample);
-            mRightAudioSamples.push_back(mAPU.rightAudioSample);
-        }
+            if (!generateAudio)
+            {
+                continue;
+            }
 
-        mAudioTimeAccum += 1.0;
-        if (mAudioTimeAccum >= mCyclesPerAudioSample)
-        {
-            mAudioTimeAccum -= mCyclesPerAudioSample;
-            if (audioPointSample)
+            if (!audioPointSample)
             {
                 mAPU.computeAudioSamples();
                 mLeftAudioSamples.push_back(mAPU.leftAudioSample);
                 mRightAudioSamples.push_back(mAPU.rightAudioSample);
             }
-            if (audioCallback != nullptr)
+
+            mAudioTimeAccum += 1.0;
+            if (mAudioTimeAccum >= mCyclesPerAudioSample)
             {
-                audioCallback(mAudioCallbackUserdata, mLeftAudioSamples, mRightAudioSamples);
+                mAudioTimeAccum -= mCyclesPerAudioSample;
+                if (audioPointSample)
+                {
+                    mAPU.computeAudioSamples();
+                    mLeftAudioSamples.push_back(mAPU.leftAudioSample);
+                    mRightAudioSamples.push_back(mAPU.rightAudioSample);
+                }
+                if (audioCallback != nullptr)
+                {
+                    audioCallback(mAudioCallbackUserdata, mLeftAudioSamples, mRightAudioSamples);
+                }
+                mLeftAudioSamples.clear();
+                mRightAudioSamples.clear();
             }
-            mLeftAudioSamples.clear();
-            mRightAudioSamples.clear();
+        }
+
+        SchedulerEvent event = *(mEvents.begin());
+        mEvents.erase(event);
+        switch (event.type)
+        {
+        case FinishFrame:
+            return;
+
+        default:
+            break;
         }
     }
 }
@@ -755,4 +766,9 @@ void Gameboy::simulateBootRom()
     }
     std::memset(mPPU.vram, 0, PPU::vramSize);
     mCPU.simulateBootRom();
+}
+
+void Gameboy::addEvent(SchedulerEventType type, uint64_t time)
+{
+    mEvents.insert(SchedulerEvent{.type = type, .timestamp = cycleCounter + time});
 }
