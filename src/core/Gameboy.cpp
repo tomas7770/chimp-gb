@@ -670,7 +670,7 @@ void Gameboy::doFrame(bool generateAudio)
         }
 
         SchedulerEvent event = *(mEvents.begin());
-        mEvents.erase(event);
+        mEvents.erase(mEvents.begin());
         switch (event.type)
         {
         case PPU_OAMScan_End:
