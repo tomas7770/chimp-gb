@@ -56,6 +56,7 @@ public:
     void simulateBootRom();
 
     void addEvent(SchedulerEventType type, uint64_t time);
+    void removeEvent(SchedulerEventType type);
 
     SystemType getSystemType() { return mSystemType; }
     bool inDMGMode() { return mKEY0 & 0x04; }
@@ -68,6 +69,10 @@ public:
     static constexpr int CLOCK_RATE = 4194304 / 2;
 
 private:
+    // Note: Events set must appear first in the class definition, so that other members adding events
+    // in their constructors don't access uninitialized memory.
+    std::multiset<SchedulerEvent> mEvents;
+
     SystemType mSystemType;
     Cartridge mCart;
     CPU mCPU;
@@ -87,8 +92,6 @@ private:
                           const std::vector<float> &rightAudioSamples) = nullptr;
     void *mAudioCallbackUserdata = nullptr;
     double mCyclesPerAudioSample, mAudioTimeAccum;
-
-    std::multiset<SchedulerEvent> mEvents;
 
     static constexpr uint16_t WRAM_BANK_SIZE = (1 << 12);
 

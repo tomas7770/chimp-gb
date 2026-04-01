@@ -4,6 +4,11 @@
 
 enum SchedulerEventType
 {
+    PPU_OAMScan_End,
+    PPU_Draw_End,
+    PPU_NewLine,
+    PPU_DelayedVBlank,
+    PPU_EarlyLYUpdate,
     FinishFrame
 };
 

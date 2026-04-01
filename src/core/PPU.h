@@ -32,58 +32,11 @@ public:
     void writeLYC(uint8_t value);
     void setDrawCallback(void (*drawCallback)(void *), void *userdata);
 
-    void doCycle()
-    {
-        if (!mEnabled)
-        {
-            return;
-        }
-
-        mScanlineDots += 2;
-
-        switch (mMode)
-        {
-        case HBlank:
-        case VBlank:
-            if (mScanlineDots >= DOTS_PER_LINE)
-            {
-                newLine();
-            }
-            else if (mLCD->LY == LCD::SCREEN_H && mScanlineDots == 4 && delayedVBLInterrupt())
-            {
-                doVBLInterrupt();
-            }
-            else if (mLCD->LY == (LCD::SCREEN_H + VBLANK_LINES - 1) && mScanlineDots >= 4)
-            {
-                // LY is updated early (original hardware quirk)
-                mLCD->LY = 0;
-                updateLYCInterrupt();
-            }
-            break;
-
-        case OAMScan:
-            if (mScanlineDots >= MODE_2_DOTS)
-            {
-                setMode(Draw);
-            }
-            break;
-
-        case Draw:
-            if (mScanlineDots >= MODE_2_DOTS + MODE_3_DOTS)
-            {
-                setMode(HBlank);
-            }
-            else if (mScanlineDots >= MODE_2_DOTS + MODE_3_DUMMY_DOTS)
-            {
-                // Draw pixels
-                updateScreenPixels(mScanlineDots - MODE_2_DOTS - MODE_3_DUMMY_DOTS, mLCD->LY);
-            }
-            break;
-
-        default:
-            break;
-        }
-    }
+    void eventOAMScanEnd();
+    void eventDrawEnd();
+    void eventNewLine();
+    void eventDelayedVBlank();
+    void eventEarlyLYUpdate();
 
     static constexpr uint16_t VRAM_BANK_SIZE = (1 << 13);
 
@@ -94,7 +47,6 @@ private:
     bool mEnabled = true;
     bool mFirstFrameAfterEnable = false;
     Mode mMode;
-    int mScanlineDots = 0;
     bool mIncrementedWindowLine = false;
     bool mWYTriggered = false;
     int mStatInterruptLine = 0;
@@ -115,7 +67,7 @@ private:
     uint8_t getBGTileAtScreenPixel(int x, int y, bool isWindow, bool doGetAttributes = false);
     int getBGTilePixel(uint8_t tileId, int tilePixelX, int tilePixelY, bool drawingObj,
                        bool xFlip = false, bool yFlip = false, int bank = 0);
-    void updateScreenPixels(int x, int y);
+    void updateScreenPixels(int y);
 
     static constexpr int MODE_2_DOTS = 80;
     static constexpr int MODE_3_DOTS = 172; // inaccurate, this is variable

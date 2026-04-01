@@ -635,7 +635,6 @@ void Gameboy::doFrame(bool generateAudio)
                 }
                 mCPU.doMCycle();
             }
-            mPPU.doCycle();
             mAPU.doCycle();
             cycleCounter++;
 
@@ -674,6 +673,26 @@ void Gameboy::doFrame(bool generateAudio)
         mEvents.erase(event);
         switch (event.type)
         {
+        case PPU_OAMScan_End:
+            mPPU.eventOAMScanEnd();
+            break;
+
+        case PPU_Draw_End:
+            mPPU.eventDrawEnd();
+            break;
+
+        case PPU_NewLine:
+            mPPU.eventNewLine();
+            break;
+
+        case PPU_DelayedVBlank:
+            mPPU.eventDelayedVBlank();
+            break;
+
+        case PPU_EarlyLYUpdate:
+            mPPU.eventEarlyLYUpdate();
+            break;
+
         case FinishFrame:
             return;
 
@@ -771,4 +790,16 @@ void Gameboy::simulateBootRom()
 void Gameboy::addEvent(SchedulerEventType type, uint64_t time)
 {
     mEvents.insert(SchedulerEvent{.type = type, .timestamp = cycleCounter + time});
+}
+
+void Gameboy::removeEvent(SchedulerEventType type)
+{
+    for (auto it = mEvents.begin(); it != mEvents.end(); it++)
+    {
+        if (it->type == type)
+        {
+            mEvents.erase(it);
+            break;
+        }
+    }
 }

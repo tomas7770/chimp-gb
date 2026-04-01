@@ -46,7 +46,11 @@ void PPU::writeLCDC(uint8_t value)
             drawCallback(mDrawCallbackUserdata);
         }
         // Reset registers
-        mScanlineDots = 0;
+        mGameboy->removeEvent(PPU_OAMScan_End);
+        mGameboy->removeEvent(PPU_Draw_End);
+        mGameboy->removeEvent(PPU_NewLine);
+        mGameboy->removeEvent(PPU_DelayedVBlank);
+        mGameboy->removeEvent(PPU_EarlyLYUpdate);
         mIncrementedWindowLine = false;
         mWYTriggered = false;
         mStatInterruptLine = 0;
@@ -81,6 +85,7 @@ void PPU::setMode(PPU::Mode mode)
     switch (mMode)
     {
     case OAMScan:
+        mGameboy->addEvent(PPU_OAMScan_End, MODE_2_DOTS / 2);
         spritesInScanline.clear();
         for (int i = 0; i < oamSize; i += SPRITE_BYTES)
         {
@@ -94,6 +99,22 @@ void PPU::setMode(PPU::Mode mode)
             {
                 break;
             }
+        }
+        break;
+
+    case Draw:
+        mGameboy->addEvent(PPU_Draw_End, MODE_3_DOTS / 2);
+        break;
+
+    case HBlank:
+        mGameboy->addEvent(PPU_NewLine, MODE_0_DOTS / 2);
+        break;
+
+    case VBlank:
+        mGameboy->addEvent(PPU_NewLine, MODE_1_DOTS / 2);
+        if (delayedVBLInterrupt())
+        {
+            mGameboy->addEvent(PPU_DelayedVBlank, 4 / 2);
         }
         break;
 
@@ -159,7 +180,6 @@ void PPU::updateLYCInterrupt()
 
 void PPU::newLine()
 {
-    mScanlineDots = 0;
     if (!(mLCD->LY == 0 && mMode == VBlank)) // don't increment if it's the early LY = 0 from scanline 153
     {
         mLCD->LY++;
@@ -192,6 +212,14 @@ void PPU::newLine()
             mWYTriggered = true;
         }
     }
+    else if (mLCD->LY > LCD::SCREEN_H)
+    {
+        mGameboy->addEvent(PPU_NewLine, MODE_1_DOTS / 2);
+        if (mLCD->LY == (LCD::SCREEN_H + VBLANK_LINES - 1))
+        {
+            mGameboy->addEvent(PPU_EarlyLYUpdate, 4 / 2);
+        }
+    }
 
     updateLYCInterrupt();
 }
@@ -204,6 +232,35 @@ bool PPU::delayedVBLInterrupt()
 void PPU::doVBLInterrupt()
 {
     mGameboy->requestInterrupt(CPU::InterruptSource::VBlank);
+}
+
+void PPU::eventOAMScanEnd()
+{
+    setMode(Draw);
+}
+
+void PPU::eventDrawEnd()
+{
+    // Draw scanline
+    updateScreenPixels(mLCD->LY);
+    setMode(HBlank);
+}
+
+void PPU::eventNewLine()
+{
+    newLine();
+}
+
+void PPU::eventDelayedVBlank()
+{
+    doVBLInterrupt();
+}
+
+void PPU::eventEarlyLYUpdate()
+{
+    // LY is updated early (original hardware quirk)
+    mLCD->LY = 0;
+    updateLYCInterrupt();
 }
 
 uint8_t PPU::getBGTileAtScreenPixel(int x, int y, bool isWindow, bool doGetAttributes)
@@ -301,15 +358,15 @@ LCD::CGBColor getDMGCompatPaletteColor(uint8_t *cgbPalette, uint8_t dmgPaletteBy
     }
 }
 
-void PPU::updateScreenPixels(int pixelXInit, int pixelY)
+void PPU::updateScreenPixels(int pixelY)
 {
-    int pixelCoord = pixelY * LCD::SCREEN_W + pixelXInit;
+    int pixelCoord = pixelY * LCD::SCREEN_W;
 
     Gameboy::SystemType systemType = mGameboy->getSystemType();
     bool cgbMode = mGameboy->inCGBMode();
     bool bgEnable = mLCD->LCDC & LCD::LCDC_FLAG_BG_WINDOW_ENABLE;
 
-    for (int pixelX = pixelXInit; pixelX <= pixelXInit + 1; pixelX++)
+    for (int pixelX = 0; pixelX < LCD::SCREEN_W; pixelX++)
     {
         int colorId = 0;
         uint8_t *palette = nullptr;
