@@ -74,6 +74,8 @@ private:
     void drawPixel(int pixelCoord, SystemType systemType, bool cgbMode, int colorId,
                    uint8_t *palette, uint8_t dmgPaletteByte);
     void drawBGPixel(int x, int y, bool isWindow, int pixelCoord, int pixelX, SystemType systemType, bool cgbMode);
+    void drawBGTileRow(uint8_t tileId, uint8_t attributes, int tileStart, int tileEnd, int row,
+                       int pixelX, int pixelY, SystemType systemType, bool cgbMode);
     void updateScreenPixels(int y);
 
     static constexpr int MODE_2_DOTS = 80;

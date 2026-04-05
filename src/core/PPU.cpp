@@ -394,59 +394,87 @@ void PPU::drawPixel(int pixelCoord, SystemType systemType, bool cgbMode, int col
     }
 }
 
-void PPU::drawBGPixel(int x, int y, bool isWindow, int pixelCoord, int pixelX, SystemType systemType, bool cgbMode)
+void PPU::drawBGTileRow(uint8_t tileId, uint8_t attributes, int tileStart, int tileEnd, int row,
+                        int pixelX, int pixelY, SystemType systemType, bool cgbMode)
 {
-    int colorId = 0;
-    uint8_t *palette = nullptr;
-    uint8_t dmgPaletteByte;
-
-    // Get color and attributes
-    uint8_t tileId = getBGTileAtScreenPixel(x, y, isWindow);
-    int tilePixelX = x % TILE_LENGTH;
-    int tilePixelY = y % TILE_LENGTH;
+    bool xFlip = false;
+    bool yFlip = false;
+    int bank = 0;
     int paletteIndex;
+    bool bgForcePriority = false;
     if (cgbMode)
     {
-        uint8_t attributes = getBGTileAtScreenPixel(x, y, isWindow, true);
-        bool xFlip = attributes & BG_ATTRIB_FLAG_X_FLIP;
-        bool yFlip = attributes & BG_ATTRIB_FLAG_Y_FLIP;
-        int bank = (attributes & BG_ATTRIB_FLAG_BANK) >> 3;
+        xFlip = attributes & BG_ATTRIB_FLAG_X_FLIP;
+        yFlip = attributes & BG_ATTRIB_FLAG_Y_FLIP;
+        bank = (attributes & BG_ATTRIB_FLAG_BANK) >> 3;
         paletteIndex = attributes & CGB_PAL_BITMASK;
-        mBGColorIdCache[pixelX] = getBGTilePixel(tileId, tilePixelX, tilePixelY, false, xFlip, yFlip, bank);
-        colorId = mBGColorIdCache[pixelX];
-        mBGForcePriorityCache[pixelX] = (attributes & BG_ATTRIB_FLAG_PRIORITY) ? true : false;
+        bgForcePriority = (attributes & BG_ATTRIB_FLAG_PRIORITY) ? true : false;
+    }
+
+    int tileOffset;
+    if (mLCD->LCDC & LCD::LCDC_FLAG_BG_WINDOW_TILE_DATA)
+    {
+        tileOffset = tileId * TILE_BYTES;
     }
     else
     {
-        mBGColorIdCache[pixelX] = getBGTilePixel(tileId, tilePixelX, tilePixelY, false);
-        colorId = mBGColorIdCache[pixelX];
-        mBGForcePriorityCache[pixelX] = false;
+        tileOffset = TILE_BLOCK_2_OFFSET + static_cast<int8_t>(tileId) * TILE_BYTES;
     }
-
-    // Get palette
-    switch (systemType)
+    // Apply flip
+    if (yFlip)
     {
-    case SystemType::DMG:
-        palette = &(mLCD->BGP);
-        break;
-
-    case SystemType::CGB:
-        if (cgbMode)
-        {
-            palette = getCGBPalette(paletteIndex, mLCD->colorBGPaletteMemory);
-        }
-        else
-        {
-            palette = getCGBPalette(0, mLCD->colorBGPaletteMemory);
-            dmgPaletteByte = mLCD->BGP;
-        }
-        break;
-
-    default:
-        break;
+        row = 7 - row;
     }
+    // Each tile occupies 16 bytes, where each line is represented by 2 bytes.
+    int lineOffset = row * 2;
+    // The first byte specifies the LSB of the color ID of each pixel, and the second byte specifies the MSB.
+    int lsbRow = vram[tileOffset + lineOffset + bank * VRAM_BANK_SIZE];
+    int msbRow = vram[tileOffset + lineOffset + 1 + bank * VRAM_BANK_SIZE];
 
-    drawPixel(pixelCoord, systemType, cgbMode, colorId, palette, dmgPaletteByte);
+    for (int i = tileStart; i <= tileEnd; i++)
+    {
+        int tilePixelX = i;
+        if (xFlip)
+        {
+            tilePixelX = 7 - tilePixelX;
+        }
+        int lsb = (lsbRow >> (7 - tilePixelX)) & 1;
+        int msb = (msbRow >> (7 - tilePixelX)) & 1;
+        mBGColorIdCache[pixelX] = (msb << 1) + lsb;
+        int colorId = mBGColorIdCache[pixelX];
+        mBGForcePriorityCache[pixelX] = bgForcePriority;
+
+        int pixelCoord = pixelY * LCD::SCREEN_W + pixelX;
+
+        // Get palette
+        uint8_t *palette = nullptr;
+        uint8_t dmgPaletteByte;
+        switch (systemType)
+        {
+        case SystemType::DMG:
+            palette = &(mLCD->BGP);
+            break;
+
+        case SystemType::CGB:
+            if (cgbMode)
+            {
+                palette = getCGBPalette(paletteIndex, mLCD->colorBGPaletteMemory);
+            }
+            else
+            {
+                palette = getCGBPalette(0, mLCD->colorBGPaletteMemory);
+                dmgPaletteByte = mLCD->BGP;
+            }
+            break;
+
+        default:
+            break;
+        }
+
+        drawPixel(pixelCoord, systemType, cgbMode, colorId, palette, dmgPaletteByte);
+
+        pixelX++;
+    }
 }
 
 void PPU::updateScreenPixels(int pixelY)
@@ -467,23 +495,61 @@ void PPU::updateScreenPixels(int pixelY)
                 mLCD->windowLineCounter++;
                 mIncrementedWindowLine = true;
             }
-            bgEndX = std::max(0, mLCD->WX - 7);
+            bgEndX = mLCD->WX - 7;
         }
 
-        int x, y;
-        for (int pixelX = 0; pixelX < bgEndX; pixelX++)
+        // Background
+        int y = (pixelY + mLCD->SCY) % 256;
+        uint16_t tileMapAddr;
+        if (mLCD->LCDC & LCD::LCDC_FLAG_BG_TILE_MAP)
         {
-            x = (pixelX + mLCD->SCX) % 256;
-            y = (pixelY + mLCD->SCY) % 256;
-            drawBGPixel(x, y, false, pixelCoord, pixelX, systemType, cgbMode);
-            pixelCoord++;
+            tileMapAddr = TILE_MAP_1_ADDR;
         }
-        for (int pixelX = bgEndX; pixelX < LCD::SCREEN_W; pixelX++)
+        else
         {
-            x = pixelX - mLCD->WX + 7;
-            y = mLCD->windowLineCounter - 1;
-            drawBGPixel(x, y, true, pixelCoord, pixelX, systemType, cgbMode);
-            pixelCoord++;
+            tileMapAddr = TILE_MAP_0_ADDR;
+        }
+        uint16_t tileIdAddr = tileMapAddr + (mLCD->SCX / TILE_LENGTH) + TILE_MAP_LENGTH * (y / TILE_LENGTH);
+        uint8_t tileId = vram[tileIdAddr];
+        uint8_t attributes = vram[tileIdAddr + VRAM_BANK_SIZE];
+        drawBGTileRow(tileId, attributes, mLCD->SCX % TILE_LENGTH, TILE_LENGTH - 1, y % TILE_LENGTH,
+                      0, pixelY, systemType, cgbMode);
+        for (int pixelX = TILE_LENGTH - mLCD->SCX % TILE_LENGTH; pixelX < bgEndX; pixelX += TILE_LENGTH)
+        {
+            tileIdAddr = tileMapAddr + ((mLCD->SCX + pixelX) % 256 / TILE_LENGTH) + TILE_MAP_LENGTH * (y / TILE_LENGTH);
+            tileId = vram[tileIdAddr];
+            attributes = vram[tileIdAddr + VRAM_BANK_SIZE];
+            int tileEnd = std::min(TILE_LENGTH - 1, bgEndX - pixelX - 1);
+            drawBGTileRow(tileId, attributes, 0, tileEnd, y % TILE_LENGTH,
+                          pixelX, pixelY, systemType, cgbMode);
+        }
+
+        // Window
+        y = mLCD->windowLineCounter - 1;
+        if (mLCD->LCDC & LCD::LCDC_FLAG_WINDOW_TILE_MAP)
+        {
+            tileMapAddr = TILE_MAP_1_ADDR;
+        }
+        else
+        {
+            tileMapAddr = TILE_MAP_0_ADDR;
+        }
+        if (bgEndX < 0)
+        {
+            tileIdAddr = tileMapAddr + TILE_MAP_LENGTH * (y / TILE_LENGTH);
+            tileId = vram[tileIdAddr];
+            attributes = vram[tileIdAddr + VRAM_BANK_SIZE];
+            drawBGTileRow(tileId, attributes, -bgEndX, TILE_LENGTH - 1, y % TILE_LENGTH,
+                          0, pixelY, systemType, cgbMode);
+        }
+        for (int pixelX = std::max(0, bgEndX); pixelX < LCD::SCREEN_W; pixelX += TILE_LENGTH)
+        {
+            tileIdAddr = tileMapAddr + ((pixelX - mLCD->WX + 7) / TILE_LENGTH) + TILE_MAP_LENGTH * (y / TILE_LENGTH);
+            tileId = vram[tileIdAddr];
+            attributes = vram[tileIdAddr + VRAM_BANK_SIZE];
+            int tileEnd = std::min(TILE_LENGTH - 1, LCD::SCREEN_W - pixelX - 1);
+            drawBGTileRow(tileId, attributes, 0, tileEnd, y % TILE_LENGTH,
+                          pixelX, pixelY, systemType, cgbMode);
         }
     }
     else
