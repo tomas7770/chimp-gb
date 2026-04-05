@@ -3,6 +3,7 @@
 #include <cstdint>
 #include <vector>
 #include "LCD.h"
+#include "SystemType.h"
 
 class Gameboy;
 
@@ -53,6 +54,9 @@ private:
 
     std::vector<int> spritesInScanline; // list of sprites to draw, stored as an offset from OAM start
 
+    bool mBGForcePriorityCache[LCD::SCREEN_W];
+    int mBGColorIdCache[LCD::SCREEN_W];
+
     void (*drawCallback)(void *userdata) = nullptr;
     void *mDrawCallbackUserdata = nullptr;
 
@@ -67,6 +71,9 @@ private:
     uint8_t getBGTileAtScreenPixel(int x, int y, bool isWindow, bool doGetAttributes = false);
     int getBGTilePixel(uint8_t tileId, int tilePixelX, int tilePixelY, bool drawingObj,
                        bool xFlip = false, bool yFlip = false, int bank = 0);
+    void drawPixel(int pixelCoord, SystemType systemType, bool cgbMode, int colorId,
+                   uint8_t *palette, uint8_t dmgPaletteByte);
+    void drawBGPixel(int x, int y, bool isWindow, int pixelCoord, int pixelX, SystemType systemType, bool cgbMode);
     void updateScreenPixels(int y);
 
     static constexpr int MODE_2_DOTS = 80;

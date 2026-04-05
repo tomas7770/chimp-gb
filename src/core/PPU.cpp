@@ -358,6 +358,97 @@ LCD::CGBColor getDMGCompatPaletteColor(uint8_t *cgbPalette, uint8_t dmgPaletteBy
     }
 }
 
+void PPU::drawPixel(int pixelCoord, SystemType systemType, bool cgbMode, int colorId,
+                    uint8_t *palette, uint8_t dmgPaletteByte)
+{
+    switch (systemType)
+    {
+    case SystemType::DMG:
+        if (palette == nullptr)
+        {
+            mLCD->pixels[pixelCoord] = {.dmg = LCD::DMGColor::White};
+        }
+        else
+        {
+            mLCD->pixels[pixelCoord] = {.dmg = getDMGPaletteColor(*palette, colorId)};
+        }
+        break;
+
+    case SystemType::CGB:
+        if (palette == nullptr)
+        {
+            mLCD->pixels[pixelCoord] = {.cgb = {.r = 31, .g = 31, .b = 31}};
+        }
+        else if (cgbMode)
+        {
+            mLCD->pixels[pixelCoord] = {.cgb = getCGBPaletteColor(palette, colorId)};
+        }
+        else
+        {
+            mLCD->pixels[pixelCoord] = {.cgb = getDMGCompatPaletteColor(palette, dmgPaletteByte, colorId)};
+        }
+        break;
+
+    default:
+        break;
+    }
+}
+
+void PPU::drawBGPixel(int x, int y, bool isWindow, int pixelCoord, int pixelX, SystemType systemType, bool cgbMode)
+{
+    int colorId = 0;
+    uint8_t *palette = nullptr;
+    uint8_t dmgPaletteByte;
+
+    // Get color and attributes
+    uint8_t tileId = getBGTileAtScreenPixel(x, y, isWindow);
+    int tilePixelX = x % TILE_LENGTH;
+    int tilePixelY = y % TILE_LENGTH;
+    int paletteIndex;
+    if (cgbMode)
+    {
+        uint8_t attributes = getBGTileAtScreenPixel(x, y, isWindow, true);
+        bool xFlip = attributes & BG_ATTRIB_FLAG_X_FLIP;
+        bool yFlip = attributes & BG_ATTRIB_FLAG_Y_FLIP;
+        int bank = (attributes & BG_ATTRIB_FLAG_BANK) >> 3;
+        paletteIndex = attributes & CGB_PAL_BITMASK;
+        mBGColorIdCache[pixelX] = getBGTilePixel(tileId, tilePixelX, tilePixelY, false, xFlip, yFlip, bank);
+        colorId = mBGColorIdCache[pixelX];
+        mBGForcePriorityCache[pixelX] = (attributes & BG_ATTRIB_FLAG_PRIORITY) ? true : false;
+    }
+    else
+    {
+        mBGColorIdCache[pixelX] = getBGTilePixel(tileId, tilePixelX, tilePixelY, false);
+        colorId = mBGColorIdCache[pixelX];
+        mBGForcePriorityCache[pixelX] = false;
+    }
+
+    // Get palette
+    switch (systemType)
+    {
+    case SystemType::DMG:
+        palette = &(mLCD->BGP);
+        break;
+
+    case SystemType::CGB:
+        if (cgbMode)
+        {
+            palette = getCGBPalette(paletteIndex, mLCD->colorBGPaletteMemory);
+        }
+        else
+        {
+            palette = getCGBPalette(0, mLCD->colorBGPaletteMemory);
+            dmgPaletteByte = mLCD->BGP;
+        }
+        break;
+
+    default:
+        break;
+    }
+
+    drawPixel(pixelCoord, systemType, cgbMode, colorId, palette, dmgPaletteByte);
+}
+
 void PPU::updateScreenPixels(int pixelY)
 {
     int pixelCoord = pixelY * LCD::SCREEN_W;
@@ -366,81 +457,53 @@ void PPU::updateScreenPixels(int pixelY)
     bool cgbMode = mGameboy->inCGBMode();
     bool bgEnable = mLCD->LCDC & LCD::LCDC_FLAG_BG_WINDOW_ENABLE;
 
-    for (int pixelX = 0; pixelX < LCD::SCREEN_W; pixelX++)
+    if (cgbMode || bgEnable)
     {
-        int colorId = 0;
-        uint8_t *palette = nullptr;
-        uint8_t dmgPaletteByte;
-        int bgColorId = 0;
-        bool bgForcePriority = false;
-        if (cgbMode || bgEnable)
+        int bgEndX = LCD::SCREEN_W;
+        if ((mLCD->LCDC & LCD::LCDC_FLAG_WINDOW_ENABLE) && mWYTriggered && mLCD->WX - 7 < LCD::SCREEN_W)
         {
-            int x, y;
-            bool isWindow;
-            if ((mLCD->LCDC & LCD::LCDC_FLAG_WINDOW_ENABLE) && pixelX >= mLCD->WX - 7 && mWYTriggered)
+            if (!mIncrementedWindowLine)
             {
-                if (!mIncrementedWindowLine)
-                {
-                    mLCD->windowLineCounter++;
-                    mIncrementedWindowLine = true;
-                }
-                x = pixelX - mLCD->WX + 7;
-                y = mLCD->windowLineCounter - 1;
-                isWindow = true;
+                mLCD->windowLineCounter++;
+                mIncrementedWindowLine = true;
             }
-            else
-            {
-                x = (pixelX + mLCD->SCX) % 256;
-                y = (pixelY + mLCD->SCY) % 256;
-                isWindow = false;
-            }
-
-            // Get color and attributes
-            uint8_t tileId = getBGTileAtScreenPixel(x, y, isWindow);
-            int tilePixelX = x % TILE_LENGTH;
-            int tilePixelY = y % TILE_LENGTH;
-            int paletteIndex;
-            if (cgbMode)
-            {
-                uint8_t attributes = getBGTileAtScreenPixel(x, y, isWindow, true);
-                bool xFlip = attributes & BG_ATTRIB_FLAG_X_FLIP;
-                bool yFlip = attributes & BG_ATTRIB_FLAG_Y_FLIP;
-                int bank = (attributes & BG_ATTRIB_FLAG_BANK) >> 3;
-                paletteIndex = attributes & CGB_PAL_BITMASK;
-                bgColorId = getBGTilePixel(tileId, tilePixelX, tilePixelY, false, xFlip, yFlip, bank);
-                bgForcePriority = (attributes & BG_ATTRIB_FLAG_PRIORITY) ? true : false;
-            }
-            else
-            {
-                bgColorId = getBGTilePixel(tileId, tilePixelX, tilePixelY, false);
-            }
-            colorId = bgColorId;
-
-            // Get palette
-            switch (systemType)
-            {
-            case SystemType::DMG:
-                palette = &(mLCD->BGP);
-                break;
-
-            case SystemType::CGB:
-                if (cgbMode)
-                {
-                    palette = getCGBPalette(paletteIndex, mLCD->colorBGPaletteMemory);
-                }
-                else
-                {
-                    palette = getCGBPalette(0, mLCD->colorBGPaletteMemory);
-                    dmgPaletteByte = mLCD->BGP;
-                }
-                break;
-
-            default:
-                break;
-            }
+            bgEndX = std::max(0, mLCD->WX - 7);
         }
-        if (mLCD->LCDC & LCD::LCDC_FLAG_OBJ_ENABLE)
+
+        int x, y;
+        for (int pixelX = 0; pixelX < bgEndX; pixelX++)
         {
+            x = (pixelX + mLCD->SCX) % 256;
+            y = (pixelY + mLCD->SCY) % 256;
+            drawBGPixel(x, y, false, pixelCoord, pixelX, systemType, cgbMode);
+            pixelCoord++;
+        }
+        for (int pixelX = bgEndX; pixelX < LCD::SCREEN_W; pixelX++)
+        {
+            x = pixelX - mLCD->WX + 7;
+            y = mLCD->windowLineCounter - 1;
+            drawBGPixel(x, y, true, pixelCoord, pixelX, systemType, cgbMode);
+            pixelCoord++;
+        }
+    }
+    else
+    {
+        for (int pixelX = 0; pixelX < LCD::SCREEN_W; pixelX++)
+        {
+            drawPixel(pixelCoord, systemType, cgbMode, 0, nullptr, 0);
+            pixelCoord++;
+        }
+    }
+
+    if (mLCD->LCDC & LCD::LCDC_FLAG_OBJ_ENABLE)
+    {
+        pixelCoord = pixelY * LCD::SCREEN_W;
+        for (int pixelX = 0; pixelX < LCD::SCREEN_W; pixelX++)
+        {
+            int colorId = 0;
+            uint8_t *palette = nullptr;
+            uint8_t dmgPaletteByte;
+
             // The smaller the X coordinate, the higher the object priority.
             // 256 > any unsigned byte
             int lowestX = 256;
@@ -484,7 +547,8 @@ void PPU::updateScreenPixels(int pixelY)
                 int bank = cgbMode ? ((flags & OBJ_FLAG_BANK) >> 3) : 0;
                 int objColorId = getBGTilePixel(tileId, tilePixelX, tilePixelY, true,
                                                 (flags & OBJ_FLAG_X_FLIP) ? true : false, yFlip, bank);
-                bool bgHasPriority = ((flags & OBJ_FLAG_PRIORITY) || bgForcePriority) && bgColorId > 0 && bgEnable;
+                bool bgHasPriority = ((flags & OBJ_FLAG_PRIORITY) || mBGForcePriorityCache[pixelX]) &&
+                                     mBGColorIdCache[pixelX] > 0 && bgEnable;
                 if (objColorId != 0 && !bgHasPriority)
                 {
                     colorId = objColorId;
@@ -510,41 +574,12 @@ void PPU::updateScreenPixels(int pixelY)
                         break;
                     }
                     lowestX = oam[i + 1];
+
+                    drawPixel(pixelCoord, systemType, cgbMode, colorId, palette, dmgPaletteByte);
                 }
             }
+
+            pixelCoord++;
         }
-
-        switch (systemType)
-        {
-        case SystemType::DMG:
-            if (palette == nullptr)
-            {
-                mLCD->pixels[pixelCoord] = {.dmg = LCD::DMGColor::White};
-            }
-            else
-            {
-                mLCD->pixels[pixelCoord] = {.dmg = getDMGPaletteColor(*palette, colorId)};
-            }
-            break;
-
-        case SystemType::CGB:
-            if (palette == nullptr)
-            {
-                mLCD->pixels[pixelCoord] = {.cgb = {.r = 31, .g = 31, .b = 31}};
-            }
-            else if (cgbMode)
-            {
-                mLCD->pixels[pixelCoord] = {.cgb = getCGBPaletteColor(palette, colorId)};
-            }
-            else
-            {
-                mLCD->pixels[pixelCoord] = {.cgb = getDMGCompatPaletteColor(palette, dmgPaletteByte, colorId)};
-            }
-            break;
-
-        default:
-            break;
-        }
-        pixelCoord++;
     }
 }
