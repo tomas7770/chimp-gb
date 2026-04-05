@@ -284,7 +284,7 @@ void ChimpGBApp::gameboyDraw()
     auto pixels = mGameboy->getPixels();
     switch (mGameboy->getSystemType())
     {
-    case Gameboy::SystemType::DMG:
+    case SystemType::DMG:
         for (int i = 0; i < LCD::SCREEN_W * LCD::SCREEN_H; i++)
         {
             switch (pixels[i].dmg)
@@ -306,7 +306,7 @@ void ChimpGBApp::gameboyDraw()
         }
         break;
 
-    case Gameboy::SystemType::CGB:
+    case SystemType::CGB:
         for (int i = 0; i < LCD::SCREEN_W * LCD::SCREEN_H; i++)
         {
             LCD::CGBColor color = pixels[i].cgb;
@@ -525,11 +525,11 @@ void ChimpGBApp::loadCart(Cartridge &cart, std::string &romFilename)
 
     mRomFilename = romFilename;
 
-    Gameboy::SystemType systemType = static_cast<Gameboy::SystemType>(mConfig.dmgGameEmulatedConsole);
+    SystemType systemType = static_cast<SystemType>(mConfig.dmgGameEmulatedConsole);
     if (cart.getHeader().cgbFlag & (1 << 7))
     {
         // CGB game
-        systemType = static_cast<Gameboy::SystemType>(mConfig.cgbGameEmulatedConsole);
+        systemType = static_cast<SystemType>(mConfig.cgbGameEmulatedConsole);
     }
 
     try
@@ -543,11 +543,11 @@ void ChimpGBApp::loadCart(Cartridge &cart, std::string &romFilename)
         std::string bootRomPath;
         switch (systemType)
         {
-        case Gameboy::SystemType::DMG:
+        case SystemType::DMG:
             bootRomPath = mConfig.dmgBootRomPath;
             break;
 
-        case Gameboy::SystemType::CGB:
+        case SystemType::CGB:
             bootRomPath = mConfig.cgbBootRomPath;
             break;
 

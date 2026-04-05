@@ -23,14 +23,14 @@ void PPU::writeLCDC(uint8_t value)
         // Clear LCD
         switch (mGameboy->getSystemType())
         {
-        case Gameboy::SystemType::DMG:
+        case SystemType::DMG:
             for (int i = 0; i < LCD::SCREEN_W * LCD::SCREEN_H; i++)
             {
                 mLCD->pixels[i].dmg = LCD::DMGColor::White;
             }
             break;
 
-        case Gameboy::SystemType::CGB:
+        case SystemType::CGB:
             for (int i = 0; i < LCD::SCREEN_W * LCD::SCREEN_H; i++)
             {
                 mLCD->pixels[i].cgb = {.r = 31, .g = 31, .b = 31};
@@ -362,7 +362,7 @@ void PPU::updateScreenPixels(int pixelY)
 {
     int pixelCoord = pixelY * LCD::SCREEN_W;
 
-    Gameboy::SystemType systemType = mGameboy->getSystemType();
+    SystemType systemType = mGameboy->getSystemType();
     bool cgbMode = mGameboy->inCGBMode();
     bool bgEnable = mLCD->LCDC & LCD::LCDC_FLAG_BG_WINDOW_ENABLE;
 
@@ -419,11 +419,11 @@ void PPU::updateScreenPixels(int pixelY)
             // Get palette
             switch (systemType)
             {
-            case Gameboy::SystemType::DMG:
+            case SystemType::DMG:
                 palette = &(mLCD->BGP);
                 break;
 
-            case Gameboy::SystemType::CGB:
+            case SystemType::CGB:
                 if (cgbMode)
                 {
                     palette = getCGBPalette(paletteIndex, mLCD->colorBGPaletteMemory);
@@ -490,11 +490,11 @@ void PPU::updateScreenPixels(int pixelY)
                     colorId = objColorId;
                     switch (systemType)
                     {
-                    case Gameboy::SystemType::DMG:
+                    case SystemType::DMG:
                         palette = (flags & OBJ_FLAG_DMG_PAL) ? &(mLCD->OBP1) : &(mLCD->OBP0);
                         break;
 
-                    case Gameboy::SystemType::CGB:
+                    case SystemType::CGB:
                         if (cgbMode)
                         {
                             palette = getCGBPalette(flags & CGB_PAL_BITMASK, mLCD->colorOBJPaletteMemory);
@@ -516,7 +516,7 @@ void PPU::updateScreenPixels(int pixelY)
 
         switch (systemType)
         {
-        case Gameboy::SystemType::DMG:
+        case SystemType::DMG:
             if (palette == nullptr)
             {
                 mLCD->pixels[pixelCoord] = {.dmg = LCD::DMGColor::White};
@@ -527,7 +527,7 @@ void PPU::updateScreenPixels(int pixelY)
             }
             break;
 
-        case Gameboy::SystemType::CGB:
+        case SystemType::CGB:
             if (palette == nullptr)
             {
                 mLCD->pixels[pixelCoord] = {.cgb = {.r = 31, .g = 31, .b = 31}};

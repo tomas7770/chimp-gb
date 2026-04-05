@@ -1,5 +1,6 @@
 #pragma once
 
+#include "SystemType.h"
 #include "Cartridge.h"
 #include "CPU.h"
 #include "Timer.h"
@@ -14,12 +15,6 @@
 class Gameboy
 {
 public:
-    enum SystemType
-    {
-        DMG,
-        CGB,
-    };
-
     Gameboy(const Cartridge &cart, bool debug, SystemType systemType)
         : mSystemType(systemType), mCart(std::move(cart)), mCPU(this, debug), mPPU(this, &(this->mLCD)) {}
 
