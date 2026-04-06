@@ -306,7 +306,7 @@ int PPU::getBGTilePixel(uint8_t tileId, int tilePixelX, int tilePixelY, bool dra
     return (msb << 1) + lsb;
 }
 
-LCD::DMGColor getDMGPaletteColor(uint8_t paletteByte, int colorId)
+inline LCD::DMGColor getDMGPaletteColor(uint8_t paletteByte, int colorId)
 {
     switch (colorId)
     {
@@ -322,12 +322,12 @@ LCD::DMGColor getDMGPaletteColor(uint8_t paletteByte, int colorId)
     }
 }
 
-uint8_t *getCGBPalette(int paletteIndex, uint8_t *paletteMemory)
+inline uint8_t *getCGBPalette(int paletteIndex, uint8_t *paletteMemory)
 {
     return paletteMemory + paletteIndex * 8;
 }
 
-LCD::CGBColor getCGBPaletteColor(uint8_t *palette, int colorId)
+inline LCD::CGBColor getCGBPaletteColor(uint8_t *palette, int colorId)
 {
     // Palette is 8 bytes: 4 colors x 2 bytes per color
     uint8_t *color = palette + colorId * 2;
@@ -342,7 +342,7 @@ LCD::CGBColor getCGBPaletteColor(uint8_t *palette, int colorId)
     return {.r = r, .g = g, .b = b};
 }
 
-LCD::CGBColor getDMGCompatPaletteColor(uint8_t *cgbPalette, uint8_t dmgPaletteByte, int colorId)
+inline LCD::CGBColor getDMGCompatPaletteColor(uint8_t *cgbPalette, uint8_t dmgPaletteByte, int colorId)
 {
     switch (colorId)
     {
