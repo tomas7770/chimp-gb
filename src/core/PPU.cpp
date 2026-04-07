@@ -545,6 +545,7 @@ void PPU::updateScreenPixels(int pixelY)
         }
 
         // Window
+        mBGTileCache.clear();
         y = mLCD->windowLineCounter - 1;
         if (mLCD->LCDC & LCD::LCDC_FLAG_WINDOW_TILE_MAP)
         {
