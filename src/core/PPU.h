@@ -56,6 +56,14 @@ private:
 
     bool mBGForcePriorityCache[LCD::SCREEN_W];
     int mBGColorIdCache[LCD::SCREEN_W];
+    // Cache that maps a boolean OR concatenation of attributes and tileId to an X coordinate on the current row
+    // where the tile has already been drawn.
+    struct CachedTile
+    {
+        int attributesTileIdKey;
+        int pixelX;
+    };
+    std::vector<CachedTile> mBGTileCache;
 
     void (*drawCallback)(void *userdata) = nullptr;
     void *mDrawCallbackUserdata = nullptr;

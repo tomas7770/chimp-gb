@@ -397,6 +397,25 @@ void PPU::drawPixel(int pixelCoord, SystemType systemType, bool cgbMode, int col
 void PPU::drawBGTileRow(uint8_t tileId, uint8_t attributes, int tileStart, int tileEnd, int row,
                         int pixelX, int pixelY, SystemType systemType, bool cgbMode)
 {
+    if (tileStart == 0 && tileEnd == TILE_LENGTH - 1)
+    {
+        auto attributesTileIdKey = (attributes << 8) | tileId;
+        for (auto &cachedTile : mBGTileCache)
+        {
+            if (cachedTile.attributesTileIdKey == attributesTileIdKey)
+            {
+                int srcPixelX = cachedTile.pixelX;
+                int destOffset = pixelY * LCD::SCREEN_W + pixelX;
+                int srcOffset = pixelY * LCD::SCREEN_W + srcPixelX;
+                memcpy(mLCD->pixels + destOffset, mLCD->pixels + srcOffset, sizeof(LCD::Color) * TILE_LENGTH);
+                memcpy(mBGColorIdCache + pixelX, mBGColorIdCache + srcPixelX, sizeof(int) * TILE_LENGTH);
+                memcpy(mBGForcePriorityCache + pixelX, mBGForcePriorityCache + srcPixelX, sizeof(bool) * TILE_LENGTH);
+                return;
+            }
+        }
+        mBGTileCache.push_back(CachedTile{.attributesTileIdKey = attributesTileIdKey, .pixelX = pixelX});
+    }
+
     bool xFlip = false;
     bool yFlip = false;
     int bank = 0;
@@ -487,6 +506,7 @@ void PPU::updateScreenPixels(int pixelY)
 
     if (cgbMode || bgEnable)
     {
+        mBGTileCache.clear();
         int bgEndX = LCD::SCREEN_W;
         if ((mLCD->LCDC & LCD::LCDC_FLAG_WINDOW_ENABLE) && mWYTriggered && mLCD->WX - 7 < LCD::SCREEN_W)
         {
