@@ -114,15 +114,7 @@ void APU::writeNRx2(int channel, uint8_t value)
         return;
     }
 
-    if (channel != 2)
-    {
-        mDAC[channel] = (NRx2[channel] >> DAC_BIT) ? true : false;
-    }
-
-    if (!mDAC[channel])
-    {
-        mChannelEnabled[channel] = false;
-    }
+    updateDAC(channel);
 }
 
 void APU::writeNRx4(int channel, uint8_t value)
@@ -305,12 +297,7 @@ void APU::writeNR30(uint8_t value)
         return;
     }
 
-    mDAC[2] = (NR30 >> DAC_BIT_WAVE_CHANNEL) ? true : false;
-
-    if (!mDAC[2])
-    {
-        mChannelEnabled[2] = false;
-    }
+    updateDAC(2);
 }
 
 uint8_t APU::readNR52()
@@ -340,5 +327,26 @@ void APU::writeNR52(uint8_t value)
         mSquareWaveCounter[0] = 0;
         mSquareWaveCounter[1] = 0;
         mWaveSampleBuffer = 0;
+        for (int i = 0; i < 4; i++)
+        {
+            updateDAC(i);
+        }
+    }
+}
+
+void APU::updateDAC(int channel)
+{
+    if (channel == 2)
+    {
+        mDAC[channel] = (NR30 >> DAC_BIT_WAVE_CHANNEL) ? true : false;
+    }
+    else
+    {
+        mDAC[channel] = (NRx2[channel] >> DAC_BIT) ? true : false;
+    }
+
+    if (!mDAC[channel])
+    {
+        mChannelEnabled[channel] = false;
     }
 }

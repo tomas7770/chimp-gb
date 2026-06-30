@@ -125,7 +125,6 @@ public:
     static constexpr float VOL_CODE_HALF_RANGES[] = {0.0F, 7.5F, 3.5F, 1.5F};
 
 private:
-    float getAudioSample(bool left) const;
     void decrementLengthCounters();
     void decrementVolumeEnvelopes();
     void clockSweep();
@@ -133,6 +132,7 @@ private:
     void reloadFrequencyTimer(int channel);
     void sweepFreqCalcAndOverflowCheck(bool writePeriodAndRepeat = false);
     void triggerChannel(int channel);
+    void updateDAC(int channel);
 
     int mFrameSequencerStep = 0;
     int mFrameSequencerTimer = FRAME_SEQUENCER_PERIOD;
