@@ -2,6 +2,7 @@
 
 #include <cstdint>
 #include <vector>
+#include <unordered_map>
 #include "LCD.h"
 #include "SystemType.h"
 
@@ -31,6 +32,7 @@ public:
     void writeLCDC(uint8_t value);
     void writeSTAT(uint8_t value);
     void writeLYC(uint8_t value);
+    void writeBGP(uint8_t value);
     void setDrawCallback(void (*drawCallback)(void *), void *userdata);
 
     void eventOAMScanEnd();
@@ -65,6 +67,10 @@ private:
     };
     std::vector<CachedTile> mBGTileCache;
 
+    uint64_t mDrawStartCycle;
+    uint8_t mCurrentBGP;
+    std::unordered_map<int, uint8_t> mBGPWrites;
+
     void (*drawCallback)(void *userdata) = nullptr;
     void *mDrawCallbackUserdata = nullptr;
 
@@ -81,7 +87,6 @@ private:
                        bool xFlip = false, bool yFlip = false, int bank = 0);
     void drawPixel(int pixelCoord, SystemType systemType, bool cgbMode, int colorId,
                    uint8_t *palette, uint8_t dmgPaletteByte);
-    void drawBGPixel(int x, int y, bool isWindow, int pixelCoord, int pixelX, SystemType systemType, bool cgbMode);
     void drawBGTileRow(uint8_t tileId, uint8_t attributes, int tileStart, int tileEnd, int row,
                        int pixelX, int pixelY, SystemType systemType, bool cgbMode);
     void updateScreenPixels(int y);

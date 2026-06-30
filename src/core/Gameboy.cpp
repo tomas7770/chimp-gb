@@ -480,6 +480,7 @@ void Gameboy::writeByte(uint16_t address, uint8_t value)
     else if (address == BGP_ADDR)
     {
         mLCD.BGP = value;
+        mPPU.writeBGP(value);
     }
     else if (address == OBP0_ADDR)
     {

@@ -73,6 +73,15 @@ void PPU::writeLYC(uint8_t value)
     updateStatInterruptLine();
 }
 
+void PPU::writeBGP(uint8_t value)
+{
+    if (mMode == Draw)
+    {
+        int column = (mGameboy->cycleCounter - mDrawStartCycle) * 2;
+        mBGPWrites[column] = value;
+    }
+}
+
 void PPU::setDrawCallback(void (*drawCallback)(void *), void *userdata)
 {
     this->drawCallback = drawCallback;
@@ -104,6 +113,9 @@ void PPU::setMode(PPU::Mode mode)
 
     case Draw:
         mGameboy->addEvent(PPU_Draw_End, MODE_3_DOTS / 2);
+        mDrawStartCycle = mGameboy->cycleCounter;
+        mCurrentBGP = mLCD->BGP;
+        mBGPWrites.clear();
         break;
 
     case HBlank:
@@ -397,7 +409,20 @@ void PPU::drawPixel(int pixelCoord, SystemType systemType, bool cgbMode, int col
 void PPU::drawBGTileRow(uint8_t tileId, uint8_t attributes, int tileStart, int tileEnd, int row,
                         int pixelX, int pixelY, SystemType systemType, bool cgbMode)
 {
-    if (tileStart == 0 && tileEnd == TILE_LENGTH - 1)
+    // If there are any BGP writes in the middle of the tile, clear the tile cache and don't use it.
+    // This obviously affects performance, but most games don't do such writes.
+    bool useTileCache = true;
+    for (const auto &paletteWrite : mBGPWrites)
+    {
+        if (paletteWrite.first >= pixelX + tileStart && paletteWrite.first <= pixelX + tileEnd)
+        {
+            mBGTileCache.clear();
+            useTileCache = false;
+            break;
+        }
+    }
+
+    if (useTileCache && tileStart == 0 && tileEnd == TILE_LENGTH - 1)
     {
         auto attributesTileIdKey = (attributes << 8) | tileId;
         for (auto &cachedTile : mBGTileCache)
@@ -471,7 +496,11 @@ void PPU::drawBGTileRow(uint8_t tileId, uint8_t attributes, int tileStart, int t
         switch (systemType)
         {
         case SystemType::DMG:
-            palette = &(mLCD->BGP);
+            if (mBGPWrites.contains(pixelX + i))
+            {
+                mCurrentBGP = mBGPWrites[pixelX + i];
+            }
+            palette = &(mCurrentBGP);
             break;
 
         case SystemType::CGB:
@@ -482,7 +511,11 @@ void PPU::drawBGTileRow(uint8_t tileId, uint8_t attributes, int tileStart, int t
             else
             {
                 palette = getCGBPalette(0, mLCD->colorBGPaletteMemory);
-                dmgPaletteByte = mLCD->BGP;
+                if (mBGPWrites.contains(pixelX + i))
+                {
+                    mCurrentBGP = mBGPWrites[pixelX + i];
+                }
+                dmgPaletteByte = mCurrentBGP;
             }
             break;
 
