@@ -167,6 +167,8 @@ This is a non-exhaustive list of references used in the development of this emul
 
 - [MBC3 RTC save format](https://bgb.bircd.org/rtcsave.html)
 
+- [Near's Respite - Color Emulation](https://saveweb.github.io/near.sh/articles/video/color-emulation.html)
+
 - [Gameboy CPU (Sharp LR35902) Tests](https://github.com/SingleStepTests/GameboyCPUTests)
 
 - [Blargg's Gameboy hardware test ROMs](https://github.com/retrio/gb-test-roms)

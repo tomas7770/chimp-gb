@@ -26,6 +26,7 @@ const char *defaultIni =
     "exclusiveFullscreen = 0\n"
     "integerScaling = 0\n"
     "uiScale = 1.0\n"
+    "cgbColorCorrection = 1\n"
     "\n"
     "[audio]\n"
     "volume = 1.0\n"

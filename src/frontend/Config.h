@@ -24,6 +24,7 @@ public:
     int exclusiveFullscreen;
     int integerScaling;
     float uiScale;
+    int cgbColorCorrection;
 
     // audio
     float audioVolume;

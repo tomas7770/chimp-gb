@@ -223,6 +223,11 @@ void GUI::draw()
                     {
                         mConfig->integerScaling = !mConfig->integerScaling;
                     }
+                    ImGui::Separator();
+                    if (ImGui::MenuItem("GBC color correction", nullptr, mConfig->cgbColorCorrection))
+                    {
+                        mConfig->cgbColorCorrection = !mConfig->cgbColorCorrection;
+                    }
                     ImGui::EndMenu();
                 }
                 if (ImGui::BeginMenu("Audio"))

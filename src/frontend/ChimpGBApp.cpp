@@ -310,9 +310,22 @@ void ChimpGBApp::gameboyDraw()
         for (int i = 0; i < LCD::SCREEN_W * LCD::SCREEN_H; i++)
         {
             LCD::CGBColor color = pixels[i].cgb;
-            int red = (255 * color.r) / 31;
-            int green = (255 * color.g) / 31;
-            int blue = (255 * color.b) / 31;
+            int red, green, blue;
+            if (mConfig.cgbColorCorrection)
+            {
+                red = (color.r * 26 + color.g * 4 + color.b * 2);
+                green = (color.g * 24 + color.b * 8);
+                blue = (color.r * 6 + color.g * 4 + color.b * 22);
+                red = std::min(960, red) >> 2;
+                green = std::min(960, green) >> 2;
+                blue = std::min(960, blue) >> 2;
+            }
+            else
+            {
+                red = (color.r << 3) | (color.r >> 2);
+                green = (color.g << 3) | (color.g >> 2);
+                blue = (color.b << 3) | (color.b >> 2);
+            }
             mTexturePixels[i] = (red << 24) | (green << 16) | (blue << 8) | 0xFF;
         }
         break;
