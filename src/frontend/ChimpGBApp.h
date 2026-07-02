@@ -18,6 +18,7 @@ public:
     void setVideoParameters();
     void setupAudio();
     void setAudioQuality(Config::AudioQuality quality);
+    void setTargetSpeed(float targetSpeed);
     bool isPoweredOn();
     void powerOff();
     void reset();
@@ -34,12 +35,13 @@ public:
     void pushAudioSample(const std::vector<float> &leftAudioSamples,
                          const std::vector<float> &rightAudioSamples);
 
+    constexpr static double BASE_FRAME_TIME = 1000.0 * double(Gameboy::CYCLES_PER_FRAME) / double(Gameboy::CLOCK_RATE);
+    constexpr static double BASE_FRAME_RATE = 1000.0 / BASE_FRAME_TIME;
+
 private:
     constexpr const static char *WINDOW_TITLE = "ChimpGB - Game Boy Emulator";
     constexpr static int WINDOW_WIDTH = 640;
     constexpr static int WINDOW_HEIGHT = 576;
-
-    constexpr static double FRAME_TIME = 1000.0 * double(Gameboy::CYCLES_PER_FRAME) / double(Gameboy::CLOCK_RATE);
 
     constexpr const static char *SAVE_EXTENSION = ".sav";
 

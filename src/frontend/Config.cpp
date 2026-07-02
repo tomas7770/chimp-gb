@@ -76,6 +76,7 @@ void Config::load(std::stringstream &configString)
     loadIntKey(ini, audioLatency, "audio", "latency");
     loadIntKey(ini, audioQuality, "audio", "quality");
 
+    loadFloatKey(ini, targetSpeed, "emulation", "targetSpeed");
     loadStringKey(ini, dmgBootRomPath, "emulation", "dmgBootRomPath");
     loadStringKey(ini, cgbBootRomPath, "emulation", "cgbBootRomPath");
     loadIntKey(ini, dmgGameEmulatedConsole, "emulation", "dmgGameEmulatedConsole");
@@ -114,6 +115,7 @@ void Config::save(std::string &configFilepath)
     ini["audio"]["latency"] = std::to_string(audioLatency);
     ini["audio"]["quality"] = std::to_string(audioQuality);
 
+    ini["emulation"]["targetSpeed"] = std::to_string(targetSpeed);
     ini["emulation"]["dmgBootRomPath"] = dmgBootRomPath;
     ini["emulation"]["cgbBootRomPath"] = cgbBootRomPath;
     ini["emulation"]["dmgGameEmulatedConsole"] = std::to_string(dmgGameEmulatedConsole);

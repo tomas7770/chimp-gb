@@ -13,6 +13,7 @@
 
 #include <filesystem>
 #include <format>
+#include <algorithm>
 
 GUI::GUI(ChimpGBApp *app, Config *config, SDL_Window *windowSDL, SDL_Renderer *rendererSDL, SDL_Texture *textureSDL)
 {
@@ -174,6 +175,47 @@ void GUI::draw()
                     {
                         mApp->pause();
                     }
+#ifndef __EMSCRIPTEN__
+                    ImGui::Separator();
+                    if (ImGui::BeginMenu("Speed"))
+                    {
+                        if (ImGui::MenuItem("25%", nullptr, mConfig->targetSpeed == 0.25F))
+                        {
+                            mApp->setTargetSpeed(0.25F);
+                        }
+                        if (ImGui::MenuItem("50%", nullptr, mConfig->targetSpeed == 0.5F))
+                        {
+                            mApp->setTargetSpeed(0.5F);
+                        }
+                        if (ImGui::MenuItem("75%", nullptr, mConfig->targetSpeed == 0.75F))
+                        {
+                            mApp->setTargetSpeed(0.75F);
+                        }
+                        if (ImGui::MenuItem("100%", nullptr, mConfig->targetSpeed == 1.0F))
+                        {
+                            mApp->setTargetSpeed(1.0F);
+                        }
+                        if (ImGui::MenuItem("150%", nullptr, mConfig->targetSpeed == 1.5F))
+                        {
+                            mApp->setTargetSpeed(1.5F);
+                        }
+                        if (ImGui::MenuItem("200%", nullptr, mConfig->targetSpeed == 2.0F))
+                        {
+                            mApp->setTargetSpeed(2.0F);
+                        }
+                        if (ImGui::MenuItem("400%", nullptr, mConfig->targetSpeed == 4.0F))
+                        {
+                            mApp->setTargetSpeed(4.0F);
+                        }
+                        if (ImGui::MenuItem("Custom"))
+                        {
+                            mShowSpeedWindow = !mShowSpeedWindow;
+                            mTargetSpeed = mConfig->targetSpeed;
+                            mTargetFPS = ChimpGBApp::BASE_FRAME_RATE * mTargetSpeed;
+                        }
+                        ImGui::EndMenu();
+                    }
+#endif
                     ImGui::Separator();
                     if (ImGui::BeginMenu("Model"))
                     {
@@ -331,6 +373,41 @@ void GUI::draw()
         {
             // Easy way to auto-resize window to text bar
             ImGui::Text("%s", "");
+        }
+        ImGui::End();
+    }
+
+    if (mShowSpeedWindow)
+    {
+        ImGui::Begin("Set target speed", &mShowSpeedWindow);
+        static bool useFPS = false;
+        if (ImGui::RadioButton("Speed##0", !useFPS))
+        {
+            useFPS = false;
+            mTargetSpeed = mTargetFPS / ChimpGBApp::BASE_FRAME_RATE;
+        }
+        if (ImGui::RadioButton("FPS##0", useFPS))
+        {
+            useFPS = true;
+            mTargetFPS = ChimpGBApp::BASE_FRAME_RATE * mTargetSpeed;
+        }
+        if (useFPS)
+        {
+            ImGui::InputFloat("FPS##1", &mTargetFPS);
+        }
+        else
+        {
+            ImGui::InputFloat("Speed##1", &mTargetSpeed);
+        }
+        if (ImGui::Button("Apply"))
+        {
+            if (useFPS)
+            {
+                mTargetSpeed = mTargetFPS / ChimpGBApp::BASE_FRAME_RATE;
+            }
+            mTargetSpeed = std::clamp(mTargetSpeed, 0.1F, 100.0F);
+            mTargetFPS = ChimpGBApp::BASE_FRAME_RATE * mTargetSpeed;
+            mApp->setTargetSpeed(mTargetSpeed);
         }
         ImGui::End();
     }

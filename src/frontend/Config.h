@@ -35,6 +35,7 @@ public:
     int audioQuality;
 
     // emulation
+    float targetSpeed;
     std::string dmgBootRomPath;
     std::string cgbBootRomPath;
     int dmgGameEmulatedConsole;

@@ -30,9 +30,13 @@ private:
     std::string mImguiIniFilename; // need to keep a char buffer persistently
 
     bool mShowControlsWindow = false;
+    bool mShowSpeedWindow = false;
 
     bool mChangingKeybind = false;
     int mKeybindToChange;
+
+    float mTargetSpeed;
+    float mTargetFPS;
 
     void loadRomFile(std::string &openFilenameString);
     void setAudioSampleRate(int audioSampleRate);

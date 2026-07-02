@@ -253,7 +253,7 @@ void ChimpGBApp::setupAudio()
 
     if (mGameboy != nullptr)
     {
-        mGameboy->setAudioCallback(gameboyAudioCallback, this, mCyclesPerSample);
+        mGameboy->setAudioCallback(gameboyAudioCallback, this, mCyclesPerSample * mConfig.targetSpeed);
     }
 }
 
@@ -263,6 +263,15 @@ void ChimpGBApp::setAudioQuality(Config::AudioQuality quality)
     if (mGameboy != nullptr)
     {
         mGameboy->audioPointSample = mConfig.audioQuality == Config::AudioQuality::Low;
+    }
+}
+
+void ChimpGBApp::setTargetSpeed(float targetSpeed)
+{
+    mConfig.targetSpeed = targetSpeed;
+    if (mGameboy != nullptr)
+    {
+        mGameboy->setAudioCallback(gameboyAudioCallback, this, mCyclesPerSample * mConfig.targetSpeed);
     }
 }
 
@@ -498,7 +507,7 @@ void ChimpGBApp::mainLoop()
         {
             uint64_t deltaTime = SDL_GetTicks64() - frameTimestamp;
             mSleepTimeAccum -= deltaTime;
-            mSleepTimeAccum += FRAME_TIME;
+            mSleepTimeAccum += BASE_FRAME_TIME / mConfig.targetSpeed;
             uint64_t startTime = SDL_GetTicks64();
             if (mSleepTimeAccum < 0.0)
             {
@@ -549,7 +558,7 @@ void ChimpGBApp::loadCart(Cartridge &cart, std::string &romFilename)
     {
         mGameboy = new Gameboy(cart, mDebug, systemType);
         mGameboy->setDrawCallback(gameboyDrawCallback, this);
-        mGameboy->setAudioCallback(gameboyAudioCallback, this, mCyclesPerSample);
+        mGameboy->setAudioCallback(gameboyAudioCallback, this, mCyclesPerSample * mConfig.targetSpeed);
         mGameboy->audioPointSample = mConfig.audioQuality == Config::AudioQuality::Low;
         mGameboy->getCart().setSaveCallback(saveGameCallback, this);
 
