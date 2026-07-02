@@ -270,6 +270,24 @@ void GUI::draw()
                     {
                         mConfig->cgbColorCorrection = !mConfig->cgbColorCorrection;
                     }
+                    if (ImGui::BeginMenu("GB palette"))
+                    {
+                        if (ImGui::MenuItem("DMG green"))
+                        {
+                            mConfig->dmgWhite = -958493441;
+                            mConfig->dmgLightGray = -2069535745;
+                            mConfig->dmgDarkGray = 962673151;
+                            mConfig->dmgBlack = 135794943;
+                        }
+                        if (ImGui::MenuItem("Grayscale"))
+                        {
+                            mConfig->dmgWhite = -1;
+                            mConfig->dmgLightGray = 2139062271;
+                            mConfig->dmgDarkGray = 1061109759;
+                            mConfig->dmgBlack = 255;
+                        }
+                        ImGui::EndMenu();
+                    }
                     ImGui::EndMenu();
                 }
                 if (ImGui::BeginMenu("Audio"))

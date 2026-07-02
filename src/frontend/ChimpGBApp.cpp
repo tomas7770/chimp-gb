@@ -300,16 +300,16 @@ void ChimpGBApp::gameboyDraw()
             {
             default:
             case LCD::DMGColor::White:
-                mTexturePixels[i] = 0xFFFFFFFF;
+                mTexturePixels[i] = mConfig.dmgWhite;
                 break;
             case LCD::DMGColor::LightGray:
-                mTexturePixels[i] = 0x7F7F7FFF;
+                mTexturePixels[i] = mConfig.dmgLightGray;
                 break;
             case LCD::DMGColor::DarkGray:
-                mTexturePixels[i] = 0x3F3F3FFF;
+                mTexturePixels[i] = mConfig.dmgDarkGray;
                 break;
             case LCD::DMGColor::Black:
-                mTexturePixels[i] = 0x000000FF;
+                mTexturePixels[i] = mConfig.dmgBlack;
                 break;
             }
         }

@@ -68,6 +68,10 @@ void Config::load(std::stringstream &configString)
     loadIntKey(ini, integerScaling, "video", "integerScaling");
     loadFloatKey(ini, uiScale, "video", "uiScale");
     loadIntKey(ini, cgbColorCorrection, "video", "cgbColorCorrection");
+    loadIntKey(ini, dmgWhite, "video", "dmgWhite");
+    loadIntKey(ini, dmgLightGray, "video", "dmgLightGray");
+    loadIntKey(ini, dmgDarkGray, "video", "dmgDarkGray");
+    loadIntKey(ini, dmgBlack, "video", "dmgBlack");
 
     loadFloatKey(ini, audioVolume, "audio", "volume");
     loadIntKey(ini, audioMute, "audio", "mute");
@@ -107,6 +111,10 @@ void Config::save(std::string &configFilepath)
     ini["video"]["integerScaling"] = std::to_string(integerScaling);
     ini["video"]["uiScale"] = std::to_string(uiScale);
     ini["video"]["cgbColorCorrection"] = std::to_string(cgbColorCorrection);
+    ini["video"]["dmgWhite"] = std::to_string(dmgWhite);
+    ini["video"]["dmgLightGray"] = std::to_string(dmgLightGray);
+    ini["video"]["dmgDarkGray"] = std::to_string(dmgDarkGray);
+    ini["video"]["dmgBlack"] = std::to_string(dmgBlack);
 
     ini["audio"]["volume"] = std::to_string(audioVolume);
     ini["audio"]["mute"] = std::to_string(audioMute);

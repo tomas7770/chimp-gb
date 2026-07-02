@@ -25,6 +25,10 @@ public:
     int integerScaling;
     float uiScale;
     int cgbColorCorrection;
+    int dmgWhite;
+    int dmgLightGray;
+    int dmgDarkGray;
+    int dmgBlack;
 
     // audio
     float audioVolume;
