@@ -175,8 +175,8 @@ void GUI::draw()
                     {
                         mApp->pause();
                     }
-#ifndef __EMSCRIPTEN__
                     ImGui::Separator();
+#ifndef __EMSCRIPTEN__
                     if (ImGui::BeginMenu("Speed"))
                     {
                         if (ImGui::MenuItem("25%", nullptr, mConfig->targetSpeed == 0.25F))
@@ -216,6 +216,17 @@ void GUI::draw()
                         ImGui::EndMenu();
                     }
 #endif
+                    if (ImGui::BeginMenu("Frameskip"))
+                    {
+                        for (int i = 0; i <= 9; i++)
+                        {
+                            if (ImGui::MenuItem(std::to_string(i).c_str(), nullptr, mConfig->frameskip == i))
+                            {
+                                mConfig->frameskip = i;
+                            }
+                        }
+                        ImGui::EndMenu();
+                    }
                     ImGui::Separator();
                     if (ImGui::BeginMenu("Model"))
                     {

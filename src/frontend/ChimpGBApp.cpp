@@ -499,6 +499,10 @@ void ChimpGBApp::mainLoop()
         try
         {
             mGameboy->doFrame(generateAudio);
+            for (int i = 0; i < mConfig.frameskip; i++)
+            {
+                mGameboy->doFrame(generateAudio);
+            }
         }
         catch (std::runtime_error err)
         {

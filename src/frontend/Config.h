@@ -41,6 +41,7 @@ public:
 
     // emulation
     float targetSpeed;
+    int frameskip;
     std::string dmgBootRomPath;
     std::string cgbBootRomPath;
     int dmgGameEmulatedConsole;

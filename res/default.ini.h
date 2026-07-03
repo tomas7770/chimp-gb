@@ -61,6 +61,7 @@ const char *defaultIni =
     "\n"
     "[emulation]\n"
     "targetSpeed = 1.0\n"
+    "frameskip = 0\n"
     "; Game Boy (monochrome) boot ROM path. This should be a 256 byte file.\n"
     "dmgBootRomPath =\n"
     "; Game Boy Color boot ROM path. This should be a 2304 byte file.\n"
