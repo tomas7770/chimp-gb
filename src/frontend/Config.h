@@ -23,6 +23,7 @@ public:
     int fullscreen;
     int exclusiveFullscreen;
     int integerScaling;
+    int bilinearFiltering;
     float uiScale;
     int cgbColorCorrection;
     int dmgWhite;

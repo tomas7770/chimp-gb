@@ -265,6 +265,11 @@ void GUI::draw()
                     {
                         mConfig->integerScaling = !mConfig->integerScaling;
                     }
+                    if (ImGui::MenuItem("Bilinear filtering", nullptr, mConfig->bilinearFiltering))
+                    {
+                        mConfig->bilinearFiltering = !mConfig->bilinearFiltering;
+                        mApp->setVideoParameters();
+                    }
                     ImGui::Separator();
                     if (ImGui::MenuItem("GBC color correction", nullptr, mConfig->cgbColorCorrection))
                     {

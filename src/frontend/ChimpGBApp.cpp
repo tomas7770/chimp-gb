@@ -229,6 +229,15 @@ void ChimpGBApp::setVideoParameters()
     {
         SDL_SetWindowFullscreen(mWindowSDL, 0);
     }
+
+    if (mConfig.bilinearFiltering)
+    {
+        SDL_SetTextureScaleMode(mTextureSDL, SDL_ScaleModeLinear);
+    }
+    else
+    {
+        SDL_SetTextureScaleMode(mTextureSDL, SDL_ScaleModeNearest);
+    }
 }
 
 void ChimpGBApp::setupAudio()
