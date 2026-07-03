@@ -416,6 +416,7 @@ void mainLoopCallback(void *userdata)
 void ChimpGBApp::startMainLoop()
 {
     frameTimestamp = SDL_GetTicks64();
+    mCoreDeltaTime = 0;
     mRunning = true;
     mSleepTimeAccum = 0.0;
 #ifdef __EMSCRIPTEN__
@@ -496,13 +497,27 @@ void ChimpGBApp::mainLoop()
 
         mAudioSamples.clear();
         bool generateAudio = !mFastForward || (SDL_GetQueuedAudioSize(mAudioDevSDL) <= mConfig.audioLatency * sizeof(float) * 2);
+        double mCoreTimeAccum = mFastForward ? BASE_FRAME_TIME * 10.0 / mConfig.targetSpeed
+                                             : std::min(double(mCoreDeltaTime), BASE_FRAME_TIME * 10.0 / mConfig.targetSpeed);
+        uint64_t mCoreFrameTimestamp = SDL_GetTicks64();
         try
         {
-            mGameboy->doFrame(generateAudio);
-            for (int i = 0; i < mConfig.frameskip; i++)
+            if (mConfig.frameskip == -1)
             {
-                mGameboy->doFrame(generateAudio);
+                while (mCoreTimeAccum > BASE_FRAME_TIME / mConfig.targetSpeed)
+                {
+                    mGameboy->doFrame(generateAudio);
+                    mCoreTimeAccum -= BASE_FRAME_TIME / mConfig.targetSpeed;
+                }
             }
+            else
+            {
+                for (int i = 0; i < mConfig.frameskip; i++)
+                {
+                    mGameboy->doFrame(generateAudio);
+                }
+            }
+            mGameboy->doFrame(generateAudio);
         }
         catch (std::runtime_error err)
         {
@@ -516,6 +531,7 @@ void ChimpGBApp::mainLoop()
         }
         SDL_QueueAudio(mAudioDevSDL, mAudioSamples.data(), mAudioSamples.size() * sizeof(float));
         drawDisplay();
+        mCoreDeltaTime = SDL_GetTicks64() - mCoreFrameTimestamp;
         while (!mFastForward && (SDL_GetQueuedAudioSize(mAudioDevSDL) > mConfig.audioLatency * sizeof(float) * 2))
         {
             uint64_t deltaTime = SDL_GetTicks64() - frameTimestamp;

@@ -63,6 +63,7 @@ private:
     bool mPaused = false;
     bool mFastForward = false;
     uint64_t frameTimestamp;
+    uint64_t mCoreDeltaTime;
     double mSleepTimeAccum;
     std::vector<float> mAudioSamples;
 
