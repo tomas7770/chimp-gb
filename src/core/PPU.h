@@ -36,8 +36,8 @@ public:
     void setDrawCallback(void (*drawCallback)(void *), void *userdata);
 
     void eventOAMScanEnd();
-    void eventDrawEnd();
-    void eventNewLine();
+    void eventDrawEnd(bool generateFrame);
+    void eventNewLine(bool generateFrame);
     void eventDelayedVBlank();
     void eventEarlyLYUpdate();
 
@@ -78,7 +78,7 @@ private:
     void updateStatInterruptLine();
 
     void updateLYCInterrupt();
-    void newLine();
+    void newLine(bool generateFrame);
     bool delayedVBLInterrupt();
     void doVBLInterrupt();
 

@@ -190,7 +190,7 @@ void PPU::updateLYCInterrupt()
     updateStatInterruptLine();
 }
 
-void PPU::newLine()
+void PPU::newLine(bool generateFrame)
 {
     if (!(mLCD->LY == 0 && mMode == VBlank)) // don't increment if it's the early LY = 0 from scanline 153
     {
@@ -210,7 +210,7 @@ void PPU::newLine()
         {
             mFirstFrameAfterEnable = false;
         }
-        else if (drawCallback != nullptr)
+        else if (drawCallback != nullptr && generateFrame)
         {
             drawCallback(mDrawCallbackUserdata);
         }
@@ -251,16 +251,30 @@ void PPU::eventOAMScanEnd()
     setMode(Draw);
 }
 
-void PPU::eventDrawEnd()
+void PPU::eventDrawEnd(bool generateFrame)
 {
     // Draw scanline
-    updateScreenPixels(mLCD->LY);
+    if (generateFrame)
+    {
+        updateScreenPixels(mLCD->LY);
+    }
+    else
+    {
+        bool bgEnable = mLCD->LCDC & LCD::LCDC_FLAG_BG_WINDOW_ENABLE;
+        if (mGameboy->inCGBMode() || bgEnable)
+        {
+            if ((mLCD->LCDC & LCD::LCDC_FLAG_WINDOW_ENABLE) && mWYTriggered && mLCD->WX - 7 < LCD::SCREEN_W)
+            {
+                mLCD->windowLineCounter++;
+            }
+        }
+    }
     setMode(HBlank);
 }
 
-void PPU::eventNewLine()
+void PPU::eventNewLine(bool generateFrame)
 {
-    newLine();
+    newLine(generateFrame);
 }
 
 void PPU::eventDelayedVBlank()
