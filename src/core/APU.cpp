@@ -125,6 +125,13 @@ void APU::writeNRx2(int channel, uint8_t value)
     NRx2[channel] = value;
 
     updateDAC(channel);
+
+    // "Zombie mode" partial implementation
+    if ((value & ENV_DIR_BITMASK) && mChannelEnabled[channel])
+    {
+        mChannelVolume[channel]++;
+        mChannelVolume[channel] &= 0xF;
+    }
 }
 
 void APU::writeNRx3(int channel, uint8_t value)
