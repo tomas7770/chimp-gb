@@ -100,6 +100,11 @@ void APU::computeAudioSamples()
 
 void APU::writeNRx1(int channel, uint8_t value)
 {
+    if (!mAPUEnabled)
+    {
+        return;
+    }
+
     NRx1[channel] = value;
     if (channel == 2)
     {
@@ -113,17 +118,31 @@ void APU::writeNRx1(int channel, uint8_t value)
 
 void APU::writeNRx2(int channel, uint8_t value)
 {
+    if (!mAPUEnabled)
+    {
+        return;
+    }
     NRx2[channel] = value;
+
+    updateDAC(channel);
+}
+
+void APU::writeNRx3(int channel, uint8_t value)
+{
+    if (!mAPUEnabled)
+    {
+        return;
+    }
+    NRx3[channel] = value;
+}
+
+void APU::writeNRx4(int channel, uint8_t value)
+{
     if (!mAPUEnabled)
     {
         return;
     }
 
-    updateDAC(channel);
-}
-
-void APU::writeNRx4(int channel, uint8_t value)
-{
     NRx4[channel] = value;
     if (NRx4[channel] & TRIGGER_BITMASK)
     {
@@ -294,15 +313,42 @@ void APU::triggerChannel(int channel)
     }
 }
 
-void APU::writeNR30(uint8_t value)
+void APU::writeNR10(uint8_t value)
 {
-    NR30 = value;
     if (!mAPUEnabled)
     {
         return;
     }
+    NR10 = value;
+}
+
+void APU::writeNR30(uint8_t value)
+{
+    if (!mAPUEnabled)
+    {
+        return;
+    }
+    NR30 = value;
 
     updateDAC(2);
+}
+
+void APU::writeNR50(uint8_t value)
+{
+    if (!mAPUEnabled)
+    {
+        return;
+    }
+    NR50 = value;
+}
+
+void APU::writeNR51(uint8_t value)
+{
+    if (!mAPUEnabled)
+    {
+        return;
+    }
+    NR51 = value;
 }
 
 uint8_t APU::readNR52()
@@ -335,6 +381,20 @@ void APU::writeNR52(uint8_t value)
         for (int i = 0; i < 4; i++)
         {
             updateDAC(i);
+        }
+    }
+    else if (!mAPUEnabled)
+    {
+        NR10 = 0;
+        NR30 = 0;
+        NR50 = 0;
+        NR51 = 0;
+        for (int i = 0; i < 4; i++)
+        {
+            NRx1[i] = 0;
+            NRx2[i] = 0;
+            NRx3[i] = 0;
+            NRx4[i] = 0;
         }
     }
 }

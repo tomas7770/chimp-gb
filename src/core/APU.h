@@ -64,9 +64,13 @@ public:
 
     void writeNRx1(int channel, uint8_t value);
     void writeNRx2(int channel, uint8_t value);
+    void writeNRx3(int channel, uint8_t value);
     void writeNRx4(int channel, uint8_t value);
 
+    void writeNR10(uint8_t value);
     void writeNR30(uint8_t value);
+    void writeNR50(uint8_t value);
+    void writeNR51(uint8_t value);
 
     uint8_t readNR52();
     void writeNR52(uint8_t value);
