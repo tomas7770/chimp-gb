@@ -2458,7 +2458,8 @@ void CPU::prefetchOpcode()
                 IF &= ~(1 << i);
                 mIME = false;
                 mIRQ = INTERRUPT_HANDLERS[i];
-                return interrupt_M1();
+                mMCycleFunc = &CPU::interrupt_M1;
+                return;
             }
         }
     }
