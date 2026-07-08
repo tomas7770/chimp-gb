@@ -20,6 +20,8 @@ public:
 
     int VRAMBank = 0;
 
+    int frameDelay;
+
     enum Mode
     {
         HBlank,
@@ -36,8 +38,8 @@ public:
     void setDrawCallback(void (*drawCallback)(void *), void *userdata);
 
     void eventOAMScanEnd();
-    void eventDrawEnd(bool generateFrame);
-    void eventNewLine(bool generateFrame);
+    void eventDrawEnd();
+    void eventNewLine();
     void eventDelayedVBlank();
     void eventEarlyLYUpdate();
 
@@ -78,7 +80,7 @@ private:
     void updateStatInterruptLine();
 
     void updateLYCInterrupt();
-    void newLine(bool generateFrame);
+    void newLine();
     bool delayedVBLInterrupt();
     void doVBLInterrupt();
 

@@ -613,9 +613,10 @@ const LCD::Color *Gameboy::getPixels() const
     return mLCD.pixels;
 }
 
-void Gameboy::doFrame(bool generateAudio, bool generateFrame)
+void Gameboy::doFrame(bool generateAudio, int frameDelay)
 {
     addEvent(FinishFrame, CYCLES_PER_FRAME);
+    mPPU.frameDelay = frameDelay;
 
     while (1)
     {
@@ -679,11 +680,11 @@ void Gameboy::doFrame(bool generateAudio, bool generateFrame)
             break;
 
         case PPU_Draw_End:
-            mPPU.eventDrawEnd(generateFrame);
+            mPPU.eventDrawEnd();
             break;
 
         case PPU_NewLine:
-            mPPU.eventNewLine(generateFrame);
+            mPPU.eventNewLine();
             break;
 
         case PPU_DelayedVBlank:

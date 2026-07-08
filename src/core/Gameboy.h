@@ -38,7 +38,7 @@ public:
 
     const LCD::Color *getPixels() const;
 
-    void doFrame(bool generateAudio, bool generateFrame);
+    void doFrame(bool generateAudio, int frameDelay);
     void onKeyPress(int key);
     void onKeyRelease(int key);
 

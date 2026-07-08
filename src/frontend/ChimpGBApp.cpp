@@ -506,18 +506,18 @@ void ChimpGBApp::mainLoop()
             {
                 while (mCoreTimeAccum > BASE_FRAME_TIME / mConfig.targetSpeed)
                 {
-                    mGameboy->doFrame(generateAudio, false);
                     mCoreTimeAccum -= BASE_FRAME_TIME / mConfig.targetSpeed;
+                    mGameboy->doFrame(generateAudio, mCoreTimeAccum <= BASE_FRAME_TIME / mConfig.targetSpeed ? 1 : 2);
                 }
             }
             else
             {
                 for (int i = 0; i < mConfig.frameskip; i++)
                 {
-                    mGameboy->doFrame(generateAudio, false);
+                    mGameboy->doFrame(generateAudio, i == mConfig.frameskip - 1 ? 1 : 2);
                 }
             }
-            mGameboy->doFrame(generateAudio, true);
+            mGameboy->doFrame(generateAudio, 0);
         }
         catch (std::runtime_error err)
         {
