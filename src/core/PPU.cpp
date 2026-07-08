@@ -51,7 +51,6 @@ void PPU::writeLCDC(uint8_t value)
         mGameboy->removeEvent(PPU_NewLine);
         mGameboy->removeEvent(PPU_DelayedVBlank);
         mGameboy->removeEvent(PPU_EarlyLYUpdate);
-        mIncrementedWindowLine = false;
         mWYTriggered = false;
         mStatInterruptLine = 0;
         mLCD->LY = 0;
@@ -225,7 +224,6 @@ void PPU::newLine()
     else if (mLCD->LY < LCD::SCREEN_H)
     {
         setMode(OAMScan);
-        mIncrementedWindowLine = false;
         if (!mWYTriggered && mLCD->WY == mLCD->LY)
         {
             mWYTriggered = true;
@@ -564,11 +562,7 @@ void PPU::updateScreenPixels(int pixelY)
         int bgEndX = LCD::SCREEN_W;
         if ((mLCD->LCDC & LCD::LCDC_FLAG_WINDOW_ENABLE) && mWYTriggered && mLCD->WX - 7 < LCD::SCREEN_W)
         {
-            if (!mIncrementedWindowLine)
-            {
-                mLCD->windowLineCounter++;
-                mIncrementedWindowLine = true;
-            }
+            mLCD->windowLineCounter++;
             bgEndX = mLCD->WX - 7;
         }
 

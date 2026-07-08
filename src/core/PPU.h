@@ -52,7 +52,6 @@ private:
     bool mEnabled = true;
     bool mFirstFrameAfterEnable = false;
     Mode mMode;
-    bool mIncrementedWindowLine = false;
     bool mWYTriggered = false;
     int mStatInterruptLine = 0;
 
