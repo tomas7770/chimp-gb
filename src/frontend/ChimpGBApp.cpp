@@ -739,7 +739,7 @@ void ChimpGBApp::saveState()
         return;
     }
 
-    auto stateData = mGameboy->serialize();
+    auto stateData = mGameboy->requestSaveState();
     auto stateDataBytes = stateData->data();
     std::string saveStateFilepath = getSavesPath() + mRomFilename + std::string(SAVE_STATE_EXTENSION);
     std::ofstream dataStream(saveStateFilepath, std::ios::binary | std::ios::trunc);

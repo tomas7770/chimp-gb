@@ -613,38 +613,30 @@ const LCD::Color *Gameboy::getPixels() const
     return mLCD.pixels;
 }
 
-void Gameboy::doFrame(bool generateAudio, int frameDelay)
+inline void Gameboy::doCycle(bool generateAudio)
 {
-    addEvent(FinishFrame, CYCLES_PER_FRAME);
-    mPPU.frameDelay = frameDelay;
-
-    while (1)
+    if (cycleCounter < mEvents.begin()->timestamp)
     {
-        while (cycleCounter < mEvents.begin()->timestamp)
+        // 2 MHz cycle (2 T-cycles) (1 M-cycle at double speed mode);
+        // CPU is emulated at M-cycle accuracy;
+        // PPU timings are multiples of 2 T-cycles (with current implementation);
+        // APU maximum audio frequency is 2 MHz;
+        // Performance can be optimized by emulating 2 T-cycles at once, without affecting accuracy.
+
+        if (!(cycleCounter % 2) || mCPU.isDoubleSpeed())
         {
-            // 2 MHz cycle (2 T-cycles) (1 M-cycle at double speed mode);
-            // CPU is emulated at M-cycle accuracy;
-            // PPU timings are multiples of 2 T-cycles (with current implementation);
-            // APU maximum audio frequency is 2 MHz;
-            // Performance can be optimized by emulating 2 T-cycles at once, without affecting accuracy.
-
-            if (!(cycleCounter % 2) || mCPU.isDoubleSpeed())
+            mSysCounter++;
+            if (mTimer.tick(mSysCounter, mSysCounter - 1))
             {
-                mSysCounter++;
-                if (mTimer.tick(mSysCounter, mSysCounter - 1))
-                {
-                    mCPU.requestInterrupt(CPU::InterruptSource::Timer);
-                }
-                mCPU.doMCycle();
+                mCPU.requestInterrupt(CPU::InterruptSource::Timer);
             }
-            mAPU.doCycle();
-            cycleCounter++;
+            mCPU.doMCycle();
+        }
+        mAPU.doCycle();
+        cycleCounter++;
 
-            if (!generateAudio)
-            {
-                continue;
-            }
-
+        if (generateAudio)
+        {
             if (!audioPointSample)
             {
                 mAPU.computeAudioSamples();
@@ -670,7 +662,10 @@ void Gameboy::doFrame(bool generateAudio, int frameDelay)
                 mRightAudioSamples.clear();
             }
         }
+    }
 
+    if (cycleCounter == mEvents.begin()->timestamp)
+    {
         SchedulerEvent event = *(mEvents.begin());
         mEvents.erase(mEvents.begin());
         switch (event.type)
@@ -699,12 +694,19 @@ void Gameboy::doFrame(bool generateAudio, int frameDelay)
             mAPU.eventFrameSequencerTick();
             break;
 
-        case FinishFrame:
-            return;
-
         default:
             break;
         }
+    }
+}
+
+void Gameboy::doFrame(bool generateAudio, int frameDelay)
+{
+    mPPU.frameDelay = frameDelay;
+
+    for (int i = 0; i < CYCLES_PER_FRAME; i++)
+    {
+        doCycle(generateAudio);
     }
 }
 
@@ -828,6 +830,22 @@ std::shared_ptr<std::vector<uint8_t>> Gameboy::serialize()
     return state.serialize();
 }
 
+std::shared_ptr<std::vector<uint8_t>> Gameboy::requestSaveState()
+{
+    // Only save state between CPU instructions (or when halted), during VBlank (or LCD disabled), among other safe conditions.
+    // Advance the system state until an appropriate moment.
+    while (!canSaveState())
+    {
+        doCycle(false);
+    }
+    return serialize();
+}
+
+bool Gameboy::canSaveState() const
+{
+    return mCPU.canSaveState() && mPPU.canSaveState();
+}
+
 void Gameboy::loadState(const SaveState &state)
 {
     if (memcmp(state.titleChars, mCart.getHeader().titleChars, 16) != 0 ||
@@ -870,9 +888,9 @@ void Gameboy::loadState(const SaveState &state)
             writeByte(address, state.ioRegisters[i]);
         }
     }
-    mCPU.loadState(state);
     std::memcpy(wram, state.wram, wramSize);
     std::memcpy(hram, state.hram, hramSize);
-    mPPU.loadState(state);
+    mCPU.loadState(state);
     mLCD.loadState(state);
+    mPPU.loadState(state);
 }

@@ -162,6 +162,11 @@ void CPU::saveState(SaveState &state) const
     state.IME = mIME;
     state.IE = IE;
     state.halted = mHalted;
+
+    state.ioRegisters[0x51] = hdmaSrc >> 8;
+    state.ioRegisters[0x52] = hdmaSrc & 0xFF;
+    state.ioRegisters[0x53] = hdmaDest >> 8;
+    state.ioRegisters[0x54] = hdmaDest & 0xFF;
 }
 
 void CPU::loadState(const SaveState &state)
@@ -183,6 +188,16 @@ void CPU::loadState(const SaveState &state)
     {
         mDoubleSpeed = (state.ioRegisters[0x4D] & (1 << 7)) ? true : false;
     }
+
+    // Assume that the state was saved between instructions (mMCycleFunc == decodeExecuteOpcode)
+    mOpcode = mGameboy->readByte(mPC - 1);
+}
+
+bool CPU::canSaveState() const
+{
+    return mHalted ||
+           (mMCycleFunc == &CPU::decodeExecuteOpcode &&
+            !mGeneralDMACopying && !mHBlankDMACopying && !mDMACopying && !mRequestIME);
 }
 
 bool CPU::doCGB_DMA()
