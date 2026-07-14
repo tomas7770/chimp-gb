@@ -20,7 +20,7 @@ public:
     void setAudioQuality(Config::AudioQuality quality);
     void setTargetSpeed(float targetSpeed);
     bool isPoweredOn();
-    void powerOff();
+    void powerOff(int error_code = 0);
     void reset();
     bool isPaused();
     void pause();

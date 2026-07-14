@@ -522,12 +522,12 @@ void ChimpGBApp::mainLoop()
         catch (std::runtime_error err)
         {
             SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, WINDOW_TITLE, err.what(), mWindowSDL);
-            terminate(-1);
+            return powerOff(-1);
         }
         catch (std::logic_error err)
         {
             SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, WINDOW_TITLE, err.what(), mWindowSDL);
-            terminate(-1);
+            return powerOff(-1);
         }
         SDL_QueueAudio(mAudioDevSDL, mAudioSamples.data(), mAudioSamples.size() * sizeof(float));
         drawDisplay();
@@ -554,11 +554,14 @@ bool ChimpGBApp::isPoweredOn()
     return mGameboy != nullptr;
 }
 
-void ChimpGBApp::powerOff()
+void ChimpGBApp::powerOff(int error_code)
 {
     if (mGameboy != nullptr)
     {
-        saveGameSafe();
+        if (error_code == 0)
+        {
+            saveGameSafe();
+        }
         delete mGameboy;
         mGameboy = nullptr;
         mPaused = false;
