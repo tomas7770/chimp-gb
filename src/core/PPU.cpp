@@ -97,6 +97,16 @@ void PPU::loadState(const SaveState &state)
 {
     std::memcpy(vram, state.vram, vramSize);
     std::memcpy(oam, state.oam, oamSize);
+    if (mEnabled)
+    {
+        mGameboy->removeEvent(PPU_OAMScan_End);
+        setMode(VBlank);
+    }
+}
+
+bool PPU::canSaveState() const
+{
+    return mMode == VBlank || !mEnabled;
 }
 
 void PPU::setMode(PPU::Mode mode)

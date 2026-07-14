@@ -39,6 +39,7 @@ public:
 
     const LCD::Color *getPixels() const;
 
+    void doCycle(bool generateAudio);
     void doFrame(bool generateAudio, int frameDelay);
     void onKeyPress(int key);
     void onKeyRelease(int key);
@@ -63,6 +64,7 @@ public:
     bool inHBlank() { return mPPU.getMode() == 0; }
 
     std::shared_ptr<std::vector<uint8_t>> serialize();
+    std::shared_ptr<std::vector<uint8_t>> requestSaveState();
     void loadState(const SaveState &state);
 
     static constexpr int CYCLES_PER_FRAME = 70224 / 2;
@@ -92,6 +94,8 @@ private:
                           const std::vector<float> &rightAudioSamples) = nullptr;
     void *mAudioCallbackUserdata = nullptr;
     double mCyclesPerAudioSample, mAudioTimeAccum;
+
+    bool canSaveState() const;
 
     static constexpr uint16_t WRAM_BANK_SIZE = (1 << 12);
 
