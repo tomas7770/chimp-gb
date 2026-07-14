@@ -64,6 +64,7 @@ public:
 
     void saveState(SaveState &state) const;
     void loadState(const SaveState &state);
+    bool canSaveState() const;
 
     // Interrupts (these registers are accessible through memory map)
     // Interrupt enable

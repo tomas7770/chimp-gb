@@ -59,6 +59,7 @@ struct LCD
     {
         memcpy(colorBGPaletteMemory, state.colorBGPaletteMemory, 64);
         memcpy(colorOBJPaletteMemory, state.colorOBJPaletteMemory, 64);
+        LY = state.ioRegisters[0x44];
     }
 
     static constexpr uint8_t LCDC_FLAG_LCD_PPU_ENABLE = (1 << 7);

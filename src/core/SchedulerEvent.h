@@ -10,7 +10,6 @@ enum SchedulerEventType
     PPU_DelayedVBlank,
     PPU_EarlyLYUpdate,
     APU_FrameSequencerTick,
-    FinishFrame
 };
 
 struct SchedulerEvent
