@@ -28,11 +28,7 @@ GUI::GUI(ChimpGBApp *app, Config *config, SDL_Window *windowSDL, SDL_Renderer *r
     io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;
     mImguiIniFilename = getStatePath() + "imgui.ini";
     io.IniFilename = mImguiIniFilename.c_str();
-    ImGui::StyleColorsDark();
-    // Setup scaling
-    ImGuiStyle &style = ImGui::GetStyle();
-    style.ScaleAllSizes(mConfig->uiScale);
-    style.FontScaleDpi = mConfig->uiScale;
+    updateUIScale();
     ImGui_ImplSDL2_InitForSDLRenderer(windowSDL, mRendererSDL);
     ImGui_ImplSDLRenderer2_Init(mRendererSDL);
 }
@@ -284,6 +280,51 @@ void GUI::draw()
                         mApp->setVideoParameters();
                     }
                     ImGui::Separator();
+                    if (ImGui::BeginMenu("UI scale"))
+                    {
+                        if (ImGui::MenuItem("100%", nullptr, mConfig->uiScale == 1.0F))
+                        {
+                            mConfig->uiScale = 1.0F;
+                            updateUIScale();
+                        }
+                        if (ImGui::MenuItem("125%", nullptr, mConfig->uiScale == 1.25F))
+                        {
+                            mConfig->uiScale = 1.25F;
+                            updateUIScale();
+                        }
+                        if (ImGui::MenuItem("150%", nullptr, mConfig->uiScale == 1.5F))
+                        {
+                            mConfig->uiScale = 1.5F;
+                            updateUIScale();
+                        }
+                        if (ImGui::MenuItem("175%", nullptr, mConfig->uiScale == 1.75F))
+                        {
+                            mConfig->uiScale = 1.75F;
+                            updateUIScale();
+                        }
+                        if (ImGui::MenuItem("200%", nullptr, mConfig->uiScale == 2.0F))
+                        {
+                            mConfig->uiScale = 2.0F;
+                            updateUIScale();
+                        }
+                        if (ImGui::MenuItem("300%", nullptr, mConfig->uiScale == 3.0F))
+                        {
+                            mConfig->uiScale = 3.0F;
+                            updateUIScale();
+                        }
+                        if (ImGui::MenuItem("400%", nullptr, mConfig->uiScale == 4.0F))
+                        {
+                            mConfig->uiScale = 4.0F;
+                            updateUIScale();
+                        }
+                        if (ImGui::MenuItem("Custom"))
+                        {
+                            mShowUIScaleWindow = !mShowUIScaleWindow;
+                            mUIScale = mConfig->uiScale;
+                        }
+                        ImGui::EndMenu();
+                    }
+                    ImGui::Separator();
                     if (ImGui::MenuItem("GBC color correction", nullptr, mConfig->cgbColorCorrection))
                     {
                         mConfig->cgbColorCorrection = !mConfig->cgbColorCorrection;
@@ -448,6 +489,21 @@ void GUI::draw()
         ImGui::End();
     }
 
+    if (mShowUIScaleWindow)
+    {
+        ImGui::Begin("Set UI scale", &mShowUIScaleWindow);
+        float uiScale = mUIScale * 100.0F;
+        ImGui::SliderFloat("UI scale##0", &uiScale, 100.0F, 1000.0F, "%.0f%%",
+                           ImGuiSliderFlags_AlwaysClamp | ImGuiSliderFlags_Logarithmic);
+        mUIScale = uiScale / 100.0F;
+        if (ImGui::Button("Apply"))
+        {
+            mConfig->uiScale = mUIScale;
+            updateUIScale();
+        }
+        ImGui::End();
+    }
+
     ImGui::Render();
 
     // Clear screen
@@ -470,6 +526,15 @@ void GUI::setAudioSampleRate(int audioSampleRate)
 {
     mConfig->audioSampleRate = audioSampleRate;
     mApp->setupAudio();
+}
+
+void GUI::updateUIScale()
+{
+    ImGuiStyle &style = ImGui::GetStyle();
+    style = ImGuiStyle();
+    ImGui::StyleColorsDark();
+    style.ScaleAllSizes(mConfig->uiScale);
+    style.FontScaleDpi = mConfig->uiScale;
 }
 
 void GUI::destroy()

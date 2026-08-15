@@ -31,13 +31,16 @@ private:
 
     bool mShowControlsWindow = false;
     bool mShowSpeedWindow = false;
+    bool mShowUIScaleWindow = false;
 
     bool mChangingKeybind = false;
     int mKeybindToChange;
 
     float mTargetSpeed;
     float mTargetFPS;
+    float mUIScale;
 
     void loadRomFile(std::string &openFilenameString);
     void setAudioSampleRate(int audioSampleRate);
+    void updateUIScale();
 };
