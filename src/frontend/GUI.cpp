@@ -62,12 +62,23 @@ void GUI::draw()
             ImVec2 viewportSize;
             if (mConfig->integerScaling)
             {
-                int scaleFactor = windowRatio >= SCREEN_RATIO ? int(io.DisplaySize.y / LCD::SCREEN_H) : int(io.DisplaySize.x / LCD::SCREEN_W);
-                viewportSize = ImVec2(float(scaleFactor * LCD::SCREEN_W), float(scaleFactor * LCD::SCREEN_H));
+                if (mConfig->keepAspectRatio)
+                {
+                    int scaleFactor = windowRatio >= SCREEN_RATIO ? int(io.DisplaySize.y / LCD::SCREEN_H) : int(io.DisplaySize.x / LCD::SCREEN_W);
+                    viewportSize = ImVec2(float(scaleFactor * LCD::SCREEN_W), float(scaleFactor * LCD::SCREEN_H));
+                }
+                else
+                {
+                    viewportSize = ImVec2(float(int(io.DisplaySize.x / LCD::SCREEN_W) * LCD::SCREEN_W), float(int(io.DisplaySize.y / LCD::SCREEN_H) * LCD::SCREEN_H));
+                }
             }
             else
             {
-                if (windowRatio >= SCREEN_RATIO)
+                if (!mConfig->keepAspectRatio)
+                {
+                    viewportSize = ImVec2(io.DisplaySize.x, io.DisplaySize.y);
+                }
+                else if (windowRatio >= SCREEN_RATIO)
                 {
                     viewportSize = ImVec2(io.DisplaySize.x * SCREEN_RATIO / windowRatio, io.DisplaySize.y);
                 }
@@ -278,6 +289,10 @@ void GUI::draw()
                     {
                         mConfig->bilinearFiltering = !mConfig->bilinearFiltering;
                         mApp->setVideoParameters();
+                    }
+                    if (ImGui::MenuItem("Keep aspect ratio", nullptr, mConfig->keepAspectRatio))
+                    {
+                        mConfig->keepAspectRatio = !mConfig->keepAspectRatio;
                     }
                     ImGui::Separator();
                     if (ImGui::BeginMenu("UI scale"))

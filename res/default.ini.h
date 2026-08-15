@@ -26,6 +26,7 @@ const char *defaultIni =
     "exclusiveFullscreen = 0\n"
     "integerScaling = 0\n"
     "bilinearFiltering = 0\n"
+    "keepAspectRatio = 1\n"
     "uiScale = 1.0\n"
     "cgbColorCorrection = 1\n"
     "dmgWhite = -958493441\n"

@@ -24,6 +24,7 @@ public:
     int exclusiveFullscreen;
     int integerScaling;
     int bilinearFiltering;
+    int keepAspectRatio;
     float uiScale;
     int cgbColorCorrection;
     int dmgWhite;

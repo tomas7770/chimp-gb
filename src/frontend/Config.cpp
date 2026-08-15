@@ -67,6 +67,7 @@ void Config::load(std::stringstream &configString)
     loadIntKey(ini, exclusiveFullscreen, "video", "exclusiveFullscreen");
     loadIntKey(ini, integerScaling, "video", "integerScaling");
     loadIntKey(ini, bilinearFiltering, "video", "bilinearFiltering");
+    loadIntKey(ini, keepAspectRatio, "video", "keepAspectRatio");
     loadFloatKey(ini, uiScale, "video", "uiScale");
     loadIntKey(ini, cgbColorCorrection, "video", "cgbColorCorrection");
     loadIntKey(ini, dmgWhite, "video", "dmgWhite");
@@ -112,6 +113,7 @@ void Config::save(std::string &configFilepath)
     ini["video"]["exclusiveFullscreen"] = std::to_string(exclusiveFullscreen);
     ini["video"]["integerScaling"] = std::to_string(integerScaling);
     ini["video"]["bilinearFiltering"] = std::to_string(bilinearFiltering);
+    ini["video"]["keepAspectRatio"] = std::to_string(keepAspectRatio);
     ini["video"]["uiScale"] = std::to_string(uiScale);
     ini["video"]["cgbColorCorrection"] = std::to_string(cgbColorCorrection);
     ini["video"]["dmgWhite"] = std::to_string(dmgWhite);
