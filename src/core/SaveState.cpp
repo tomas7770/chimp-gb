@@ -300,7 +300,7 @@ std::shared_ptr<std::vector<uint8_t>> SaveState::serialize() const
     stateData->insert(stateData->end(), vramOffset.begin(), vramOffset.end());
     stateData->push_back(0x00);
     stateData->push_back(0x00);
-    stateData->push_back(0x01);
+    stateData->push_back(0x02);
     stateData->push_back(0x00);
     stateData->insert(stateData->end(), sramOffset.begin(), sramOffset.end());
     stateData->push_back(OAM_SIZE);
