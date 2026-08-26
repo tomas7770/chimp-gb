@@ -817,11 +817,11 @@ std::shared_ptr<std::vector<uint8_t>> Gameboy::serialize()
     SaveState state;
     state.systemType = mSystemType;
     mCart.saveState(state);
-    mCPU.saveState(state);
     for (int i = 0; i < 128; i++)
     {
         state.ioRegisters[i] = readByte(0xFF00 + i);
     }
+    mCPU.saveState(state);
     state.ioRegisters[BANK_ADDR - 0xFF00] = mBootRomFinished ? 1 : 0;
     std::memcpy(state.wram, wram, wramSize);
     std::memcpy(state.hram, hram, hramSize);
