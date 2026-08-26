@@ -92,7 +92,7 @@ public:
             uint8_t addressLow = state.mbcBlock.at(i);
             uint8_t addressHigh = state.mbcBlock.at(i + 1);
             uint8_t value = state.mbcBlock.at(i + 2);
-            writeByte((addressHigh << 8) & addressLow, value);
+            writeByte((addressHigh << 8) | addressLow, value);
         }
 
         auto rtc = getRTC();
