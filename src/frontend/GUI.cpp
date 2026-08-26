@@ -47,6 +47,14 @@ bool GUI::processEvent(SDL_Event *eventSDL)
     return !io.WantCaptureKeyboard;
 }
 
+void GUI::onRomLoad()
+{
+    for (int i = 0; i < SAVE_STATE_SLOT_COUNT; i++)
+    {
+        mSaveStateExists[i] = mApp->saveStateExists(i);
+    }
+}
+
 void GUI::draw()
 {
     ImGui_ImplSDLRenderer2_NewFrame();
@@ -160,13 +168,30 @@ void GUI::draw()
                         ImGui::EndMenu();
                     }
                     ImGui::Separator();
-                    if (ImGui::MenuItem("Load state", nullptr, nullptr, mApp->isPoweredOn()))
+                    if (ImGui::BeginMenu("Load state", mApp->isPoweredOn()))
                     {
-                        mApp->loadState();
+                        for (int i = 0; i < SAVE_STATE_SLOT_COUNT; i++)
+                        {
+                            std::string slotString = "Slot " + std::to_string(i);
+                            if (ImGui::MenuItem(slotString.c_str(), nullptr, nullptr, mSaveStateExists[i]))
+                            {
+                                mApp->loadState(i);
+                            }
+                        }
+                        ImGui::EndMenu();
                     }
-                    if (ImGui::MenuItem("Save state", nullptr, nullptr, mApp->isPoweredOn()))
+                    if (ImGui::BeginMenu("Save state", mApp->isPoweredOn()))
                     {
-                        mApp->saveState();
+                        for (int i = 0; i < SAVE_STATE_SLOT_COUNT; i++)
+                        {
+                            std::string slotString = "Slot " + std::to_string(i);
+                            if (ImGui::MenuItem(slotString.c_str()))
+                            {
+                                mApp->saveState(i);
+                                mSaveStateExists[i] = true;
+                            }
+                        }
+                        ImGui::EndMenu();
                     }
 #ifndef __EMSCRIPTEN__
                     ImGui::Separator();
