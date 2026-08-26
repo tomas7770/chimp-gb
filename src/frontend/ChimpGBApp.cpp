@@ -578,6 +578,7 @@ void ChimpGBApp::loadCart(Cartridge &cart, std::string &romFilename)
 #endif
 
     mRomFilename = romFilename;
+    mGUI.onRomLoad();
 
     SystemType systemType = static_cast<SystemType>(mConfig.dmgGameEmulatedConsole);
     if (cart.getHeader().cgbFlag & (1 << 7))
@@ -732,7 +733,7 @@ void ChimpGBApp::loadGame()
     }
 }
 
-void ChimpGBApp::saveState()
+void ChimpGBApp::saveState(int slotNum)
 {
     if (mGameboy == nullptr)
     {
@@ -741,19 +742,19 @@ void ChimpGBApp::saveState()
 
     auto stateData = mGameboy->requestSaveState();
     auto stateDataBytes = stateData->data();
-    std::string saveStateFilepath = getSavesPath() + mRomFilename + std::string(SAVE_STATE_EXTENSION);
+    std::string saveStateFilepath = getSavesPath() + mRomFilename + std::string(SAVE_STATE_EXTENSION) + std::to_string(slotNum);
     std::ofstream dataStream(saveStateFilepath, std::ios::binary | std::ios::trunc);
     dataStream.write(reinterpret_cast<const char *>(stateDataBytes), stateData->size());
 }
 
-void ChimpGBApp::loadState()
+void ChimpGBApp::loadState(int slotNum)
 {
     if (mGameboy == nullptr)
     {
         return;
     }
 
-    std::string saveStateFilepath = getSavesPath() + mRomFilename + std::string(SAVE_STATE_EXTENSION);
+    std::string saveStateFilepath = getSavesPath() + mRomFilename + std::string(SAVE_STATE_EXTENSION) + std::to_string(slotNum);
     std::ifstream dataStream(saveStateFilepath, std::ios::binary | std::ios::ate);
     if (!dataStream.good())
     {
@@ -780,6 +781,13 @@ void ChimpGBApp::loadState()
     {
         SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, WINDOW_TITLE, err.what(), mWindowSDL);
     }
+}
+
+bool ChimpGBApp::saveStateExists(int slotNum)
+{
+    std::string saveStateFilepath = getSavesPath() + mRomFilename + std::string(SAVE_STATE_EXTENSION) + std::to_string(slotNum);
+    std::ifstream dataStream(saveStateFilepath);
+    return dataStream.good();
 }
 
 void ChimpGBApp::doExit()

@@ -13,6 +13,7 @@ public:
     GUI() = default;
 
     bool processEvent(SDL_Event *eventSDL);
+    void onRomLoad();
     void draw();
     void destroy();
 
@@ -21,6 +22,7 @@ public:
 private:
     constexpr static float SCREEN_RATIO = float(LCD::SCREEN_W) / float(LCD::SCREEN_H);
     constexpr static const char *KEYS_GAME_NAMES[] = {"Right", "Left", "Up", "Down", "A", "B", "Select", "Start"};
+    constexpr static int SAVE_STATE_SLOT_COUNT = 10;
 
     ChimpGBApp *mApp;
     Config *mConfig;
@@ -39,6 +41,8 @@ private:
     float mTargetSpeed;
     float mTargetFPS;
     float mUIScale;
+
+    bool mSaveStateExists[SAVE_STATE_SLOT_COUNT];
 
     void loadRomFile(std::string &openFilenameString);
     void setAudioSampleRate(int audioSampleRate);
