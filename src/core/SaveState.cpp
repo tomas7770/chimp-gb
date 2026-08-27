@@ -58,11 +58,12 @@ void validateMemoryLength(const std::vector<uint8_t> &stateData, int offset, uin
 }
 
 void copyMemoryBlock(uint8_t *dest, const std::vector<uint8_t> &stateData,
-                     int bodyOffset, int sizeOffset)
+                     int bodyOffset, int sizeOffset, uint32_t maxSize)
 {
     uint32_t ramSize = byteArrayToWord(stateData, bodyOffset + sizeOffset);
     uint32_t ramOffset = byteArrayToWord(stateData, bodyOffset + sizeOffset + 4);
     validateMemoryLength(stateData, ramOffset, ramSize);
+    ramSize = std::min(ramSize, maxSize);
     memcpy(dest, stateData.data() + ramOffset, ramSize);
 }
 
@@ -129,13 +130,13 @@ uint32_t SaveState::parseBlock(const std::vector<uint8_t> &stateData, int header
         halted = stateData.at(bodyOffset + 0x16) == 1 ? true : false;
         memcpy(ioRegisters, data + bodyOffset + 0x18, 128);
 
-        copyMemoryBlock(wram, stateData, bodyOffset, 0x98);
-        copyMemoryBlock(vram, stateData, bodyOffset, 0xA0);
-        copyMemoryBlock(sram, stateData, bodyOffset, 0xA8);
-        copyMemoryBlock(oam, stateData, bodyOffset, 0xB0);
-        copyMemoryBlock(hram, stateData, bodyOffset, 0xB8);
-        copyMemoryBlock(colorBGPaletteMemory, stateData, bodyOffset, 0xC0);
-        copyMemoryBlock(colorOBJPaletteMemory, stateData, bodyOffset, 0xC8);
+        copyMemoryBlock(wram, stateData, bodyOffset, 0x98, WRAM_SIZE);
+        copyMemoryBlock(vram, stateData, bodyOffset, 0xA0, VRAM_SIZE);
+        copyMemoryBlock(sram, stateData, bodyOffset, 0xA8, SRAM_SIZE);
+        copyMemoryBlock(oam, stateData, bodyOffset, 0xB0, OAM_SIZE);
+        copyMemoryBlock(hram, stateData, bodyOffset, 0xB8, HRAM_SIZE);
+        copyMemoryBlock(colorBGPaletteMemory, stateData, bodyOffset, 0xC0, 64);
+        copyMemoryBlock(colorOBJPaletteMemory, stateData, bodyOffset, 0xC8, 64);
 
         return 0xD0;
     }
