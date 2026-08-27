@@ -51,7 +51,7 @@ void GUI::onRomLoad()
 {
     for (int i = 0; i < SAVE_STATE_SLOT_COUNT; i++)
     {
-        mSaveStateExists[i] = mApp->saveStateExists(i);
+        saveStateExists[i] = mApp->saveStateExists(i);
     }
 }
 
@@ -173,7 +173,8 @@ void GUI::draw()
                         for (int i = 0; i < SAVE_STATE_SLOT_COUNT; i++)
                         {
                             std::string slotString = "Slot " + std::to_string(i);
-                            if (ImGui::MenuItem(slotString.c_str(), nullptr, nullptr, mSaveStateExists[i]))
+                            std::string shortcutString = "Ctrl+Shift+" + std::to_string(i);
+                            if (ImGui::MenuItem(slotString.c_str(), shortcutString.c_str(), nullptr, saveStateExists[i]))
                             {
                                 mApp->loadState(i);
                             }
@@ -185,10 +186,11 @@ void GUI::draw()
                         for (int i = 0; i < SAVE_STATE_SLOT_COUNT; i++)
                         {
                             std::string slotString = "Slot " + std::to_string(i);
-                            if (ImGui::MenuItem(slotString.c_str()))
+                            std::string shortcutString = "Ctrl+" + std::to_string(i);
+                            if (ImGui::MenuItem(slotString.c_str(), shortcutString.c_str()))
                             {
                                 mApp->saveState(i);
-                                mSaveStateExists[i] = true;
+                                saveStateExists[i] = true;
                             }
                         }
                         ImGui::EndMenu();
@@ -204,7 +206,7 @@ void GUI::draw()
                 }
                 if (ImGui::BeginMenu("Emulation"))
                 {
-                    if (ImGui::MenuItem("Reset"))
+                    if (ImGui::MenuItem("Reset", "Ctrl+R"))
                     {
                         mApp->reset();
                     }
@@ -212,7 +214,7 @@ void GUI::draw()
                     {
                         mApp->powerOff();
                     }
-                    if (ImGui::MenuItem("Pause", nullptr, mApp->isPaused()))
+                    if (ImGui::MenuItem("Pause", "Ctrl+P", mApp->isPaused()))
                     {
                         mApp->pause();
                     }
@@ -303,7 +305,9 @@ void GUI::draw()
                 }
                 if (ImGui::BeginMenu("Video"))
                 {
-                    if (ImGui::MenuItem("Fullscreen", nullptr, mConfig->fullscreen))
+                    if (ImGui::MenuItem("Fullscreen",
+                                        SDL_GetScancodeName(static_cast<SDL_Scancode>(mConfig->keyToggleFullscreen)),
+                                        mConfig->fullscreen))
                     {
                         mConfig->fullscreen = !mConfig->fullscreen;
                         mApp->setVideoParameters();

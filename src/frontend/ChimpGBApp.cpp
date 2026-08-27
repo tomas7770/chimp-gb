@@ -447,7 +447,29 @@ void ChimpGBApp::mainLoop()
             else if (mEventSDL.type == SDL_KEYDOWN)
             {
                 auto scancode = mEventSDL.key.keysym.scancode;
-                if (scancode == mConfig.keyToggleFullscreen)
+                auto mod = mEventSDL.key.keysym.mod;
+                if (scancode == SDL_SCANCODE_R && (mod & KMOD_CTRL))
+                {
+                    reset();
+                }
+                else if (scancode == SDL_SCANCODE_P && (mod & KMOD_CTRL))
+                {
+                    pause();
+                }
+                else if (scancode >= SDL_SCANCODE_1 && scancode <= SDL_SCANCODE_0 && (mod & KMOD_CTRL))
+                {
+                    int slotNum = scancode == SDL_SCANCODE_0 ? 0 : scancode - SDL_SCANCODE_1 + 1;
+                    if (mod & KMOD_SHIFT)
+                    {
+                        loadState(slotNum);
+                    }
+                    else
+                    {
+                        saveState(slotNum);
+                        mGUI.saveStateExists[slotNum] = true;
+                    }
+                }
+                else if (scancode == mConfig.keyToggleFullscreen)
                 {
                     mConfig.fullscreen = !mConfig.fullscreen;
                     setVideoParameters();
