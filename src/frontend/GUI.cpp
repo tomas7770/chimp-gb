@@ -55,6 +55,22 @@ void GUI::onRomLoad()
     }
 }
 
+void rgba8888ToFloatArray(unsigned rgba8888, float array[3])
+{
+    array[0] = float(rgba8888 >> 24) / 255.0F;
+    array[1] = float((rgba8888 >> 16) & 0xFF) / 255.0F;
+    array[2] = float((rgba8888 >> 8) & 0xFF) / 255.0F;
+}
+
+unsigned floatArrayToRgba8888(float array[3])
+{
+    unsigned rgba8888 = 0xFF;
+    rgba8888 |= uint8_t(array[0] * 255.0F) << 24;
+    rgba8888 |= uint8_t(array[1] * 255.0F) << 16;
+    rgba8888 |= uint8_t(array[2] * 255.0F) << 8;
+    return rgba8888;
+}
+
 void GUI::draw()
 {
     ImGui_ImplSDLRenderer2_NewFrame();
@@ -398,6 +414,10 @@ void GUI::draw()
                             mConfig->dmgDarkGray = 1061109759;
                             mConfig->dmgBlack = 255;
                         }
+                        if (ImGui::MenuItem("Custom"))
+                        {
+                            mShowDMGPaletteWindow = !mShowDMGPaletteWindow;
+                        }
                         ImGui::EndMenu();
                     }
                     ImGui::EndMenu();
@@ -554,6 +574,25 @@ void GUI::draw()
             mConfig->uiScale = mUIScale;
             updateUIScale();
         }
+        ImGui::End();
+    }
+
+    if (mShowDMGPaletteWindow)
+    {
+        ImGui::Begin("GB palette", &mShowDMGPaletteWindow);
+        static float whiteColor[3], lightGrayColor[3], darkGrayColor[3], blackColor[3];
+        rgba8888ToFloatArray(mConfig->dmgWhite, whiteColor);
+        rgba8888ToFloatArray(mConfig->dmgLightGray, lightGrayColor);
+        rgba8888ToFloatArray(mConfig->dmgDarkGray, darkGrayColor);
+        rgba8888ToFloatArray(mConfig->dmgBlack, blackColor);
+        ImGui::ColorEdit3("White", whiteColor);
+        ImGui::ColorEdit3("Light Gray", lightGrayColor);
+        ImGui::ColorEdit3("Dark Gray", darkGrayColor);
+        ImGui::ColorEdit3("Black", blackColor);
+        mConfig->dmgWhite = floatArrayToRgba8888(whiteColor);
+        mConfig->dmgLightGray = floatArrayToRgba8888(lightGrayColor);
+        mConfig->dmgDarkGray = floatArrayToRgba8888(darkGrayColor);
+        mConfig->dmgBlack = floatArrayToRgba8888(blackColor);
         ImGui::End();
     }
 

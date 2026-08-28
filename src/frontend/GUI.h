@@ -36,6 +36,7 @@ private:
     bool mShowControlsWindow = false;
     bool mShowSpeedWindow = false;
     bool mShowUIScaleWindow = false;
+    bool mShowDMGPaletteWindow = false;
 
     bool mChangingKeybind = false;
     int mKeybindToChange;
