@@ -31,6 +31,7 @@ set (IMGUI_SOURCE_FILES
     lib/imgui/imgui.cpp
     lib/imgui/backends/imgui_impl_sdl2.cpp
     lib/imgui/backends/imgui_impl_sdlrenderer2.cpp
+    lib/imgui/misc/cpp/imgui_stdlib.cpp
 )
 
 set (MISC_SOURCE_FILES

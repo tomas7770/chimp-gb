@@ -6,6 +6,7 @@
 
 #ifndef __EMSCRIPTEN__
 #include "tinyfiledialogs/tinyfiledialogs.h"
+#include "misc/cpp/imgui_stdlib.h"
 #endif
 
 #include "Platform.h"
@@ -317,6 +318,12 @@ void GUI::draw()
                         }
                         ImGui::EndMenu();
                     }
+#ifndef __EMSCRIPTEN__
+                    if (ImGui::MenuItem("Boot ROM"))
+                    {
+                        mShowBootROMWindow = !mShowBootROMWindow;
+                    }
+#endif
                     ImGui::EndMenu();
                 }
                 if (ImGui::BeginMenu("Video"))
@@ -595,6 +602,45 @@ void GUI::draw()
         mConfig->dmgBlack = floatArrayToRgba8888(blackColor);
         ImGui::End();
     }
+
+#ifndef __EMSCRIPTEN__
+    if (mShowBootROMWindow)
+    {
+        ImGui::Begin("Boot ROM", &mShowBootROMWindow);
+        ImGui::InputText("DMG boot ROM path", &mConfig->dmgBootRomPath);
+        if (ImGui::Button("Select##0"))
+        {
+            char *openFilename = tinyfd_openFileDialog("DMG boot ROM", nullptr,
+                                                       0, nullptr, nullptr, 0);
+            if (openFilename)
+            {
+                mConfig->dmgBootRomPath = std::string(openFilename);
+            }
+        }
+        ImGui::SameLine();
+        if (ImGui::Button("Clear##0"))
+        {
+            mConfig->dmgBootRomPath = std::string("");
+        }
+        ImGui::NewLine();
+        ImGui::InputText("CGB boot ROM path", &mConfig->cgbBootRomPath);
+        if (ImGui::Button("Select##1"))
+        {
+            char *openFilename = tinyfd_openFileDialog("CGB boot ROM", nullptr,
+                                                       0, nullptr, nullptr, 0);
+            if (openFilename)
+            {
+                mConfig->cgbBootRomPath = std::string(openFilename);
+            }
+        }
+        ImGui::SameLine();
+        if (ImGui::Button("Clear##1"))
+        {
+            mConfig->cgbBootRomPath = std::string("");
+        }
+        ImGui::End();
+    }
+#endif
 
     ImGui::Render();
 

@@ -37,6 +37,7 @@ private:
     bool mShowSpeedWindow = false;
     bool mShowUIScaleWindow = false;
     bool mShowDMGPaletteWindow = false;
+    bool mShowBootROMWindow = false;
 
     bool mChangingKeybind = false;
     int mKeybindToChange;
