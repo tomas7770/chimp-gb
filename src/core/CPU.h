@@ -60,7 +60,7 @@ public:
     bool isDoubleSpeed() const { return mDoubleSpeed; }
 
     void loadBootRom();
-    void simulateBootRom();
+    void simulateBootRom(bool agb);
 
     void saveState(SaveState &state) const;
     void loadState(const SaveState &state);

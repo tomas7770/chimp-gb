@@ -765,7 +765,7 @@ void Gameboy::setBootRom(std::istream &dataStream)
     mPPU.writeLCDC(0x00);
 }
 
-void Gameboy::simulateBootRom()
+void Gameboy::simulateBootRom(bool agb)
 {
     if (mSystemType == SystemType::CGB)
     {
@@ -792,7 +792,7 @@ void Gameboy::simulateBootRom()
         }
     }
     std::memset(mPPU.vram, 0, PPU::vramSize);
-    mCPU.simulateBootRom();
+    mCPU.simulateBootRom(agb);
 }
 
 void Gameboy::addEvent(SchedulerEventType type, uint64_t time)

@@ -638,7 +638,7 @@ void ChimpGBApp::loadCart(Cartridge &cart, std::string &romFilename)
         }
         else
         {
-            mGameboy->simulateBootRom();
+            mGameboy->simulateBootRom(mConfig.simulateAGB);
         }
 
         loadGame();

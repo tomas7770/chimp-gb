@@ -47,6 +47,7 @@ public:
     std::string cgbBootRomPath;
     int dmgGameEmulatedConsole;
     int cgbGameEmulatedConsole;
+    int simulateAGB;
 
     void load(std::stringstream &configString);
     void save(std::string &configFilepath);

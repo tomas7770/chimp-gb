@@ -51,7 +51,7 @@ public:
                                                 const std::vector<float> &),
                           void *userdata, double cyclesPerSample);
     void setBootRom(std::istream &dataStream);
-    void simulateBootRom();
+    void simulateBootRom(bool agb);
 
     void addEvent(SchedulerEventType type, uint64_t time);
     void removeEvent(SchedulerEventType type);

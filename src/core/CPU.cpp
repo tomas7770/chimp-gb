@@ -78,7 +78,7 @@ void CPU::loadBootRom()
     mPC = 0;
 }
 
-void CPU::simulateBootRom()
+void CPU::simulateBootRom(bool agb)
 {
     switch (mGameboy->getSystemType())
     {
@@ -103,7 +103,7 @@ void CPU::simulateBootRom()
 
     case SystemType::CGB:
         mRegA = 0x11;
-        mRegF = FLAG_ZERO;
+        mRegF = agb ? 0 : FLAG_ZERO;
         mRegC = 0x00;
 
         if (mGameboy->inDMGMode())
@@ -118,6 +118,15 @@ void CPU::simulateBootRom()
                     mRegB += header.titleChars[i];
                 }
             }
+            if (agb)
+            {
+                if (mRegB + 1 == 0)
+                    mRegF |= FLAG_ZERO;
+                if ((mRegB & (1 << 4)) != ((mRegB + 1) & (1 << 4)))
+                    mRegF |= FLAG_HALFCARRY;
+                mRegB++;
+            }
+
             mRegD = 0x00;
             mRegE = 0x08;
             if (mRegB == 0x43 || mRegB == 0x58)
@@ -133,7 +142,7 @@ void CPU::simulateBootRom()
         }
         else
         {
-            mRegB = 0x00;
+            mRegB = agb ? 0x01 : 0x00;
             mRegD = 0xFF;
             mRegE = 0x56;
             mRegH = 0x00;

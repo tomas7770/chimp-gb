@@ -75,4 +75,5 @@ const char *defaultIni =
     "; 0 = DMG (Game Boy), 1 = CGB (Game Boy Color)\n"
     "dmgGameEmulatedConsole = 0\n"
     "; Which console to emulate when running a GBC-enhanced or GBC-only game.\n"
-    "cgbGameEmulatedConsole = 1\n";
+    "cgbGameEmulatedConsole = 1\n"
+    "simulateAGB = 0\n";

@@ -316,6 +316,10 @@ void GUI::draw()
                             }
                             ImGui::EndMenu();
                         }
+                        if (ImGui::MenuItem("Unlock GBA features", nullptr, mConfig->simulateAGB, mConfig->cgbBootRomPath == ""))
+                        {
+                            mConfig->simulateAGB = !mConfig->simulateAGB;
+                        }
                         ImGui::EndMenu();
                     }
 #ifndef __EMSCRIPTEN__
