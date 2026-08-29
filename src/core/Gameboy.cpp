@@ -344,6 +344,17 @@ void Gameboy::writeByte(uint16_t address, uint8_t value)
         mJoypad.selectButtons = (value & Joypad::SEL_BUTTONS_BITMASK) ? false : true;
         mJoypad.selectDPad = (value & Joypad::SEL_DPAD_BITMASK) ? false : true;
     }
+    else if (address == SB_ADDR)
+    {
+        mSerialByte = value;
+    }
+    else if (address == SC_ADDR && value == 0x81)
+    {
+        if (serialCallback != nullptr)
+        {
+            serialCallback(mSerialCallbackUserdata, mSerialByte);
+        }
+    }
     else if (address == DIV_ADDR)
     {
         // The whole system internal counter is set to 0
@@ -745,6 +756,12 @@ void Gameboy::setAudioCallback(void (*audioCallback)(void *, const std::vector<f
     mAudioTimeAccum = 0.0;
 }
 
+void Gameboy::setSerialCallback(void (*serialCallback)(void *, uint8_t), void *userdata)
+{
+    this->serialCallback = serialCallback;
+    mSerialCallbackUserdata = userdata;
+}
+
 void Gameboy::setBootRom(std::istream &dataStream)
 {
     switch (mSystemType)
@@ -863,7 +880,7 @@ void Gameboy::loadState(const SaveState &state)
         {
             mSysCounter = state.ioRegisters[i] << 6;
         }
-        else if (address == DMA_ADDR || address == HDMA5_ADDR)
+        else if (address == SC_ADDR || address == DMA_ADDR || address == HDMA5_ADDR)
         {
             // Intentionally left empty
         }
