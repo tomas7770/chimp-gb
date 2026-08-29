@@ -50,6 +50,7 @@ public:
     void setAudioCallback(void (*audioCallback)(void *, const std::vector<float> &,
                                                 const std::vector<float> &),
                           void *userdata, double cyclesPerSample);
+    void setSerialCallback(void (*serialCallback)(void *, uint8_t), void *userdata);
     void setBootRom(std::istream &dataStream);
     void simulateBootRom(bool agb);
 
@@ -89,11 +90,16 @@ private:
     uint8_t mKEY0 = 0;
     int mWRAMBank = 1;
 
+    uint8_t mSerialByte;
+
     std::vector<float> mLeftAudioSamples, mRightAudioSamples;
     void (*audioCallback)(void *userdata, const std::vector<float> &leftAudioSamples,
                           const std::vector<float> &rightAudioSamples) = nullptr;
     void *mAudioCallbackUserdata = nullptr;
     double mCyclesPerAudioSample, mAudioTimeAccum;
+
+    void (*serialCallback)(void *userdata, uint8_t serialByte) = nullptr;
+    void *mSerialCallbackUserdata = nullptr;
 
     bool canSaveState() const;
 
@@ -112,6 +118,8 @@ private:
     static constexpr uint16_t OAM_ADDR = 0xFE00;
     static constexpr uint16_t UNUSABLE_ADDR = 0xFEA0;
     static constexpr uint16_t JOYPAD_ADDR = 0xFF00;
+    static constexpr uint16_t SB_ADDR = 0xFF01;
+    static constexpr uint16_t SC_ADDR = 0xFF02;
     static constexpr uint16_t DIV_ADDR = 0xFF04;
     static constexpr uint16_t TIMA_ADDR = 0xFF05;
     static constexpr uint16_t TMA_ADDR = 0xFF06;
