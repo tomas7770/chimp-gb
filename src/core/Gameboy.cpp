@@ -346,13 +346,9 @@ void Gameboy::writeByte(uint16_t address, uint8_t value)
     }
     else if (address == SB_ADDR)
     {
-        mSerialByte = value;
-    }
-    else if (address == SC_ADDR && value == 0x81)
-    {
         if (serialCallback != nullptr)
         {
-            serialCallback(mSerialCallbackUserdata, mSerialByte);
+            serialCallback(mSerialCallbackUserdata, value);
         }
     }
     else if (address == DIV_ADDR)
@@ -880,7 +876,7 @@ void Gameboy::loadState(const SaveState &state)
         {
             mSysCounter = state.ioRegisters[i] << 6;
         }
-        else if (address == SC_ADDR || address == DMA_ADDR || address == HDMA5_ADDR)
+        else if (address == DMA_ADDR || address == HDMA5_ADDR)
         {
             // Intentionally left empty
         }
