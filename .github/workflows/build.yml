@@ -23,11 +23,13 @@ jobs:
             c_compiler: gcc
             cpp_compiler: g++
             shell: "msys2 {0}"
+            extra_options: -DBUILD_CHIMPGB_TEST=ON
           - name: "🐧 Linux (GCC)"
             os: ubuntu-latest
             c_compiler: gcc
             cpp_compiler: g++
             shell: bash
+            extra_options: -DBUILD_CHIMPGB_TEST=ON
           - name: "🌐 Web (Emscripten)"
             os: ubuntu-latest
             c_compiler: emcc
@@ -49,6 +51,7 @@ jobs:
           mingw-w64-ucrt-x86_64-gcc
           mingw-w64-ucrt-x86_64-make
           mingw-w64-ucrt-x86_64-SDL2
+          mingw-w64-ucrt-x86_64-python
 
     - name: Install Dependencies (Linux)
       if: ${{ (runner.os == 'Linux') && (matrix.config.web != true) }}
@@ -71,3 +74,14 @@ jobs:
 
     - name: Build
       run: cmake --build build --config Release
+
+    - name: Test
+      if: ${{ matrix.config.web != true }}
+      run: |
+        cd src/test
+        wget https://gekkio.fi/files/mooneye-test-suite/mts-20240926-1737-443f6e1/mts-20240926-1737-443f6e1.tar.gz
+        tar -xvzf mts-20240926-1737-443f6e1.tar.gz
+        wget https://github.com/retrio/gb-test-roms/archive/refs/heads/master.tar.gz
+        tar -xvzf master.tar.gz
+        mv gb-test-roms-master/ gb-test-roms
+        python run_tests.py ../../build/src/ChimpGBTest
