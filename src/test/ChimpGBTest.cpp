@@ -13,6 +13,8 @@ int main(int argc, char *args[])
     std::string filepath;
     int runCycles;
     SystemType systemType;
+    bool agb = false;
+
     if (argc < 4)
     {
         std::cout << "Please provide a ROM file path, number of cycles to run, and system type." << std::endl;
@@ -31,6 +33,14 @@ int main(int argc, char *args[])
         return -1;
     }
 
+    for (int i = 4; i < argc; i++)
+    {
+        if (std::string(args[i]) == "-agb")
+        {
+            agb = true;
+        }
+    }
+
     // Load ROM
     std::ifstream dataStream(filepath, std::ios::binary | std::ios::ate);
     if (!dataStream.good())
@@ -44,7 +54,7 @@ int main(int argc, char *args[])
     Cartridge cart = Cartridge(dataStream, size);
     Gameboy *gameboy = new Gameboy(cart, false, systemType);
     gameboy->setSerialCallback(printSerialByte, nullptr);
-    gameboy->simulateBootRom(false);
+    gameboy->simulateBootRom(agb);
     for (int i = 0; i < runCycles; i++)
     {
         gameboy->doCycle(false);
