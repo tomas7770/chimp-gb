@@ -21,6 +21,9 @@ struct RomHeader
         MBC5 = 0x19,
         MBC5_RAM = 0x1A,
         MBC5_RAM_BATTERY = 0x1B,
+        MBC5_RUMBLE = 0x1C,
+        MBC5_RUMBLE_RAM = 0x1D,
+        MBC5_RUMBLE_RAM_BATTERY = 0x1E,
     };
 
     static constexpr int MBC_BYTE = 0x0147;

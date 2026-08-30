@@ -40,6 +40,13 @@ void Cartridge::init()
     case RomHeader::CartridgeType::MBC5_RAM_BATTERY:
         mMBC = std::make_shared<MBC5>(true);
         break;
+    case RomHeader::CartridgeType::MBC5_RUMBLE:
+    case RomHeader::CartridgeType::MBC5_RUMBLE_RAM:
+        mMBC = std::make_shared<MBC5>(false, true);
+        break;
+    case RomHeader::CartridgeType::MBC5_RUMBLE_RAM_BATTERY:
+        mMBC = std::make_shared<MBC5>(true, true);
+        break;
     }
 }
 

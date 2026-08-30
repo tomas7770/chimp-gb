@@ -39,7 +39,7 @@ Detailed status:
 
     - MBC3
 
-    - MBC5 (except variants with rumble)
+    - MBC5
 
 ## Compiling (desktop)
 

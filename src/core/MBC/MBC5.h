@@ -5,7 +5,7 @@
 class MBC5 : public MBC
 {
 public:
-    MBC5(bool hasBattery) : MBC(hasBattery) {}
+    MBC5(bool hasBattery, bool hasRumble = false) : MBC(hasBattery), mHasRumble(hasRumble) {}
 
     uint8_t readByte(std::vector<uint8_t> &romData, uint16_t address) override;
     void writeByte(uint16_t address, uint8_t value) override;
@@ -16,6 +16,7 @@ private:
     int mRAMBank = 0;
     bool mRAMEnabled = false;
     bool mRAMDirty = false;
+    bool mHasRumble;
 
     static constexpr uint16_t RAM_ENABLE_END = 0x1FFF;
 

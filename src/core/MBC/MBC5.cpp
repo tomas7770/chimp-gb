@@ -43,6 +43,10 @@ void MBC5::writeByte(uint16_t address, uint8_t value)
     }
     else if (address >= RAM_BANK_SELECT_START && address <= RAM_BANK_SELECT_END)
     {
+        if (mHasRumble)
+        {
+            value &= 0b111;
+        }
         mRAMBank = value % 16;
     }
     else if (address >= SRAM_ADDR && mRAMEnabled)
