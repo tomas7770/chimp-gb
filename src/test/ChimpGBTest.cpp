@@ -1,5 +1,9 @@
 #include <iostream>
 #include <fstream>
+#ifdef _WIN32
+#include <io.h>
+#include <fcntl.h>
+#endif
 #include "Gameboy.h"
 
 void printSerialByte(void *userdata, uint8_t serialByte)
@@ -50,6 +54,11 @@ int main(int argc, char *args[])
     }
     auto size = dataStream.tellg();
     dataStream.seekg(0);
+
+#ifdef _WIN32
+    // Prevent LF to CRLF conversion
+    setmode(fileno(stdout), O_BINARY);
+#endif
 
     Cartridge cart = Cartridge(dataStream, size);
     Gameboy *gameboy = new Gameboy(cart, false, systemType);
