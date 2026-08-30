@@ -181,6 +181,8 @@ This is a non-exhaustive list of references used in the development of this emul
 
 - [cgb-acid2](https://github.com/mattcurrie/cgb-acid2)
 
+- [Mooneye Test Suite](https://github.com/Gekkio/mooneye-test-suite/)
+
 - [MBC3 RTC test ROM](https://github.com/aaaaaa123456789/rtc3test)
 
 ## Credits
