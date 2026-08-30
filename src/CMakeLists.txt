@@ -2,7 +2,9 @@ cmake_minimum_required(VERSION 3.7)
 
 project(ChimpGB)
 
-set(SOURCE_FILES
+option(BUILD_CHIMPGB_TEST "Build ChimpGB test executable" OFF)
+
+set(CORE_SOURCE_FILES
     core/Gameboy.cpp
     core/Cartridge.cpp
     core/RomHeader.cpp
@@ -15,6 +17,9 @@ set(SOURCE_FILES
     core/MBC/MBC1.cpp
     core/MBC/MBC3.cpp
     core/MBC/MBC5.cpp
+)
+
+set(FRONTEND_SOURCE_FILES
     frontend/ChimpGB.cpp
     frontend/ChimpGBApp.cpp
     frontend/Platform.cpp
@@ -38,7 +43,14 @@ set (MISC_SOURCE_FILES
     lib/tinyfiledialogs/tinyfiledialogs.cpp
 )
 
-add_executable(ChimpGB ${SOURCE_FILES} ${IMGUI_SOURCE_FILES} ${MISC_SOURCE_FILES})
+set (TEST_SOURCE_FILES
+    test/ChimpGBTest.cpp
+)
+
+add_executable(ChimpGB ${CORE_SOURCE_FILES} ${FRONTEND_SOURCE_FILES} ${IMGUI_SOURCE_FILES} ${MISC_SOURCE_FILES})
+if (BUILD_CHIMPGB_TEST)
+    add_executable(ChimpGBTest ${CORE_SOURCE_FILES} ${TEST_SOURCE_FILES})
+endif()
 
 include_directories(core lib lib/imgui)
 if(EMSCRIPTEN)
