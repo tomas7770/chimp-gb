@@ -39,7 +39,92 @@ public:
 
     const LCD::Color *getPixels() const;
 
-    void doCycle(bool generateAudio);
+    void doCycle(bool generateAudio)
+    {
+        if (cycleCounter < mEvents.begin()->timestamp)
+        {
+            // 2 MHz cycle (2 T-cycles) (1 M-cycle at double speed mode);
+            // CPU is emulated at M-cycle accuracy;
+            // PPU timings are multiples of 2 T-cycles (with current implementation);
+            // APU maximum audio frequency is 2 MHz;
+            // Performance can be optimized by emulating 2 T-cycles at once, without affecting accuracy.
+
+            if (!(cycleCounter % 2) || mCPU.isDoubleSpeed())
+            {
+                mSysCounter++;
+                if (mTimer.tick(mSysCounter, mSysCounter - 1))
+                {
+                    mCPU.requestInterrupt(CPU::InterruptSource::Timer);
+                }
+                mCPU.doMCycle();
+            }
+            mAPU.doCycle();
+            cycleCounter++;
+
+            if (generateAudio)
+            {
+                if (!audioPointSample)
+                {
+                    mAPU.computeAudioSamples();
+                    mLeftAudioSamples.push_back(mAPU.leftAudioSample);
+                    mRightAudioSamples.push_back(mAPU.rightAudioSample);
+                }
+
+                mAudioTimeAccum += 1.0;
+                if (mAudioTimeAccum >= mCyclesPerAudioSample)
+                {
+                    mAudioTimeAccum -= mCyclesPerAudioSample;
+                    if (audioPointSample)
+                    {
+                        mAPU.computeAudioSamples();
+                        mLeftAudioSamples.push_back(mAPU.leftAudioSample);
+                        mRightAudioSamples.push_back(mAPU.rightAudioSample);
+                    }
+                    if (audioCallback != nullptr)
+                    {
+                        audioCallback(mAudioCallbackUserdata, mLeftAudioSamples, mRightAudioSamples);
+                    }
+                    mLeftAudioSamples.clear();
+                    mRightAudioSamples.clear();
+                }
+            }
+        }
+
+        if (cycleCounter == mEvents.begin()->timestamp)
+        {
+            SchedulerEvent event = *(mEvents.begin());
+            mEvents.erase(mEvents.begin());
+            switch (event.type)
+            {
+            case PPU_OAMScan_End:
+                mPPU.eventOAMScanEnd();
+                break;
+
+            case PPU_Draw_End:
+                mPPU.eventDrawEnd();
+                break;
+
+            case PPU_NewLine:
+                mPPU.eventNewLine();
+                break;
+
+            case PPU_DelayedVBlank:
+                mPPU.eventDelayedVBlank();
+                break;
+
+            case PPU_EarlyLYUpdate:
+                mPPU.eventEarlyLYUpdate();
+                break;
+
+            case APU_FrameSequencerTick:
+                mAPU.eventFrameSequencerTick();
+                break;
+
+            default:
+                break;
+            }
+        }
+    }
     void doFrame(bool generateAudio, int frameDelay);
     void onKeyPress(int key);
     void onKeyRelease(int key);
