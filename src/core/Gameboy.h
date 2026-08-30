@@ -90,8 +90,6 @@ private:
     uint8_t mKEY0 = 0;
     int mWRAMBank = 1;
 
-    uint8_t mSerialByte;
-
     std::vector<float> mLeftAudioSamples, mRightAudioSamples;
     void (*audioCallback)(void *userdata, const std::vector<float> &leftAudioSamples,
                           const std::vector<float> &rightAudioSamples) = nullptr;
@@ -119,7 +117,6 @@ private:
     static constexpr uint16_t UNUSABLE_ADDR = 0xFEA0;
     static constexpr uint16_t JOYPAD_ADDR = 0xFF00;
     static constexpr uint16_t SB_ADDR = 0xFF01;
-    static constexpr uint16_t SC_ADDR = 0xFF02;
     static constexpr uint16_t DIV_ADDR = 0xFF04;
     static constexpr uint16_t TIMA_ADDR = 0xFF05;
     static constexpr uint16_t TMA_ADDR = 0xFF06;
